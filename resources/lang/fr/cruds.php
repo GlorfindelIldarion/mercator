@@ -928,6 +928,8 @@ return [
             'certificates_helper' => 'Certificats installés sur ce serveur',
             'configuration' => 'Configuration',
             'configuration_helper' => 'Autres caractéristiques techniques',
+            'backups' => 'Sauvegardes',
+            'backups_helper' => 'Liste des sauvegardes de ce serveur logiques',
             'domain' => 'Domain',
             'domain_helper' => 'Domain d\'administration du serveur',
             'description' => 'Description',

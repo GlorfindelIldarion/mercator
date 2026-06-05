@@ -910,6 +910,8 @@ return [
             'address_ip_helper' => 'Filter: (IPv4|IPv6), ...',
             'applications' => 'Applications',
             'applications_helper' => 'Installed apps',
+            'backups' => 'Backups',
+            'backups_helper' => 'List of backups for this logical server',
             'certificates' => 'Certificates',
             'certificates_helper' => 'Certificates installed on this server',
             'configuration' => 'Configuration',
