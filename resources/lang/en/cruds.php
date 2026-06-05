@@ -1399,7 +1399,10 @@ return [
     'tools' => [
         'patching' => 'Patching',
         'explore' => 'Exploration',
-
+        'query' => [
+            'title' => 'Query Engine',
+            'title_short' => 'Queries',
+        ]
     ],
     'report' => [
         'cartography' => [
