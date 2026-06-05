@@ -19,6 +19,7 @@ theme:
   language: en
   features:
     - navigation.sections
+    - navigation.indexes
     - navigation.expand
     - navigation.top
     #- toc.integrate
@@ -59,6 +60,22 @@ plugins:
         - locale: fr
           name: Français
           build: true
+          nav_translations:
+            GETTING STARTED: DÉMARRAGE
+            DATA MODEL: MODÈLE DE DONNÉES
+            PROCESS & ANALYSIS: PROCESSUS & ANALYSE
+            API & INTEGRATION: API & INTÉGRATION
+            OPERATIONS: OPÉRATIONS
+            Cartography: Cartographie
+            Features: Fonctionnalités
+            Use Cases: Cas d'usage
+            Data Model: Modèle de données
+            Maturity: Maturité
+            Queries: Requêtes
+            Reports: Rapports
+            API Filters: Filtres d'API
+            Vulnerabilities: Vulnérabilités
+            References: Références
       reconfigure_material: true
 
 markdown_extensions:
@@ -71,21 +88,25 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - index.md
-  - application.md
-  - cartography.md
-  - maturity.md
-  - bpmn.md
-  - queries.md
-  - features.md
-  - reports.md
-  - vulnerabilities.md
-  - usecases.md
-  - model.md
-  - import.md
-  - api.md
-  - apifilters.md
-  - admin.md
-  - config.md
-  - references.md
-
+  - GETTING STARTED:
+      - Introduction: index.md
+      - -- Cartography: cartography.md
+      - -- Features: features.md
+      - -- Use Cases: usecases.md
+  - DATA MODEL:
+      - -- Data Model: model.md
+      - -- Maturity: maturity.md
+  - PROCESS & ANALYSIS:
+      - -- BPMN: bpmn.md
+      - -- Application: application.md
+      - -- Queries: queries.md
+      - -- Reports: reports.md
+  - API & INTEGRATION:
+      - -- API: api.md
+      - -- API Filters: apifilters.md
+      - -- Import: import.md
+      - -- Vulnerabilities: vulnerabilities.md
+  - OPERATIONS:
+      - -- Administration: admin.md
+      - -- Configuration: config.md
+      - -- References: references.md
