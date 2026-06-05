@@ -171,6 +171,7 @@ class Cartographer extends Model
             \App\Models\PhysicalServer::class         => trans('cruds.physicalServer.title'),
             \App\Models\PhysicalSwitch::class         => trans('cruds.physicalSwitch.title'),
             \App\Models\Process::class                => trans('cruds.process.title'),
+            \App\Models\Relation::class               => trans('cruds.relation.title'),
             \App\Models\Router::class                 => trans('cruds.router.title'),
             \App\Models\SecurityDevice::class         => trans('cruds.securityDevice.title'),
             \App\Models\Site::class                   => trans('cruds.site.title'),
