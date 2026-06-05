@@ -52,6 +52,9 @@
                             {{ trans('cruds.subnetwork.fields.vlan') }}
                         </th>
                         <th>
+                            {{ trans('cruds.vlan.fields.vlan_id') }}
+                        </th>
+                        <th>
                             {{ trans('cruds.subnetwork.fields.zone') }}
                         </th>
                         <th>
@@ -105,6 +108,11 @@
                             <td>
                                 @if ($subnetwork->vlan!=null)
                                     <x-show-link :model="$subnetwork->vlan" />
+                                @endif
+                            </td>
+                            <td>
+                                @if ($subnetwork->vlan!=null)
+                                    <x-show-link :model="$subnetwork->vlan" :label="$subnetwork->vlan->vlan_id" />
                                 @endif
                             </td>
                             <td>
