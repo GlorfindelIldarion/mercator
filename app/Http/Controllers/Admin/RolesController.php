@@ -7,6 +7,7 @@ use App\Http\Requests\MassDestroyRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use Gate;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -59,6 +60,23 @@ class RolesController extends Controller
         $models = Cartographer::cartographiableModelsList();
 
         return view('admin.roles.index', compact('roles', 'routes', 'models'));
+    }
+
+    public function clone(Request $request)
+    {
+        abort_if(Gate::denies('role_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $role = Role::find($request['id']);
+        abort_if($role === null, Response::HTTP_NOT_FOUND, '404 Not Found');
+
+        $permissions = Permission::all()->sortBy('title')->pluck('title', 'id');
+        $permissions_sorted = $this->getSortedPerms($permissions);
+
+        $request->merge($role->only($role->getFillable()));
+        $request->merge(['permissions' => $role->permissions()->pluck('id')->toArray()]);
+        $request->flash();
+
+        return view('admin.roles.create', compact('permissions_sorted'));
     }
 
     public function create()

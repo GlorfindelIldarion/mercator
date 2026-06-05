@@ -7,10 +7,10 @@ use App\Http\Requests\MassStoreRoleRequest;
 use App\Http\Requests\MassUpdateRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\Role;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Role;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoleController extends APIController
@@ -28,7 +28,6 @@ class RoleController extends APIController
     {
         abort_if(Gate::denies('role_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        /** @var Role $role */
         $role = Role::query()->create($request->all());
 
         return response()->json($role, Response::HTTP_CREATED);
@@ -38,6 +37,8 @@ class RoleController extends APIController
     {
         abort_if(Gate::denies('show-object', $role), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
+        $role['permissions'] = $role->permissions()->pluck('id');
+
         return new JsonResource($role);
     }
 
@@ -46,6 +47,10 @@ class RoleController extends APIController
         abort_if(Gate::denies('edit-object', $role), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $role->update($request->all());
+
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->input('permissions', []));
+        }
 
         return response()->json();
     }

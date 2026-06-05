@@ -61,6 +61,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['web.prote
     });
 
     // Roles
+    Route::get('roles/clone/{id}', [Admin\RolesController::class, 'clone'])->name('roles.clone');
     Route::resource('roles', Admin\RolesController::class);
     Route::delete('roles-destroy', [Admin\RolesController::class, 'massDestroy'])->name('roles.massDestroy');
 
