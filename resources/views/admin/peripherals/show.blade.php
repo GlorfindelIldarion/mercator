@@ -203,7 +203,7 @@
                         {{ trans('cruds.peripheral.fields.bay') }}
                     </th>
                     <td width="23%">
-                        @if($peripheral->bays!=null)
+                        @if($peripheral->bay!=null)
                             @canShow($peripheral->bay)
                                 <a href="{{ route('admin.bays.show', $peripheral->bay->id) }}">
                                     {{ $peripheral->bay->name }}
