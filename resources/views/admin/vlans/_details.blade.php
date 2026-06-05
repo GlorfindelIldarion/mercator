@@ -20,12 +20,18 @@
                 {{ $vlan->name }}
             @endif
             </td>
+            <th width="10%">
+            {{ trans('cruds.vlan.fields.vlan_id') }}
+            </th>
+            <td>
+            {{ $vlan->id }}
+            </td>
         </tr>
         <tr>
             <th>
                 {{ trans('cruds.vlan.fields.description') }}
             </th>
-            <td>
+            <td colspan="3">
                 {!! $vlan->description !!}
             </td>
         </tr>
@@ -34,7 +40,7 @@
             <th>
                 {{ trans('cruds.vlan.fields.subnetworks') }}
             </th>
-            <td>
+            <td colspan="3">
                 @foreach($vlan->subnetworks as $subnetwork)
                 @canShow($subnetwork)
                 <a href="/admin/subnetworks/{{ $subnetwork->id }}">{{ $subnetwork->name }}</a>
@@ -53,7 +59,7 @@
             <th>
                 {{ trans('cruds.vlan.fields.network_switches') }}
             </th>
-            <td>
+            <td colspan="3">
                 @foreach($vlan->networkSwitches as $networkSwitch)
                 @canShow($networkSwitch)
                 <a href="/admin/network-switches/{{ $networkSwitch->id }}">{{ $networkSwitch->name }}</a>
