@@ -16,93 +16,129 @@ php artisan passport:install
 
 - The Docker environment supports this functionality natively, via the entrypoint.
 
-## Mapping APIs
+## 📚 Mapping APIs
 
-For each object in the cartography data model, there is an API.
-The list of APIs can be found in /route/api.php
+### Descriptions
+Each entity in the mapping data model exposes a REST endpoint following Laravel conventions.  
+Routes are defined in: `/routes/api.php`.
+
+---
+
+#### **GET /api/{resource}**  
+Returns a **collection** of `{resource}` objects.
+
+**Response:**  
+- Laravel `ResourceCollection`  
+- Includes only the main attributes (simplified view)
+
+**Example:**  
+`GET /api/processes`
+
+---
+
+#### **GET /api/{resource}/{id}**  
+Returns the full **Resource** for the specified ID.
+
+**Parameters:**  
+- `id` — unique identifier of the object
+
+**Response:**  
+- Laravel `Resource`  
+- Includes all attributes of the object
+
+**Example:**  
+`GET /api/processes/1`
+
+---
+
+#### 📌 Notes
+- List endpoints return a **ResourceCollection**, which exposes a partial view.  
+- To retrieve the full representation of an object, use its individual endpoint.  
+- To view the data model associated with an API, click its name in the interface.
 
 ### Endpoints for GDPR
 
-- [/api/data-processings](./model.md#register)
-- [/api/security-controls](./model.md#security-measures)
+- [<img src="/mercator/images/get.png" width="30"> /api/data-processings](./model.md#register)
+- [<img src="/mercator/images/get.png" width="30"> /api/security-controls](./model.md#security-measures)
 
 ### Endpoints for Ecosystem
 
-- [/api/entities](./model.md#entities)
-- [/api/relations](./model.md#relationships)
+- [<img src="/mercator/images/get.png" width="30"> /api/entities](./model.md#entities)
+- [<img src="/mercator/images/get.png" width="30"> /api/relations](./model.md#relationships)
 
 ### Endpoints for Information system business
 
-- [/api/macro-processuses](./model.md#macro-processes)
-- [/api/processes](./model.md#processes)
-- [/api/activities](./model.md#activities)
-- [/api/operations](./model.md#operations)
-- [/api/tasks](./model.md#tasks)
-- [/api/actors](./model.md#actors)
-- [/api/information](./model.md#information)
+- [<img src="/mercator/images/get.png" width="30"> /api/macro-processuses](./model.md#macro-processes)
+- [<img src="/mercator/images/get.png" width="30"> /api/processes](./model.md#processes)
+- [<img src="/mercator/images/get.png" width="30"> /api/activities](./model.md#activities)
+- [<img src="/mercator/images/get.png" width="30"> /api/operations](./model.md#operations)
+- [<img src="/mercator/images/get.png" width="30"> /api/tasks](./model.md#tasks)
+- [<img src="/mercator/images/get.png" width="30"> /api/actors](./model.md#actors)
+- [<img src="/mercator/images/get.png" width="30"> /api/information](./model.md#information)
 
 ### Endpoints for Application
 
-- [/api/application-blocks](./model.md#applications-blocks)
-- [/api/applications](./model.md#applications)
-- [/api/application-services](./model.md#applications-services)
-- [/api/application-modules](./model.md#application-modules)
-- [/api/databases](./model.md#databases)
-- [/api/application-flows](./model.md#application-flows)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-blocks](./model.md#applications-blocks)
+- [<img src="/mercator/images/get.png" width="30"> /api/applications](./model.md#applications)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-services](./model.md#applications-services)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-modules](./model.md#application-modules)
+- [<img src="/mercator/images/get.png" width="30"> /api/databases](./model.md#databases)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-flows](./model.md#application-flows)
 
 ### Endpoints for Administration view
 
-- [/api/zone-admins](./model.md#administration-areas)
-- [/api/annuaires](./model.md#administration-directory-services)
-- [/api/forest-ads](./model.md#active-directory-forests-ldap-tree-structure)
-- [/api/domains](./model.md#active-directory-domains-ldap)
-- [/api/admin-users](./model.md#users)
+- [<img src="/mercator/images/get.png" width="30"> /api/zone-admins](./model.md#administration-areas)
+- [<img src="/mercator/images/get.png" width="30"> /api/annuaires](./model.md#administration-directory-services)
+- [<img src="/mercator/images/get.png" width="30"> /api/forest-ads](./model.md#active-directory-forests-ldap-tree-structure)
+- [<img src="/mercator/images/get.png" width="30"> /api/domains](./model.md#active-directory-domains-ldap)
+- [<img src="/mercator/images/get.png" width="30"> /api/admin-users](./model.md#users)
 
 ### Endpoints for Logical infrastructure
 
-- [/api/networks](./model.md#networks)
-- [/api/subnetworks](./model.md#subnetworks)
-- [/api/gateways](./model.md#external-input-gateways)
-- [/api/external-connected-entities](./model.md#connected-external-entities)
-- [/api/network-switches](./model.md#network-switches)
-- [/api/routers](./model.md#logical-routers)
-- [/api/security-devices](model.md#security-devices)
-- [/api/dhcp-servers *(usage not recommended)*](./model.md#dhcp-servers)
-- [/api/dnsservers *(usage not recommended)*](./model.md#dns-servers)
-- [/api/clusters](./model.md#clusters)
-- [/api/logical-servers](./model.md#logical-servers)
-- [/api/backups](./model.md#backup-plans) ==> linked to logical-servers and storage-devices
-- [/api/containers](./model.md#containers)
-- [/api/logical-flows](./model.md#logical-flows)
-- [/api/certificates](./model.md#certificates)
-- [/api/vlans](./model.md#vlans)
+- [<img src="/mercator/images/get.png" width="30"> /api/networks](./model.md#networks)
+- [<img src="/mercator/images/get.png" width="30"> /api/subnetworks](./model.md#subnetworks)
+- [<img src="/mercator/images/get.png" width="30"> /api/gateways](./model.md#external-input-gateways)
+- [<img src="/mercator/images/get.png" width="30"> /api/external-connected-entities](./model.md#connected-external-entities)
+- [<img src="/mercator/images/get.png" width="30"> /api/network-switches](./model.md#network-switches)
+- [<img src="/mercator/images/get.png" width="30"> /api/routers](./model.md#logical-routers)
+- [<img src="/mercator/images/get.png" width="30"> /api/security-devices](model.md#security-devices)
+- [<img src="/mercator/images/get.png" width="30"> /api/dhcp-servers *(usage not recommended)*](./model.md#dhcp-servers)
+- [<img src="/mercator/images/get.png" width="30"> /api/dnsservers *(usage not recommended)*](./model.md#dns-servers)
+- [<img src="/mercator/images/get.png" width="30"> /api/clusters](./model.md#clusters)
+- [<img src="/mercator/images/get.png" width="30"> /api/logical-servers](./model.md#logical-servers)
+- [<img src="/mercator/images/get.png" width="30"> /api/backups](./model.md#backup-plans) ==> linked to logical-servers and storage-devices
+- [<img src="/mercator/images/get.png" width="30"> /api/containers](./model.md#containers)
+- [<img src="/mercator/images/get.png" width="30"> /api/logical-flows](./model.md#logical-flows)
+- [<img src="/mercator/images/get.png" width="30"> /api/certificates](./model.md#certificates)
+- [<img src="/mercator/images/get.png" width="30"> /api/vlans](./model.md#vlans)
 
 ### Endpoints for Physical infrastructure
 
-- [/api/sites](./model.md#sites)
-- [/api/buildings](./model.md#buildings-rooms)
-- [/api/bays](./model.md#racks)
-- [/api/zones](./model.md#security-zones)
-- [/api/physical-servers](./model.md#physical-servers)
-- [/api/workstations](./model.md#workstations)
-- [/api/storage-devices](./model.md#storage-infrastructures) (recommended for backups)
-- [/api/peripherals](./model.md#peripherals)
-- [/api/phones](./model.md#phones)
-- [/api/physical-switches](./model.md#physical-switches)
-- [/api/physical-routers](./model.md#physical-routers)
-- [/api/wifi-terminals](./model.md#wifi-terminals)
-- [/api/physical-security-devices](./model.md#physical-security-devices)
-- [/api/wans](./model.md#wans)
-- [/api/mans](./model.md#mans)
-- [/api/lans](./model.md#lans)
-- [/api/physical-links](./model.md#physical-links)
+- [<img src="/mercator/images/get.png" width="30"> /api/sites](./model.md#sites)
+- [<img src="/mercator/images/get.png" width="30"> /api/buildings](./model.md#buildings-rooms)
+- [<img src="/mercator/images/get.png" width="30"> /api/bays](./model.md#racks)
+- [<img src="/mercator/images/get.png" width="30"> /api/zones](./model.md#security-zones)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-servers](./model.md#physical-servers)
+- [<img src="/mercator/images/get.png" width="30"> /api/workstations](./model.md#workstations)
+- [<img src="/mercator/images/get.png" width="30"> /api/storage-devices](./model.md#storage-infrastructures) (recommended for backups)
+- [<img src="/mercator/images/get.png" width="30"> /api/peripherals](./model.md#peripherals)
+- [<img src="/mercator/images/get.png" width="30"> /api/phones](./model.md#phones)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-switches](./model.md#physical-switches)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-routers](./model.md#physical-routers)
+- [<img src="/mercator/images/get.png" width="30"> /api/wifi-terminals](./model.md#wifi-terminals)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-security-devices](./model.md#physical-security-devices)
+- [<img src="/mercator/images/get.png" width="30"> /api/wans](./model.md#wans)
+- [<img src="/mercator/images/get.png" width="30"> /api/mans](./model.md#mans)
+- [<img src="/mercator/images/get.png" width="30"> /api/lans](./model.md#lans)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-links](./model.md#physical-links)
 
 ## Configuration APIs
 
-- [/api/users](./model.md#users)
-- [/api/roles](./model.md#roles)
-- [/api/permissions](./model.md#permissions) *access not allowed yet*
-- [/api/documents](./model.md#documents)
+- [<img src="/mercator/images/get.png" width="30"> /api/users](./model.md#users)
+- [<img src="/mercator/images/get.png" width="30"> /api/roles](./model.md#roles)
+- [<img src="/mercator/images/get.png" width="30"> /api/cartographers](./model.md#cartography)
+- [<img src="/mercator/images/get.png" width="30"> /api/permissions](./model.md#permissions) *access not allowed yet*
+- [<img src="/mercator/images/get.png" width="30"> /api/documents](./model.md#documents)
 
 The unique feature of the endpoint **documents** is that it allows you to either upload or download a document.
 
@@ -133,30 +169,34 @@ DOC_ID=$(echo "$RESPONSE" | jq -r '.id // empty' 2>/dev/null)
 
 ## Queries APIs
 
-- /api/queries
-- /api/queries/***id***
+- <img src="/mercator/images/get.png" width="30"> /api/queries
+- <img src="/mercator/images/get.png" width="30"> /api/queries/***id***
+
+### Requests can also be executed via the API
+- <img src="/mercator/images/get.png" width="30"> /api/queries/execute/1  
+    - The **query ID** must be provided.  
+    - The query must be of **list type**.
 
 ## Reports APIs
 
-- /api/report/cartography
-- /api/report/entities
-- /api/report/applicationsByBlocks
-- /api/report/directory
-- /api/report/logicalServers
-- /api/report/securityNeeds
-- /api/report/logicalServerConfigs
-- /api/report/externalAccess
-- /api/report/physicalInventory
-- /api/report/vlans
-- /api/report/workstations
-- /api/report/cve
-- /api/report/activityList
-- /api/report/activityReport
-- /api/report/impacts
-- /api/report/rto
+- <img src="/mercator/images/get.png" width="30"> /api/report/cartography
+- <img src="/mercator/images/get.png" width="30"> /api/report/entities
+- <img src="/mercator/images/get.png" width="30"> /api/report/applicationsByBlocks
+- <img src="/mercator/images/get.png" width="30"> /api/report/directory
+- <img src="/mercator/images/get.png" width="30"> /api/report/logicalServers
+- <img src="/mercator/images/get.png" width="30"> /api/report/securityNeeds
+- <img src="/mercator/images/get.png" width="30"> /api/report/logicalServerConfigs
+- <img src="/mercator/images/get.png" width="30"> /api/report/externalAccess
+- <img src="/mercator/images/get.png" width="30"> /api/report/physicalInventory
+- <img src="/mercator/images/get.png" width="30"> /api/report/vlans
+- <img src="/mercator/images/get.png" width="30"> /api/report/workstations
+- <img src="/mercator/images/get.png" width="30"> /api/report/cve
+- <img src="/mercator/images/get.png" width="30"> /api/report/activityList
+- <img src="/mercator/images/get.png" width="30"> /api/report/activityReport
+- <img src="/mercator/images/get.png" width="30"> /api/report/impacts
+- <img src="/mercator/images/get.png" width="30"> /api/report/rto
 
-
-### Excel reports can be extracted as csv. 
+### Excel reports can be extracted as csv. 
 
 - Example for report extracted with excel format
 ```bash
@@ -202,6 +242,8 @@ objects accessed via the API.
 
 When authentication is successful, the API sends an "access_token", which must be passed in the "Authorization" header.
 header of the API request.
+
+📌 Examples of connections are presented in the [Examples](#examples) section.
 
 ## Linking objects
 

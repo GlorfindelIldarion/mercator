@@ -2027,6 +2027,26 @@ Cette partie permet de voir la liste des roles des users dans mercator.
 | updated_at | timestamp        | Date de mise à jour  |
 | deleted_at | timestamp        | Date de suppression  |
 
+
+### Cartographie
+
+Cette section permet de définir des règles d’accès sur des objets, applicables à des rôles ou à des utilisateurs.
+
+| Table                                         | api              |
+|:----------------------------------------------|:-----------------|
+| <span style="color: blue;">*cartographers*</span> | `/api/cartographers` |
+
+| Champ      | Type             | Description          |
+|------------|------------------|----------------------|
+| id         | int(10) unsigned | auto_increment       |
+| cartographiable_type     | varchar(255)     | Type d'objet        |
+| cartographiable_id | int(10)        | id de l'objet sélectionné     |
+| user_id | int(10)        | id de l'utilisateur affecté (peut-être null si on a un role alloué)  |
+| role_id | int(10)        | id du role affecté (peut-être null si on a un user alloué)  |
+| created_at | timestamp        | Date de création     |
+| updated_at | timestamp        | Date de mise à jour  |
+| deleted_at | timestamp        | Date de suppression  |
+
 ### Permissions
 
 Cette partie permet de voir la liste des permissions qui peuvent être affectées aux roles.
