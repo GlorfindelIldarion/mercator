@@ -777,6 +777,7 @@ class PermissionRoleTableSeeder extends Seeder
                 ->where('title', 'Cartographer')
                 ->value('id');
 
+            /*
             DB::table('permission_role')->insert([
                 ['role_id' => $cartographerId, 'permission_id' => 59],
                 ['role_id' => $cartographerId, 'permission_id' => 60],
@@ -820,6 +821,7 @@ class PermissionRoleTableSeeder extends Seeder
                 ['role_id' => $cartographerId, 'permission_id' => 322],
                 ['role_id' => $cartographerId, 'permission_id' => 324]
             ]);
+            */
         }
     }
 }
