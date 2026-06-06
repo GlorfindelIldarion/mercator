@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cartographer;
-use Gate;
-use Illuminate\Http\Request;
 use App\Models\Entity;
 use App\Models\Relation;
+use Gate;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EcosystemView extends Controller
