@@ -372,7 +372,7 @@ return [
             'user_helper'     => 'Utilisateur autorisé (exclusif avec le rôle)',
             'role'            => 'Rôle',
             'role_helper'     => 'Rôle autorisé (exclusif avec l\'utilisateur)',
-            'last_updated'    => 'Dernière modification',
+            'last_updated'    => 'Dernière modification de l\'objet',
         ],
         'errors' => [
             'user_or_role_required'   => 'Veuillez sélectionner un utilisateur ou un rôle.',

@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyEntityRequest;
 use App\Http\Requests\StoreEntityRequest;
 use App\Http\Requests\UpdateEntityRequest;
-use App\Services\IconUploadService;
-use Gate;
+use App\Models\Application;
 use App\Models\Database;
 use App\Models\Entity;
-use App\Models\Application;
 use App\Models\Process;
+use App\Services\IconUploadService;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class EntityController extends Controller
@@ -28,7 +28,6 @@ class EntityController extends Controller
 
         $entities = Entity::query()
             ->with('processes')
-        // $entities = Entity::with('processes', 'applications', 'databases')
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Entity::$searchable as $field) {
@@ -38,7 +37,8 @@ class EntityController extends Controller
             })
             ->orderBy('name')
             
-            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))
+            ->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.entities.index', compact('entities'));
     }

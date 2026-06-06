@@ -192,6 +192,9 @@ class Cartographer extends Model
     /** @var array<int, list<int>> */
     private static array $roleIdsCache = [];
 
+    /** @var array<int, list<string>> */
+    private static array $dbPermissionsCache = [];
+
     /** @var array<int, array<string, list<int>>> */
     private static array $cartographerCache = [];
 
@@ -209,6 +212,32 @@ class Cartographer extends Model
             self::$roleIdsCache[$key] = $user->roles()->pluck('id')->toArray();
         }
         return self::$roleIdsCache[$key];
+    }
+
+    /**
+     * Vérifie si l'utilisateur a la permission via ses rôles, sans passer par Gate.
+     * Gate::allows() retournerait true pour les cartographes (règle 2b de AuthServiceProvider),
+     * ce qui ferait croire à une permission complète alors qu'il faut filtrer par IDs.
+     */
+    private static function userHasRolePermission(User $user, string $permission): bool
+    {
+        if (self::hasWebSession()) {
+            return in_array($permission, session('auth_permissions', []), true);
+        }
+        // Contexte API : requête DB (cachée par requête)
+        $key = (int) $user->getKey();
+        if (! array_key_exists($key, self::$dbPermissionsCache)) {
+            $roleIds = self::getRoleIds($user);
+            self::$dbPermissionsCache[$key] = empty($roleIds) ? [] :
+                Role::whereIn('id', $roleIds)
+                    ->with('permissions')
+                    ->get()
+                    ->flatMap->permissions
+                    ->pluck('title')
+                    ->unique()
+                    ->toArray();
+        }
+        return in_array($permission, self::$dbPermissionsCache[$key], true);
     }
 
     /**
@@ -288,9 +317,11 @@ class Cartographer extends Model
             return $query;
         }
 
-        // No assignments: fall back to role-based permission (grants full access).
+        // Accès complet si l'utilisateur a la permission via son rôle.
+        // On passe par userHasRolePermission() et non Gate::allows() car AuthServiceProvider
+        // accorde _access via Gate aux cartographes (règle 2b), ce qui fausserait le filtre.
         $permission = Str::snake(class_basename($class)) . '_access';
-        if (Gate::allows($permission)) {
+        if (self::userHasRolePermission($user, $permission)) {
             return $query;
         }
 
