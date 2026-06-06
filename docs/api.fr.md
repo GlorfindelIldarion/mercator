@@ -137,8 +137,14 @@ Retourne la **Resource** complète correspondant à l’ID fourni.
 
 - [<img src="/mercator/images/get.png" width="30"> /api/users](./model.md#utilisateurs)
 - [<img src="/mercator/images/get.png" width="30"> /api/roles](./model.md#roles)
+
+Le rôle contient des permissions: *permission_roles*
+*permission_roles* n'existe pas comme endpoint API. C'est une table pivot gérée en interne par Laravel. Pour récupérer les associations rôle↔permission, on doit passer par **/api/roles/{id}?include=permissions** — les permissions liées à chaque rôle seront imbriquées dans la réponse du rôle.
+La liste des permissions de de leurs {id} se trouve par l'api **/api/permissions**
+
+
 - [<img src="/mercator/images/get.png" width="30"> /api/cartographers](./model.md#cartographie)
-- [<img src="/mercator/images/get.png" width="30"> /api/permissions](./model.md#permissions) *access impossible pour le moment*
+- [<img src="/mercator/images/get.png" width="30"> /api/permissions](./model.md#permissions) `LECTURE UNIQUEMENT`
 - [<img src="/mercator/images/get.png" width="30"> /api/documents](./model.md#documents)
 
 La particularité du point de terminaison **documents** est qu'il permet d'ajouter ou de télécharger un document.

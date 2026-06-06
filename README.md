@@ -123,10 +123,10 @@ Access your instance at [http://127.0.0.1:8080](http://127.0.0.1:8080).
 For a production-ready environment with HTTPS and automated setup, check out the [docker-compose](docker-compose/)
 folder.
 
-## 📜 **Changelog**
+## 📜 **Roadmap and Changelog**
 
 Stay up to date with the latest improvements and updates in
-the [Changelog](https://github.com/dbarzin/mercator/blob/master/CHANGELOG.md).
+the [Roadmap](https://github.com/sourcentis/mercator/blob/master/ROADMAP.md). *(French version)*
 
 ## 📄 **License**
 
