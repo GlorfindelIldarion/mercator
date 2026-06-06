@@ -355,8 +355,8 @@ return [
         ],
     ],
     'cartographer' => [
-        'title'          => 'Cartographie',
-        'title_singular' => 'Cartographie',
+        'title'          => 'Cartographes',
+        'title_singular' => 'Cartographe',
         'my_objects' => [
             'title'   => 'Mes objets cartographiés',
             'empty'   => "Vous n'êtes cartographe d'aucun objet.",

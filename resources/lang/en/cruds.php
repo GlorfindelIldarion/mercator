@@ -351,8 +351,8 @@ return [
         ],
     ],
     'cartographer' => [
-        'title'          => 'Cartography',
-        'title_singular' => 'Cartography',
+        'title'          => 'Cartographers',
+        'title_singular' => 'Cartographer',
         'my_objects' => [
             'title'   => 'My mapped objects',
             'empty'   => 'You are not a cartographer of any object.',
