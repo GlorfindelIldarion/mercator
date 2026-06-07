@@ -71,7 +71,6 @@
     </li>
 </ul>
 
-{{-- ─── Tab content ─────────────────────────────────────────────────────── --}}
 <div class="tab-content" id="configTabsContent">
 
     {{-- ================================================================== --}}
@@ -399,18 +398,26 @@
                               {{ $notif_reminders_enabled ? '' : 'disabled' }}
                               class="{{ $notif_reminders_enabled ? '' : 'opacity-50' }}">
 
+                        <div class="row">
+                        <div class="col-6">
                         <div class="form-group mb-3">
                             <label for="reminder_from">{{ trans('cruds.notifications.reminder_from') }}</label>
                             <input class="form-control" type="email"
                                    name="reminder_from" id="reminder_from"
                                    value="{{ $notif_reminder_from }}"/>
                         </div>
+                        </div>
+                        </div>
 
+                        <div class="row">
+                        <div class="col-6">
                         <div class="form-group mb-3">
                             <label for="reminder_subject">{{ trans('cruds.notifications.reminder_subject') }}</label>
                             <input class="form-control" type="text"
                                    name="reminder_subject" id="reminder_subject"
                                    value="{{ $notif_reminder_subject }}"/>
+                        </div>
+                        </div>
                         </div>
 
                         <div class="form-group mb-3">
@@ -419,18 +426,23 @@
                                       rows="4">{{ $notif_reminder_body }}</textarea>
                         </div>
 
+                        <div class="row">
+                        <div class="col-3">
                         <div class="form-group mb-3">
                             <label for="reminder_months">{{ trans('cruds.notifications.reminder_months') }}</label>
                             <input class="form-control" type="number" min="1"
                                    name="reminder_months" id="reminder_months"
                                    value="{{ $notif_reminder_months }}"/>
                         </div>
-
+                        </div>
+                        <div class="col-3">
                         <div class="form-group mb-3">
                             <label for="reminder_every_days">{{ trans('cruds.notifications.reminder_every_days') }}</label>
                             <input class="form-control" type="number" min="1"
                                    name="reminder_every_days" id="reminder_every_days"
                                    value="{{ $notif_reminder_every_days }}"/>
+                        </div>
+                        </div>
                         </div>
 
                     </fieldset>
@@ -453,18 +465,35 @@
                               {{ $notif_modification_enabled ? '' : 'disabled' }}
                               class="{{ $notif_modification_enabled ? '' : 'opacity-50' }}">
 
+                        <div class="row">
+                        <div class="col-3">
                         <div class="form-group mb-3">
-                            <label for="modification_to">{{ trans('cruds.notifications.modification_to') }}</label>
+                            <label for="modification_from">{{ trans('cruds.notifications.modification_from') }}</label>
                             <input class="form-control" type="email"
-                                   name="modification_to" id="modification_to"
-                                   value="{{ $notif_modification_to }}"/>
+                                   name="modification_from" id="modification_from"
+                                   value="{{ $notif_modification_from }}"/>
+                        </div>
                         </div>
 
+                        <div class="col-3">
+                        <div class="form-group mb-3">
+                            <label for="modification_copy_to">{{ trans('cruds.notifications.modification_copy_to') }}</label>
+                            <input class="form-control" type="email"
+                                   name="modification_copy_to" id="modification_copy_to"
+                                   value="{{ $notif_modification_copy_to }}"/>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="row">
+                        <div class="col-6">
                         <div class="form-group mb-3">
                             <label for="modification_subject">{{ trans('cruds.notifications.modification_subject') }}</label>
                             <input class="form-control" type="text"
                                    name="modification_subject" id="modification_subject"
                                    value="{{ $notif_modification_subject }}"/>
+                        </div>
+                        </div>
                         </div>
 
                         <div class="form-group mb-3">

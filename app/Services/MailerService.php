@@ -9,9 +9,10 @@ use PHPMailer\PHPMailer\PHPMailer;
 class MailerService
 {
     /**
-     * Send an email via SMTP (PHPMailer). Accepts a comma-separated $to list.
+     * Send an email via SMTP (PHPMailer).
+     * $to and $bcc accept comma-separated address lists.
      */
-    public function send(string $from, string $to, string $subject, string $body): void
+    public function send(string $from, string $to, string $subject, string $body, string $bcc = ''): void
     {
         $mail = new PHPMailer(true);
 
@@ -31,6 +32,10 @@ class MailerService
 
             foreach (array_filter(array_map('trim', explode(',', $to))) as $address) {
                 $mail->addAddress($address);
+            }
+
+            foreach (array_filter(array_map('trim', explode(',', $bcc))) as $address) {
+                $mail->addBCC($address);
             }
 
             $mail->CharSet  = PHPMailer::CHARSET_UTF8;

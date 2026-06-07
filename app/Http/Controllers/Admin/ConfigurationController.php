@@ -50,8 +50,9 @@ class ConfigurationController extends Controller
             'notif_reminder_months'      => $cfg['cartography']['reminder_months']      ?? 6,
             'notif_reminder_every_days'  => $cfg['cartography']['reminder_every_days']  ?? 30,
             'notif_reminder_last_sent'   => $cfg['cartography']['reminder_last_sent']   ?? null,
-            'notif_modification_enabled' => $cfg['cartography']['notifier_enabled'] ?? false,
-            'notif_modification_to'      => $cfg['cartography']['notifier_to']      ?? '',
+            'notif_modification_enabled'  => $cfg['cartography']['notifier_enabled'] ?? false,
+            'notif_modification_from'    => $cfg['cartography']['notifier_from']    ?? '',
+            'notif_modification_copy_to' => $cfg['cartography']['notifier_to']      ?? '',
             'notif_modification_subject' => $cfg['cartography']['notifier_subject'] ?? '[Mercator] Un objet a été mis à jour',
             'notif_modification_body'    => $cfg['cartography']['notifier_body']    ?? '',
             // Documents
@@ -194,11 +195,9 @@ class ConfigurationController extends Controller
         }
 
         if ($action === 'test_modification') {
-            return $this->sendTestMail(
-                $request->input('modification_to'),
-                $request->input('modification_to'),
-                $request->input('modification_subject'),
-            );
+            $from = $request->input('modification_from');
+            $to   = $request->input('modification_copy_to') ?: $from;
+            return $this->sendTestMail($from, $to, $request->input('modification_subject'));
         }
 
         $cfg = $this->readConfigFile();
@@ -219,7 +218,8 @@ class ConfigurationController extends Controller
         }
 
         if ($modificationEnabled) {
-            $cfg['cartography']['notifier_to']      = $request->input('modification_to');
+            $cfg['cartography']['notifier_from']    = $request->input('modification_from');
+            $cfg['cartography']['notifier_to']      = $request->input('modification_copy_to');
             $cfg['cartography']['notifier_subject'] = $request->input('modification_subject');
             $cfg['cartography']['notifier_body']    = $request->input('modification_body');
         }

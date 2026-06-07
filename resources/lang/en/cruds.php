@@ -1846,7 +1846,8 @@ return [
 
         'section_modification'  => 'Modification notifications',
         'modification_enabled'  => 'Enable modification notifications',
-        'modification_to'       => 'Recipient',
+        'modification_from'     => 'Sender',
+        'modification_copy_to'  => 'Carbon copy to',
         'modification_subject'  => 'Notification subject',
         'modification_body'     => 'Notification body',
         'btn_test_modification' => 'Test notification',

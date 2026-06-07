@@ -1882,7 +1882,8 @@ return [
 
         'section_modification'  => 'Notifications de modification',
         'modification_enabled'  => 'Activer les notifications de modification',
-        'modification_to'       => 'Destinataire',
+        'modification_from'     => 'Expéditeur',
+        'modification_copy_to'  => 'Copie cachée à',
         'modification_subject'  => 'Sujet de la notification',
         'modification_body'     => 'Corps de la notification',
         'btn_test_modification' => 'Tester la notification',

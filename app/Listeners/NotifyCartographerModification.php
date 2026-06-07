@@ -18,14 +18,14 @@ class NotifyCartographerModification implements ShouldQueue
     public function __construct(private readonly MailerService $mailer) {}
 
     /**
-     * Merge the general notification address with the emails of every cartographer
-     * assigned to the modified object (direct user_id or via role).
+     * Collect the emails of every cartographer assigned to the modified object
+     * (direct user_id or via role). These become the To recipients.
      *
      * @return string[]
      */
-    private function resolveRecipients(string $modelClass, mixed $objectId, string $generalTo): array
+    private function resolveRecipients(string $modelClass, mixed $objectId): array
     {
-        $emails = array_filter(array_map('trim', explode(',', $generalTo)));
+        $emails = [];
 
         $cartographers = Cartographer::where('cartographiable_type', $modelClass)
             ->where('cartographiable_id', $objectId)
@@ -88,8 +88,9 @@ class NotifyCartographerModification implements ShouldQueue
         $body    = str_replace(array_keys($placeholders), array_values($placeholders), (string) config('mercator.cartography.notifier_body', ''));
 
         $from = (string) config('mercator.cartography.notifier_from', '');
+        $bcc  = (string) config('mercator.cartography.notifier_to', '');
 
-        $recipients = $this->resolveRecipients($class, $objectKey, (string) config('mercator.cartography.notifier_to', ''));
+        $recipients = $this->resolveRecipients($class, $objectKey);
 
         if ($recipients === []) {
             Log::warning('[cartographer] no recipients for modification notification, skipping');
@@ -98,7 +99,7 @@ class NotifyCartographerModification implements ShouldQueue
 
         $to = implode(',', $recipients);
 
-        $this->mailer->send($from, $to, $subject, $body);
+        $this->mailer->send($from, $to, $subject, $body, $bcc);
 
         Log::info("[cartographer] notification sent for {$event->user->email} modified {$event->objectType}#{$objectKey} to: {$to}");
     }
