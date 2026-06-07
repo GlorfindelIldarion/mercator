@@ -439,6 +439,54 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['web.prote
         return view('doc/about');
     })->name('doc.about');
 
+    Route::get('doc/info', function () {
+        $user  = auth()->user();
+        $roles = $user->roles()->orderBy('title')->pluck('title')->toArray();
+
+        $cartographerTypes = [];
+        if (session('is_cartographer')) {
+            $perms = session('cartographer_permissions', []);
+            $cartographerTypes = array_map(
+                fn ($fqcn) => class_basename($fqcn),
+                array_keys(array_filter($perms, fn ($ids) => ! empty($ids)))
+            );
+            sort($cartographerTypes);
+        }
+
+        $memLimitRaw  = ini_get('memory_limit');
+        $memUsedBytes = memory_get_usage(true);
+        $memLimitBytes = (function (string $val): int {
+            $unit = strtoupper(substr(trim($val), -1));
+            $num  = (int) $val;
+            return match ($unit) {
+                'G'     => $num * 1073741824,
+                'M'     => $num * 1048576,
+                'K'     => $num * 1024,
+                default => $num,
+            };
+        })($memLimitRaw);
+
+        $memUsedMb  = round($memUsedBytes / 1048576, 1);
+        $memFreeMb  = $memLimitBytes > 0 ? round(($memLimitBytes - $memUsedBytes) / 1048576, 1) : null;
+
+        return view('doc.info', [
+            'mercatorVersion'   => app('mercator.version'),
+            'appEnv'            => config('app.env'),
+            'appTimezone'       => config('app.timezone'),
+            'appLocale'         => config('app.locale'),
+            'dbDriver'          => config('database.default'),
+            'memLimit'          => $memLimitRaw,
+            'memUsedMb'         => $memUsedMb,
+            'memFreeMb'         => $memFreeMb,
+            'userName'          => $user->name,
+            'userEmail'         => $user->email,
+            'userLogin'         => $user->login,
+            'roles'             => $roles,
+            'isCartographer'    => session('is_cartographer', false),
+            'cartographerTypes' => $cartographerTypes,
+        ]);
+    })->name('doc.info');
+
     // Import
     Route::get('config/import', [Admin\ImportController::class, 'show'])
         ->name('config.import.form');
