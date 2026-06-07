@@ -153,7 +153,7 @@
                         </li>
                         @endif
                         <li><a class="dropdown-item" href="{{ route('admin.doc.info') }}">
-                                <i class="bi bi-person-lines-fill"></i>{{ trans('panel.menu.info') }}</a>
+                                <i class="bi bi-credit-card-2-front-fill"></i>{{ trans('panel.menu.info') }}</a>
                         </li>
                         <li><a class="dropdown-item" href="/admin/doc/about">
                                 <i class="bi bi-info-circle-fill"></i>{{ trans('panel.menu.about') }}</a>

@@ -12,7 +12,7 @@
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-header fw-bold">
-                <i class="bi bi-app me-1"></i>Mercator
+                <i class="bi bi-credit-card-2-front-fill me-3"></i>Mercator
             </div>
             <div class="card-body">
                 <table class="table table-sm table-borderless mb-0">
@@ -58,7 +58,7 @@
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-header fw-bold">
-                <i class="bi bi-person-circle me-1"></i>{{ trans('panel.info.user') }}
+                <i class="bi bi-person-circle me-3"></i>{{ trans('panel.info.user') }}
             </div>
             <div class="card-body">
                 <table class="table table-sm table-borderless mb-0">
