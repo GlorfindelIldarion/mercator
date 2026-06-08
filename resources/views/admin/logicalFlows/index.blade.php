@@ -77,7 +77,7 @@
                             <td>
                                 <x-show-link :model="$logicalFlow" />
                             </td>
-                            <td>
+                            <td data-column="description">
                                 {!! $logicalFlow->description !!}
                             </td>
                             <td>

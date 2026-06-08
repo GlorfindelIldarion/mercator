@@ -53,7 +53,7 @@
                             {{ trans('cruds.activity.fields.processes') }}
                         </th>
                         <th data-column="drp">
-                            {{ trans('cruds.activity.fields.drp') }}
+                            {{ trans('cruds.activity.drp') }}
                         </th>
                         <th>
                             &nbsp;
