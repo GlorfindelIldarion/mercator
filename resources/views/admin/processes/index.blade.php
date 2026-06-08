@@ -48,9 +48,6 @@
                         <th>
                             {{ trans('cruds.process.fields.owner') }}
                         </th>
-                        <th data-column="icon_id">
-                            {{ trans('cruds.process.fields.icon_id') }}
-                        </th>
                         <th data-column="in_out">
                             {{ trans('cruds.process.fields.in_out') }}
                         </th>
@@ -110,9 +107,6 @@
                                 {{ $process->owner ?? '' }}
                             </td>
                             <td>
-                                {{ $process->icon_id }}
-                            </td>
-                            <td>
                                 {{ $process->in_out }}
                             </td>
                             <td nowrap>
@@ -160,7 +154,7 @@
     'URL' => route('admin.processes.massDestroy'),
     'canDelete' => auth()->user()->can('process_delete') ? true : false,
     'serverSidePagination' => true,
-    'hiddenColumns' => ['icon_id', 'in_out'],
+    'hiddenColumns' => ['in_out'],
 ));
 </script>
 @endsection
