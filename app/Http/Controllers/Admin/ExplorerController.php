@@ -1170,7 +1170,10 @@ class ExplorerController extends Controller
         $flows = Cartographer::scopedQuery(LogicalFlow::query())->get();
 
         foreach ($flows as $flow) {
-            // \Log::Debug('flow: '.$flow->name);
+            if (!empty($flow->action) && $flow->action !== 'Permit') {
+                continue;
+            }
+
             // Get sources
             $sources = [];
             if ($flow->source_ip_range !== null) {
