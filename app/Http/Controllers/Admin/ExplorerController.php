@@ -1221,6 +1221,19 @@ class ExplorerController extends Controller
                 array_push($destinations, $flow->destinationId());
             }
 
+            // Guard: skip flow if the Cartesian product would generate an excessive number of edges
+            $edgeCount = count($sources) * count($destinations);
+            if ($edgeCount > 10000) {
+                \Log::warning('ExplorerController: flow skipped — too many edges would be generated', [
+                    'flow_id'       => $flow->id,
+                    'flow_name'     => $flow->name,
+                    'sources'       => count($sources),
+                    'destinations'  => count($destinations),
+                    'edge_count'    => $edgeCount,
+                ]);
+                continue;
+            }
+
             // Add source <-> destination flows
             foreach ($sources as $source) {
                 foreach ($destinations as $destination) {
