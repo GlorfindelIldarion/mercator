@@ -42,6 +42,12 @@
                         <th>
                             {{ trans('cruds.cluster.fields.physical_servers') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.cluster.fields.description') }}
+                        </th>
+                        <th data-column="address_ip">
+                            {{ trans('cruds.cluster.fields.address_ip') }}
+                        </th>
                         <th>
                         </th>
                     </tr>
@@ -97,6 +103,12 @@
                                 @endforeach
 
                             </td>
+                            <td>
+                                {!! $cluster->description !!}
+                            </td>
+                            <td>
+                                {{ $cluster->address_ip }}
+                            </td>
                             <td nowrap>
                                 @can('cluster_show')
                                     <a class="btn btn-xs btn-primary"
@@ -142,7 +154,8 @@
             'title' => trans("cruds.cluster.title_singular"),
             'URL' => route('admin.clusters.massDestroy'),
             'canDelete' => auth()->user()->can('cluster_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description', 'address_ip'],
 ));
     </script>
 @endsection

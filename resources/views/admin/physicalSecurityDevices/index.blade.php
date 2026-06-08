@@ -48,6 +48,9 @@
                         <th>
                             {{ trans('cruds.physicalSecurityDevice.fields.bay') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.physicalSecurityDevice.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -99,6 +102,9 @@
                                     <x-show-link :model="$physicalSecurityDevice->bay" />
                                 @endif
                             </td>
+                            <td>
+                                {!! $physicalSecurityDevice->description !!}
+                            </td>
                             <td nowrap>
                                 @can('physical_security_device_show')
                                     <a class="btn btn-xs btn-primary"
@@ -144,7 +150,8 @@
             'title' => trans("cruds.physicalSecurityDevice.title_singular"),
             'URL' => route('admin.physical-security-devices.massDestroy'),
             'canDelete' => auth()->user()->can('physical_security_device_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

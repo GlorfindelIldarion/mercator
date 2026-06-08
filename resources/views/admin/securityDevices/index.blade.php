@@ -42,6 +42,12 @@
                         <th>
                             {{ trans('cruds.securityDevice.fields.physical_security_devices') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.securityDevice.fields.description') }}
+                        </th>
+                        <th data-column="address_ip">
+                            {{ trans('cruds.securityDevice.fields.address_ip') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -89,6 +95,12 @@
                                 @endforeach
                             </td>
 
+                            <td>
+                                {!! $securityDevice->description !!}
+                            </td>
+                            <td>
+                                {{ $securityDevice->address_ip }}
+                            </td>
                             <td nowrap>
                                 @can('security_device_show')
                                     <a class="btn btn-xs btn-primary"
@@ -135,7 +147,8 @@
             'title' => trans("cruds.securityDevice.title_singular"),
             'URL' => route('admin.security-devices.massDestroy'),
             'canDelete' => auth()->user()->can('security_device_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description', 'address_ip'],
 ));
     </script>
 @endsection

@@ -42,6 +42,9 @@
                         <th>
                             {{ trans('cruds.wifiTerminal.fields.building') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.wifiTerminal.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -80,6 +83,9 @@
                                 @if ($wifiTerminal->building!==null)
                                     <x-show-link :model="$wifiTerminal->building" />
                                 @endif
+                            </td>
+                            <td>
+                                {!! $wifiTerminal->description !!}
                             </td>
                             <td nowrap>
                                 @can('wifi_terminal_show')
@@ -128,7 +134,8 @@
             'title' => trans("cruds.wifiTerminal.title_singular"),
             'URL' => route('admin.wifi-terminals.massDestroy'),
             'canDelete' => auth()->user()->can('wifi_terminal_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

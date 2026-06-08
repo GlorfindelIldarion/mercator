@@ -48,6 +48,18 @@
                         <th>
                             {{ trans('cruds.workstation.fields.building') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.workstation.fields.description') }}
+                        </th>
+                        <th data-column="manufacturer">
+                            {{ trans('cruds.workstation.fields.manufacturer') }}
+                        </th>
+                        <th data-column="model">
+                            {{ trans('cruds.workstation.fields.model') }}
+                        </th>
+                        <th data-column="address_ip">
+                            {{ trans('cruds.workstation.fields.address_ip') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -94,6 +106,18 @@
                                     <x-show-link :model="$workstation->building" />
                                 @endif
                             </td>
+                            <td>
+                                {!! $workstation->description !!}
+                            </td>
+                            <td>
+                                {{ $workstation->manufacturer }}
+                            </td>
+                            <td>
+                                {{ $workstation->model }}
+                            </td>
+                            <td>
+                                {{ $workstation->address_ip }}
+                            </td>
                             <td nowrap>
                                 @can('workstation_show')
                                     <a class="btn btn-xs btn-primary"
@@ -139,7 +163,8 @@
             'title' => trans("cruds.workstation.title_singular"),
             'URL' => route('admin.workstations.massDestroy'),
             'canDelete' => auth()->user()->can('workstation_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description', 'manufacturer', 'model', 'address_ip'],
 ));
     </script>
 @endsection

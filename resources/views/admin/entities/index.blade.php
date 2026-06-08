@@ -42,6 +42,12 @@
                         <th>
                             {{ trans('cruds.entity.fields.relations') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.entity.fields.description') }}
+                        </th>
+                        <th data-column="security_level">
+                            {{ trans('cruds.entity.fields.security_level') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -78,6 +84,12 @@
                                 @foreach ($entity->destinationRelations as $relation)
                                     <x-show-link :model="$relation" />@if(!$loop->last), @endif
                                 @endforeach
+                            </td>
+                            <td>
+                                {!! $entity->description !!}
+                            </td>
+                            <td>
+                                {{ $entity->security_level }}
                             </td>
                             <td nowrap>
                                 @can('entity_show')
@@ -120,7 +132,8 @@
     'title' => trans("cruds.entity.title_singular"),
     'URL' => route('admin.entities.massDestroy'),
     'canDelete' => auth()->user()->can('entity_delete'),
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description', 'security_level'],
     )
 );
 </script>

@@ -51,6 +51,9 @@
                         <th>
                             {{ trans('cruds.information.fields.children') }}
                         </th>
+                        <th data-column="constraints">
+                            {{ trans('cruds.information.fields.constraints') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -173,6 +176,9 @@
                                 @if(!$loop->last), @endif
                             @endforeach
                             </td>
+                            <td>
+                                {{ $info->constraints }}
+                            </td>
                             <td nowrap>
                                 @can('information_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.information.show', $info->id) }}">
@@ -214,7 +220,8 @@
     'title' => trans("cruds.information.title_singular"),
     'URL' => route('admin.information.massDestroy'),
     'canDelete' => auth()->user()->can('information_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['constraints'],
 ));
 </script>
 @endsection

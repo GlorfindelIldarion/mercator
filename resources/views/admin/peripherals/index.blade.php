@@ -54,6 +54,9 @@
                         <th>
                             {{ trans('cruds.peripheral.fields.bay') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.peripheral.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -100,6 +103,9 @@
                             </td>
                             <td>
                                 {{ $peripheral->bay->name ?? '' }}
+                            </td>
+                            <td>
+                                {!! $peripheral->description !!}
                             </td>
                             <td nowrap>
                                 @can('peripheral_show')
@@ -148,7 +154,8 @@
             'title' => trans("cruds.peripheral.title_singular"),
             'URL' => route('admin.peripherals.massDestroy'),
             'canDelete' => auth()->user()->can('peripheral_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

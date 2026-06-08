@@ -45,6 +45,9 @@
                         <th>
                             {{ trans('cruds.domaine.fields.relation_inter_domaine') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.domaine.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -85,6 +88,9 @@
                             </td>
                             <td>
                                 {{ $domain->relation_inter_domaine ?? '' }}
+                            </td>
+                            <td>
+                                {!! $domain->description !!}
                             </td>
                             <td nowrap>
                                 @can('domain_show')
@@ -130,7 +136,8 @@
             'title' => trans("cruds.domaine.title_singular"),
             'URL' => route('admin.domains.massDestroy'),
             'canDelete' => auth()->user()->can('domain_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

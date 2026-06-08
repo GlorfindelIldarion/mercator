@@ -214,11 +214,7 @@
     'URL' => route('admin.logical-flows.massDestroy'),
     'canDelete' => auth()->user()->can('logical_flow_delete') ? true : false,
     'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
-document.addEventListener("DOMContentLoaded", function () {
-    if (typeof table !== 'undefined' && !table.state.loaded()) {
-        table.column('[data-column="description"]').visible(false);
-        }
-    });
 </script>
 @endsection

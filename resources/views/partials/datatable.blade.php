@@ -6,6 +6,7 @@
     'canDelete',
     'hasButtons' => true,
     'serverSidePagination' => false,
+    'hiddenColumns' => [],
 ])
 
 @if ($serverSidePagination)
@@ -217,4 +218,11 @@ table = $('{{ $id }}').DataTable({
         .buttons(0, null)
         .container()
         .prependTo(table.table().container());
+    @if (!empty($hiddenColumns))
+    if (!table.state.loaded()) {
+        @foreach ($hiddenColumns as $col)
+        table.column('[data-column="{{ $col }}"]').visible(false);
+        @endforeach
+    }
+    @endif
 });

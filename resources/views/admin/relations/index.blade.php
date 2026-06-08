@@ -54,6 +54,18 @@
                         <th>
                             {{ trans('cruds.relation.fields.attributes') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.relation.fields.description') }}
+                        </th>
+                        <th data-column="order_number">
+                            {{ trans('cruds.relation.fields.order_number') }}
+                        </th>
+                        <th data-column="reference">
+                            {{ trans('cruds.relation.fields.reference') }}
+                        </th>
+                        <th data-column="comments">
+                            {{ trans('cruds.relation.fields.comments') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -136,6 +148,18 @@
                                     <span class="badge badge-info">{{ trans('global.active') }}</span>
                                 @endif
                             </td>
+                            <td>
+                                {!! $relation->description !!}
+                            </td>
+                            <td>
+                                {{ $relation->order_number }}
+                            </td>
+                            <td>
+                                {{ $relation->reference }}
+                            </td>
+                            <td>
+                                {{ $relation->comments }}
+                            </td>
                             <td nowrap>
                                 @can('relation_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.relations.show', $relation->id) }}">
@@ -175,7 +199,8 @@
     'title' => trans("cruds.relation.title_singular"),
     'URL' => route('admin.relations.massDestroy'),
     'canDelete' => auth()->user()->can('relation_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description', 'order_number', 'reference', 'comments'],
 ));
 </script>
 @endsection

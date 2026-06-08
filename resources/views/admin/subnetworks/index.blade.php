@@ -57,6 +57,9 @@
                         <th>
                             {{ trans('cruds.subnetwork.fields.zone') }}
                         </th>
+                        <th data-column="responsible_exp">
+                            {{ trans('cruds.subnetwork.fields.responsible_exp') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -118,6 +121,9 @@
                             <td>
                                 {{ $subnetwork->zone }}
                             </td>
+                            <td>
+                                {{ $subnetwork->responsible_exp }}
+                            </td>
                             <td nowrap>
                                 @can('subnetwork_show')
                                     <a class="btn btn-xs btn-primary"
@@ -163,7 +169,8 @@
             'title' => trans("cruds.subnetwork.title_singular"),
             'URL' => route('admin.subnetworks.massDestroy'),
             'canDelete' => auth()->user()->can('subnetwork_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['responsible_exp'],
 ));
     </script>
 @endsection

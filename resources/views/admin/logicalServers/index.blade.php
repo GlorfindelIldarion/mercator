@@ -49,6 +49,12 @@
                             {{ trans('cruds.logicalServer.fields.cluster') }} /
                             {{ trans('cruds.logicalServer.fields.servers') }}
                         </th>
+                        <th data-column="net_services">
+                            {{ trans('cruds.logicalServer.fields.net_services') }}
+                        </th>
+                        <th data-column="address_ip">
+                            {{ trans('cruds.logicalServer.fields.address_ip') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -103,6 +109,12 @@
                                     @endforeach
                                 @endif
                             </td>
+                            <td>
+                                {{ $logicalServer->net_services }}
+                            </td>
+                            <td>
+                                {{ $logicalServer->address_ip }}
+                            </td>
                             <td nowrap>
                                 @can('logical_server_show')
                                     <a class="btn btn-xs btn-primary"
@@ -142,7 +154,8 @@
             'title' => trans("cruds.logicalServer.title_singular"),
             'URL' => route('admin.logical-servers.massDestroy'),
             'canDelete' => auth()->user()->can('logical_server_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['net_services', 'address_ip'],
 ));
     </script>
 @endsection

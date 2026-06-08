@@ -38,6 +38,9 @@
                         <th>
                             {{ trans('cruds.macroProcessus.fields.processes') }}
                         </th>
+                        <th data-column="io_elements">
+                            {{ trans('cruds.macroProcessus.fields.io_elements') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -87,6 +90,9 @@
                                 @endforeach
                             </td>
 
+                            <td>
+                                {{ $macroProcessus->io_elements }}
+                            </td>
                             <td nowrap>
                                 @can('macro_processus_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.macro-processuses.show', $macroProcessus->id) }}">
@@ -131,7 +137,8 @@
     'title' => trans("cruds.macroProcessus.title_singular"),
     'URL' => route('admin.macro-processuses.massDestroy'),
     'canDelete' => auth()->user()->can('site_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['io_elements'],
 ));
 </script>
 @endsection

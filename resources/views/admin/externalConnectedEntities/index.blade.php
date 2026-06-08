@@ -57,6 +57,9 @@
                         <th>
                             {{ trans('cruds.externalConnectedEntity.fields.dest') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.externalConnectedEntity.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -114,6 +117,9 @@
                             <td>
                                 {{ $externalConnectedEntity->dest }}
                             </td>
+                            <td>
+                                {!! $externalConnectedEntity->description !!}
+                            </td>
                             <td nowrap>
                                 @can('external_connected_entity_show')
                                     <a class="btn btn-xs btn-primary"
@@ -159,7 +165,8 @@
             'title' => trans("cruds.externalConnectedEntity.title_singular"),
             'URL' => route('admin.external-connected-entities.massDestroy'),
             'canDelete' => auth()->user()->can('external_connected_entity_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection
