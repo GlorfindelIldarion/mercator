@@ -251,6 +251,7 @@ class Subnetwork extends Model implements HasIconContract, HasPrefix
               (str_contains($ip, ':') && str_contains($cidr, ':'))) {
             // Get mask bits
             [$net, $maskBits] = explode('/', $cidr);
+            $maskBits = (int) $maskBits;
 
             // Size
             $size = strpos($ip, ':') === false ? 4 : 16;
