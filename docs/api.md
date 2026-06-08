@@ -136,8 +136,14 @@ Returns the full **Resource** for the specified ID.
 
 - [<img src="/mercator/images/get.png" width="30"> /api/users](./model.md#users)
 - [<img src="/mercator/images/get.png" width="30"> /api/roles](./model.md#roles)
+
+The role contains permissions: *permission_roles*.
+*permission_roles* does not exist as an API endpoint. It is a pivot table internally managed by Laravel.
+To retrieve the role↔permission associations, you must use **/api/roles/{id}?include=permissions** — the permissions linked to each role will be embedded in the role’s response.
+The list of permissions and their corresponding {id} values is available via the **/api/permissions** API.
+
 - [<img src="/mercator/images/get.png" width="30"> /api/cartographers](./model.md#cartography)
-- [<img src="/mercator/images/get.png" width="30"> /api/permissions](./model.md#permissions) *access not allowed yet*
+- [<img src="/mercator/images/get.png" width="30"> /api/permissions](./model.md#permissions) `READ ONLY`
 - [<img src="/mercator/images/get.png" width="30"> /api/documents](./model.md#documents)
 
 The unique feature of the endpoint **documents** is that it allows you to either upload or download a document.

@@ -110,9 +110,9 @@ Accédez à votre instance via [http://127.0.0.1:8080](http://127.0.0.1:8080).
 
 Pour un environnement de production prêt à l'emploi avec HTTPS et une configuration automatisée, consultez le dossier [docker-compose](docker-compose/).
 
-## 📜 **Changelog**
+## 📜 **Roadmap & Changelog**
 
-Restez informé des dernières améliorations et mises à jour dans le [Changelog](https://github.com/dbarzin/mercator/blob/master/CHANGELOG.md).
+Restez informé des dernières améliorations et mises à jour dans la [Roadmap](https://github.com/sourcentis/mercator/blob/master/ROADMAP.md).
 
 ## 📄 **Licence**
 
