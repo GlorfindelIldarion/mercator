@@ -1834,6 +1834,12 @@ return [
     'notifications' => [
         'tab_title'             => 'Cartography',
 
+        'tab_title_reminders'   => 'Reminders',
+        'tab_legend_reminders'  => 'Configure reminders sent to cartographers when an object has not been updated for a certain period of time.',
+
+        'tab_title_notifications'  => 'Notifications',
+        'tab_legend_notifications' => 'Configure e-mail notifications sent when a cartography object is modified.',
+
         'section_reminders'     => 'Cartographer reminders',
         'reminders_enabled'     => 'Enable reminders',
         'reminder_from'         => 'Sender',
@@ -1841,7 +1847,7 @@ return [
         'reminder_body'         => 'Reminder body',
         'reminder_months'       => 'No update since (months)',
         'reminder_every_days'   => 'Send a reminder every (days)',
-        'btn_test_reminder'     => 'Test reminder',
+        'btn_test_reminder'     => 'Test',
         'last_reminder_sent'    => 'Last reminder sent',
 
         'section_modification'  => 'Modification notifications',
@@ -1850,7 +1856,7 @@ return [
         'modification_copy_to'  => 'Carbon copy to',
         'modification_subject'  => 'Notification subject',
         'modification_body'     => 'Notification body',
-        'btn_test_modification' => 'Test notification',
+        'btn_test_modification' => 'Test',
 
         'test_success'          => 'Test email sent successfully.',
         'test_error'            => 'Failed to send: :error',

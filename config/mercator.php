@@ -28,7 +28,7 @@
   ),
   'cartography' => 
   array (
-    'reminders_enabled' => true,
+    'reminders_enabled' => false,
     'reminder_from' => 'mercator@localhost.com',
     'reminder_subject' => '[Mercator] Rappel',
     'reminder_body' => '<!DOCTYPE html>
@@ -48,7 +48,7 @@ Si tu penses avoir reçu ce message par erreur, contacte ton administrateur.</em
 </html>',
     'reminder_months' => 1,
     'reminder_every_days' => 30,
-    'notifier_enabled' => true,
+    'notifier_enabled' => false,
     'notifier_to' => 'mercator@localhost.com',
     'notifier_from' => 'mercator@localhost.com',
     'notifier_subject' => '[Mercator] Objet :name modifié',

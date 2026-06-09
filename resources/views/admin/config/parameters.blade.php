@@ -52,12 +52,21 @@
         </button>
     </li>
     <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold {{ $tab === 'reminders' ? 'active' : '' }}"
+                id="tab-reminders-btn" data-bs-toggle="tab" data-bs-target="#tab-reminders"
+                type="button" role="tab"
+                aria-controls="tab-reminders" aria-selected="{{ $tab === 'reminders' ? 'true' : 'false' }}">
+            <i class="fas fa-clock me-1"></i>
+            {{ trans('cruds.notifications.tab_title_reminders') }}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
         <button class="nav-link fw-bold {{ $tab === 'notifications' ? 'active' : '' }}"
                 id="tab-notifications-btn" data-bs-toggle="tab" data-bs-target="#tab-notifications"
                 type="button" role="tab"
                 aria-controls="tab-notifications" aria-selected="{{ $tab === 'notifications' ? 'true' : 'false' }}">
             <i class="fas fa-bell me-1"></i>
-            {{ trans('cruds.notifications.tab_title') }}
+            {{ trans('cruds.notifications.tab_title_notifications') }}
         </button>
     </li>
     <li class="nav-item" role="presentation">
@@ -366,22 +375,22 @@
     </div>{{-- /tab-cve --}}
 
     {{-- ================================================================== --}}
-    {{-- TAB 4 : Cartographie                                                --}}
+    {{-- TAB 4 : Rappels                                                     --}}
     {{-- ================================================================== --}}
-    <div class="tab-pane fade {{ $tab === 'notifications' ? 'show active' : '' }}"
-         id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications-btn">
+    <div class="tab-pane fade {{ $tab === 'reminders' ? 'show active' : '' }}"
+         id="tab-reminders" role="tabpanel" aria-labelledby="tab-reminders-btn">
 
-        {{-- ── Main save form ──────────────────────────────────────────── --}}
         <form method="POST" action="{{ route('admin.config.parameters') }}">
             @method('PUT')
             @csrf
-            <input type="hidden" name="active_tab" value="notifications">
+            <input type="hidden" name="active_tab" value="reminders">
 
             <div class="card">
                 <div class="card-body">
 
-                    {{-- Section A : Rappels cartographes --}}
-                    <h5 class="fw-bold mb-3">{{ trans('cruds.notifications.section_reminders') }}</h5>
+                    <p class="text-muted mb-3">
+                        {{ trans('cruds.notifications.tab_legend_reminders') }}
+                    </p>
 
                     <div class="form-group mb-3">
                         <div class="form-check form-switch">
@@ -425,7 +434,7 @@
                             <div class="form-group mb-3">
                                 <label for="reminder_body">{{ trans('cruds.notifications.reminder_body') }}</label>
                                 <textarea class="form-control" name="reminder_body" id="reminder_body"
-                                          rows="10">{{ $notif_reminder_body }}</textarea>
+                                          rows="13">{{ $notif_reminder_body }}</textarea>
                             </div>
                         </div>
                         <div class="col-3">
@@ -469,8 +478,44 @@
 
                     </fieldset>
 
-                    {{-- Section B : Notifications de modification --}}
-                    <h5 class="fw-bold mb-3">{{ trans('cruds.notifications.section_modification') }}</h5>
+                </div>
+                <div class="card-footer text-muted small">
+                    {{ trans('cruds.notifications.last_reminder_sent') }} :
+                    {{ $notif_reminder_last_sent ?? trans('global.never') }}
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <button class="btn btn-success" type="submit" name="action" value="save">
+                    <i class="fas fa-save me-1"></i>{{ trans('global.save') }}
+                </button>
+                <button class="btn btn-secondary" type="submit" name="action" value="test_reminder"
+                        {{ $notif_reminders_enabled ? '' : 'disabled' }}>
+                    <i class="fas fa-paper-plane me-1"></i>{{ trans('cruds.notifications.btn_test_reminder') }}
+                </button>
+            </div>
+
+        </form>
+
+    </div>{{-- /tab-reminders --}}
+
+    {{-- ================================================================== --}}
+    {{-- TAB 5 : Notifications de modification                               --}}
+    {{-- ================================================================== --}}
+    <div class="tab-pane fade {{ $tab === 'notifications' ? 'show active' : '' }}"
+         id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications-btn">
+
+        <form method="POST" action="{{ route('admin.config.parameters') }}">
+            @method('PUT')
+            @csrf
+            <input type="hidden" name="active_tab" value="notifications">
+
+            <div class="card">
+                <div class="card-body">
+
+                    <p class="text-muted mb-3">
+                        {{ trans('cruds.notifications.tab_legend_notifications') }}
+                    </p>
 
                     <div class="form-group mb-3">
                         <div class="form-check form-switch">
@@ -523,7 +568,7 @@
                             <div class="form-group mb-3">
                                 <label for="modification_body">{{ trans('cruds.notifications.modification_body') }}</label>
                                 <textarea class="form-control" name="modification_body" id="modification_body"
-                                          rows="10">{{ $notif_modification_body }}</textarea>
+                                          rows="13">{{ $notif_modification_body }}</textarea>
                             </div>
                         </div>
                         <div class="col-3">
@@ -553,19 +598,11 @@
                     </fieldset>
 
                 </div>
-                <div class="card-footer text-muted small">
-                    {{ trans('cruds.notifications.last_reminder_sent') }} :
-                    {{ $notif_reminder_last_sent ?? trans('global.never') }}
-                </div>
             </div>
 
             <div class="form-group mt-3">
                 <button class="btn btn-success" type="submit" name="action" value="save">
                     <i class="fas fa-save me-1"></i>{{ trans('global.save') }}
-                </button>
-                <button class="btn btn-secondary" type="submit" name="action" value="test_reminder"
-                        {{ $notif_reminders_enabled ? '' : 'disabled' }}>
-                    <i class="fas fa-paper-plane me-1"></i>{{ trans('cruds.notifications.btn_test_reminder') }}
                 </button>
                 <button class="btn btn-secondary" type="submit" name="action" value="test_modification"
                         {{ $notif_modification_enabled ? '' : 'disabled' }}>
@@ -578,7 +615,7 @@
     </div>{{-- /tab-notifications --}}
 
     {{-- ================================================================== --}}
-    {{-- TAB 5 : Documents                                                   --}}
+    {{-- TAB 6 : Documents                                                   --}}
     {{-- ================================================================== --}}
     <div class="tab-pane fade {{ $tab === 'documents' ? 'show active' : '' }}"
          id="tab-documents" role="tabpanel" aria-labelledby="tab-documents-btn">
@@ -679,10 +716,10 @@
 
 (function () {
     'use strict';
-    function bindNotifToggle(cbId, fsId, btnVal) {
+    function bindNotifToggle(cbId, fsId, tabId, btnVal) {
         var cb  = document.getElementById(cbId);
         var fs  = document.getElementById(fsId);
-        var btn = document.querySelector('#tab-notifications button[value="' + btnVal + '"]');
+        var btn = document.querySelector('#' + tabId + ' button[value="' + btnVal + '"]');
         if (!cb || !fs) return;
         cb.addEventListener('change', function () {
             fs.disabled = !cb.checked;
@@ -690,8 +727,8 @@
             if (btn) btn.disabled = !cb.checked;
         });
     }
-    bindNotifToggle('reminders_enabled',    'fieldset-reminders',    'test_reminder');
-    bindNotifToggle('modification_enabled', 'fieldset-modification', 'test_modification');
+    bindNotifToggle('reminders_enabled',    'fieldset-reminders',    'tab-reminders',    'test_reminder');
+    bindNotifToggle('modification_enabled', 'fieldset-modification', 'tab-notifications', 'test_modification');
 })();
 </script>
 @endsection

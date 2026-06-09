@@ -1870,6 +1870,12 @@ return [
     'notifications' => [
         'tab_title'             => 'Cartographie',
 
+        'tab_title_reminders'   => 'Rappels',
+        'tab_legend_reminders'  => 'Configurez les rappels envoyés aux cartographes lorsqu\'un objet n\'a pas été mis à jour depuis un certain temps.',
+
+        'tab_title_notifications'  => 'Notifications',
+        'tab_legend_notifications' => 'Configurez les notifications envoyées par e-mail lors de la modification d\'un objet de la cartographie.',
+
         'section_reminders'     => 'Rappels cartographes',
         'reminders_enabled'     => 'Activer les rappels',
         'reminder_from'         => 'Expéditeur',
@@ -1877,7 +1883,7 @@ return [
         'reminder_body'         => 'Corps du rappel',
         'reminder_months'       => 'Pas de mise à jour depuis (mois)',
         'reminder_every_days'   => 'Envoyer un rappel tous les (jours)',
-        'btn_test_reminder'     => 'Tester le rappel',
+        'btn_test_reminder'     => 'Tester',
         'last_reminder_sent'    => 'Dernier envoi des rappels',
 
         'section_modification'  => 'Notifications de modification',
@@ -1886,7 +1892,7 @@ return [
         'modification_copy_to'  => 'Copie cachée à',
         'modification_subject'  => 'Sujet de la notification',
         'modification_body'     => 'Corps de la notification',
-        'btn_test_modification' => 'Tester la notification',
+        'btn_test_modification' => 'Tester',
 
         'test_success'          => 'Email de test envoyé avec succès.',
         'test_error'            => 'Échec de l\'envoi : :error',
