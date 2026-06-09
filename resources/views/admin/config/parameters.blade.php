@@ -420,10 +420,32 @@
                         </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label for="reminder_body">{{ trans('cruds.notifications.reminder_body') }}</label>
-                            <textarea class="form-control" name="reminder_body" id="reminder_body"
-                                      rows="4">{{ $notif_reminder_body }}</textarea>
+                        <div class="row">
+                        <div class="col-9">
+                            <div class="form-group mb-3">
+                                <label for="reminder_body">{{ trans('cruds.notifications.reminder_body') }}</label>
+                                <textarea class="form-control" name="reminder_body" id="reminder_body"
+                                          rows="10">{{ $notif_reminder_body }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <br><br>
+                            <table class="table table-sm table-bordered table-hover" style="font-size: 14px; font-family: var(--font-mono);">
+                            <thead class="table-dark">
+                              <tr>
+                                <th style="width: 42%;">Variable</th>
+                                <th>Description</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td><code>:user</code></td><td>Nom de l'utilisateur</td></tr>
+                              <tr><td><code>:count</code></td><td>Nombre d'objets</td></tr>
+                              <tr><td><code>:list</code></td><td>Liste des objets</td></tr>
+                              <tr><td><code>:month</code></td><td>Récurence de mise à jour</td></tr>
+                              <tr><td><code>:mercator</code></td><td>URL de Mercator</td></tr>
+                            </tbody>
+                            </table>
+                        </div>
                         </div>
 
                         <div class="row">
@@ -496,10 +518,36 @@
                         </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label for="modification_body">{{ trans('cruds.notifications.modification_body') }}</label>
-                            <textarea class="form-control" name="modification_body" id="modification_body"
-                                      rows="4">{{ $notif_modification_body }}</textarea>
+                        <div class="row">
+                        <div class="col-9">
+                            <div class="form-group mb-3">
+                                <label for="modification_body">{{ trans('cruds.notifications.modification_body') }}</label>
+                                <textarea class="form-control" name="modification_body" id="modification_body"
+                                          rows="10">{{ $notif_modification_body }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <br><br>
+                            <table class="table table-sm table-bordered table-hover" style="font-size: 14px; font-family: var(--font-mono);">
+                            <thead class="table-dark">
+                              <tr>
+                                <th style="width: 42%;">Variable</th>
+                                <th>Description</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td><code>:user</code></td><td>Nom de l'utilisateur</td></tr>
+                              <tr><td><code>:email</code></td><td>Email de l'utilisateur</td></tr>
+                              <tr><td><code>:name</code></td><td>Nom de l'objet</td></tr>
+                              <tr><td><code>:object</code></td><td>Type d'objet</td></tr>
+                              <tr><td><code>:id</code></td><td>Identifiant de l'objet</td></tr>
+                              <tr><td><code>:object_url</code></td><td>URL de l'objet</td></tr>
+                              <tr><td><code>:object_history_url</code></td><td>URL de l'historique</td></tr>
+                              <tr><td><code>:fields</code></td><td>Champs modifiés</td></tr>
+                              <tr><td><code>:timestamp</code></td><td>Date et heure de la modification</td></tr>
+                            </tbody>
+                            </table>
+                        </div>
                         </div>
 
                     </fieldset>
