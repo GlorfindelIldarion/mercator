@@ -15,6 +15,7 @@ use App\Models\ApplicationService;
 use App\Models\Backup;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\Certificate;
 use App\Models\Cluster;
 use App\Models\Container;
@@ -54,10 +55,8 @@ use App\Models\WifiTerminal;
 use App\Models\Workstation;
 use App\Models\Zone;
 use App\Models\ZoneAdmin;
-use App\Models\Cartographer;
 use Gate;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -1226,7 +1225,7 @@ class ExplorerController extends Controller
 
             // Guard: skip flow if the Cartesian product would generate an excessive number of edges
             $edgeCount = count($sources) * count($destinations);
-            if ($edgeCount > 10000) {
+            if ($edgeCount > 1000) {
                 \Log::warning('ExplorerController: flow skipped — too many edges would be generated', [
                     'flow_id'       => $flow->id,
                     'flow_name'     => $flow->name,
