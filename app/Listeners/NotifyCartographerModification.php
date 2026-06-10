@@ -88,7 +88,7 @@ class NotifyCartographerModification implements ShouldQueue
             ':id'                 => (string) $objectKey,
             ':name'               => $name !== null ? (string) $name : '#' . $objectKey,
             ':fields'             => implode(', ', array_keys($event->dirty)),
-            ':date'               => now()->format('d/m/Y H:i'),
+            ':timestamp'          => now()->format('d/m/Y H:i'),
         ];
 
         $subjectTemplate = (string) config('mercator.cartography.notifier_subject', '') ?: self::DEFAULT_SUBJECT;
