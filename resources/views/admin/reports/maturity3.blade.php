@@ -532,7 +532,7 @@
 @section('scripts')
 <script type="text/javascript">
 window.chartData = {
-    maturity: {{ $maturity1  }},
+    maturity: {{ $maturity3  }},
 };
 </script>
 
