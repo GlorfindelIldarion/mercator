@@ -4,11 +4,11 @@ set -e
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-DOCKER_REGISTRY="ghcr.io/dbarzin"
+DOCKER_REGISTRY="ghcr.io/sourcentis"
 DOCKER_IMAGE="mercator"
 CHART_DIR="docs/_helm_chart/chart"
 CHART_INDEX_DIR="docs/_helm_chart/index"
-CHART_REPO_URL="https://github.com/dbarzin/mercator/releases/download"
+CHART_REPO_URL="https://github.com/sourcentis/mercator/releases/download"
 
 # ---------------------------------------------------------------------------
 # 0. Version
