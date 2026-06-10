@@ -61,7 +61,7 @@ suivants :
 | **Métier**                       |        |                                                                                                        |
 | Macro-processus                  | 2      | Description, niveaux de sécurité                                                                       |
 | Macro-processus                  | 3      | Responsable                                                                                            |
-| Processus                        | 1      | Description, entrée-sorties, responsable                                                               |  
+| Processus                        | 1      | Description, entrées-sorties, responsable                                                              |
 | Processus                        | 2      | Macro-processus, besoins de sécurité                                                                   |
 | Activités                        | 2      | Description                                                                                            |
 | Opérations                       | 1      | Description                                                                                            |

@@ -106,7 +106,7 @@ Un double click sur un objet permet d'ajouter toutes ses connexions dans la visu
 
 ## Analyse des Dépendances
 
-Mercator permet d'analyser le graphe de dépendances de n'importe quel objet du système d'information, en ammont ou en aval et ce sur plusieurs niveaux. Cet écran d'analyse est accessible depuis le menu supérieur **"outils"**.
+Mercator permet d'analyser le graphe de dépendances de n'importe quel objet du système d'information, en amont ou en aval et ce sur plusieurs niveaux. Cet écran d'analyse est accessible depuis le menu supérieur **"outils"**.
 
 ### Filtres
 

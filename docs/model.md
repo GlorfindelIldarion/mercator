@@ -1,4 +1,4 @@
-# Data model
+## Data model
 
 [<img src="/mercator/images/model.png" width="700">](images/model.png)
 
@@ -275,7 +275,7 @@ This button is in the GDPR view and visible in the list of Security controls obj
 
 ### Activities
 
-An activity is a step required to carry out a process. It corresponds to a speciﬁc know-how and not necessarily to an
+An activity is a step required to carry out a process. It corresponds to a specific know-how and not necessarily to an
 organizational structure of the company.
 
 | Table                                          | api               |
@@ -1143,7 +1143,7 @@ Clusters are a set of logical servers hosted on one or more physical servers.
 | address_ip  | varchar(255) | Cluster's IP address         |
 | created_at  | timestamp    | Date of creation             |
 | updated_at  | timestamp    | Date of update               |
-| deleted_at  | timestamp    | Date of deletionn            |
+| deleted_at  | timestamp    | Date of deletion             |
 
 The data model export lists logical routers, logical and physical servers linked with a cluster.
 
@@ -1429,7 +1429,7 @@ Sites are geographical locations that bring together a group of people and/or re
 | updated_at  | timestamp    | Date of update               |
 | deleted_at  | timestamp    | Date of deletion             |
 
-In the app, a building / room can be linked with a site from a building / room objet.
+In the app, a building / room can be linked with a site from a building / room object.
 
 ### Buildings / Rooms
 
@@ -1474,7 +1474,7 @@ Racks are technical cabinets housing computer network or telephony equipment.
 | updated_at  | timestamp    | Date of update               |
 | deleted_at  | timestamp    | Date of deletion             |
 
-In the app, a rack can be linked to a building / room from a rack objet.
+In the app, a rack can be linked to a building / room from a rack object.
 
 ### Security zones
 
@@ -1942,7 +1942,7 @@ A WAN can be linked to a LAN from a WAN object.
 
 ## Configuration
 
-Dans le menu configuration, on trouve la partie documents.
+The "documents" section can be found in the configuration menu.
 
 ### documents
 
@@ -1952,21 +1952,21 @@ This part allow to see all attached documents, including specific image (icons)
 |:----------------------------------------------|:-----------------|
 | <span style="color: blue;">*documents*</span> | `/api/documents` |
 
-| Champ      | Type         | Description                            |
-|:-----------|:-------------|:---------------------------------------|
-| id         | int unsigned | auto_increment                         |
-| filename   | varchar(255) | file name including extension          |
-| mimetype   | varchar(255) | Type of document. filled automatically |
-| size       | int unsigned | filled automatically                   |
-| hash       | longtext     | Hash du document. filled automatically |
-| created_at | timestamp    | Date of creation                       |
-| updated_at | timestamp    | Date of update                         |
-| deleted_at | timestamp    | Date of deletion                       |
+| Champ      | Type         | Description                                     |
+|------------|--------------|-------------------------------------------------|
+| id         | int unsigned | auto_increment                                  |
+| filename   | varchar(255) | file name including extension                   |
+| mimetype   | varchar(255) | Type of document. Filled automatically          |
+| size       | int unsigned | filled automatically                            |
+| hash       | longtext     | Document Hash. Filled automatically |
+| created_at | timestamp    | Date of creation                                |
+| updated_at | timestamp    | Date of update                                  |
+| deleted_at | timestamp    | Date of deletion                                |
 
 - The document is created in docs directory, referenced by its ID
 - The document is not inserted in the database.
 
-### Exemple of a document fields for a specific image of firewall:
+### Example of a document fields for a specific image of firewall:
 
 ```json
     "id": 1,
@@ -1979,11 +1979,11 @@ This part allow to see all attached documents, including specific image (icons)
 "updated_at": "2026-03-30T08:05:46.000000Z"
 ```
 
-⚠️ From user interface of mercator, if a document of specific image (personalized icon) is created, This icon might be used by another asset of the same category as soon as there is, a least, one asset in the category. 
+⚠️ From user interface of Mercator, if a document of specific image (personalized icon) is created, This icon might be used by another asset of the same category as soon as there is, a least, one asset in the category.
 
 ### users
 
-This part allows to see the mercator users list and their associated link to roles.
+This part allows to see the Mercator users list and their associated link to roles.
 
 | Table                                         | api              |
 |:----------------------------------------------|:-----------------|
@@ -2008,7 +2008,7 @@ This part allows to see the mercator users list and their associated link to rol
 
 ### Roles
 
-This part allows to see mercator roles list.
+This part allows to see Mercator roles list.
 
 | Table                                         | api              |
 |:----------------------------------------------|:-----------------|
@@ -2024,7 +2024,7 @@ This part allows to see mercator roles list.
 
 ### Permissions
 
-This part allows to see all mercator permissions than can be allocated to roles.
+This part allows to see all Mercator permissions than can be allocated to roles.
 
 | Table                                         | api              |
 |:----------------------------------------------|:-----------------|
