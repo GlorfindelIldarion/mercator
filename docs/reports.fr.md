@@ -47,7 +47,7 @@ Liste des VLANs, sous-réseaux et équipements qui s'y trouvent
 
 ### Configuration des Serveurs logiques
 
-iste de la configuration des serveurs logiques.
+Liste de la configuration des serveurs logiques.
 
 Cette liste permet d’analyser la configuration des serveurs logiques.
 

@@ -102,8 +102,6 @@ spec:
               value: {{ .Values.smtp.port | quote }}
             - name: MAIL_USERNAME
               value: {{ .Values.smtp.username | quote }}
-            - name: MAIL_PASSWORD
-              value: {{ .Values.smtp.password | quote }}
             - name: MAIL_ENCRYPTION
               value: {{ .Values.smtp.encryption | quote }}
             - name: MAIL_FROM_ADDRESS
@@ -112,8 +110,6 @@ spec:
               value: {{ .Chart.Name | quote }}
             - name: AWS_ACCESS_KEY_ID
               value: {{ .Values.aws.access_key_id | quote }}
-            - name: AWS_SECRET_ACCESS_KEY
-              value: {{ .Values.aws.secret_access_key | quote }}
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.aws.default_region | quote }}
             - name: AWS_BUCKET
@@ -122,8 +118,6 @@ spec:
               value: {{ .Values.pusher.app_id | quote }}
             - name: PUSHER_APP_KEY
               value: {{ .Values.pusher.app_key | quote }}
-            - name: PUSHER_APP_SECRET
-              value: {{ .Values.pusher.app_secret | quote }}
             - name: PUSHER_APP_CLUSTER
               value: {{ .Values.pusher.app_cluster | quote }}
             - name: MIX_PUSHER_APP_KEY
@@ -135,8 +129,6 @@ spec:
               value: "enabled"
             - name: KEYCLOAK_CLIENT_ID
               value: {{ .Values.keycloak.client_id | quote }}
-            - name: KEYCLOAK_CLIENT_SECRET
-              value: {{ .Values.keycloak.client_secret | quote }}
             - name: KEYCLOAK_REDIRECT_URI
               value: {{ .Values.keycloak.redirect_uri | quote }}
             - name: KEYCLOAK_BASE_URL
@@ -158,8 +150,6 @@ spec:
               value: {{ .Values.ldap.host | quote }}
             - name: LDAP_USERNAME
               value: {{ .Values.ldap.username | quote }}
-            - name: LDAP_PASSWORD
-              value: {{ .Values.ldap.password | quote }}
             - name: LDAP_PORT
               value: {{ .Values.ldap.service.number | quote }}
             - name: LDAP_BASE_DN
@@ -179,13 +169,13 @@ spec:
               value: {{ .Values.debug | quote }}
             - name: APP_ENV
               value: {{ .Values.environment | quote }}
-            - name: APP_KEY
-              value: {{ .Values.key | quote }}
             - name: APP_URL
               value: {{ .Values.reverse_proxy | quote }}
             - name: USE_DEMO_DATA
               value: {{ .Values.use_demo_data | quote }}
-
+          envFrom:
+            - secretRef:
+                name: {{ include "chart.fullname" . }}-secret-env
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}

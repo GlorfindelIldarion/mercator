@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: github.com/dbarzin/mercator
+  repository: ghcr.io/sourcentis/mercator
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
@@ -71,7 +71,6 @@ resources: {}
 
 debug: false
 environment: "development"
-key: ""
 reverse_proxy: "http://localhost"
 use_demo_data: 1
 seed_database: 1
@@ -83,7 +82,6 @@ ldap:
   connection: "default"
   host: "127.0.0.1"
   username: "cn=user,dc=local,dc=com"
-  password: "secret"
   base_dn: "dc=local,dc=com"
   timeout: "5"
   service:
@@ -97,26 +95,22 @@ smtp:
   host: "smtp.mailtrap.io"
   port: "25"
   username: ""
-  password: ""
   encryption: ""
   from_address: ""
 
 aws:
   access_key_id: ""
-  secret_access_key: ""
   default_region: "us-east-1"
   bucket: ""
 
 pusher:
   app_id: ""
   app_key: ""
-  app_secret: ""
   app_cluster: "mt1"
 
 keycloak:
   enabled: false
   client_id: ""       # Client Name (on Keycloak)
-  client_secret: ""   # Client Secret
   redirect_uri: ""    # <Mercator IP Address>/login/keycloak/callback
   base_url: ""        # <KeyCloak IP Address>
   realm: ""           # Realm Name
@@ -164,6 +158,20 @@ secret:
     postgresPassword: "2ù_-qeeYT21!8zA2~"
     password: "1ù_-qeeRH21!8zA1~"
 
+# Sensitive information passed as environment vars
+secretEnv:
+  managed: true
+  key: ""
+  smtp:
+    password: ""
+  ldap:
+    password: ""
+  keycloak:
+    client_secret: ""
+  aws:
+    secret_access_key: ""
+  pusher:
+    app_secret: ""
 
 postgresql:
   fullnameOverride: "postgresql"

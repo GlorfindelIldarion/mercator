@@ -8,7 +8,7 @@ et permet d'interagir avec les services web RESTful.
 
 ## Installer l'API sur Mercator
 
-pour installer l'API dans Mercator, il est nécessaire d'installer Passport en lançant cette commande :
+Pour installer l'API dans Mercator, il est nécessaire d'installer Passport en lançant cette commande :
 
 ```bash
 php artisan passport:install
@@ -149,7 +149,7 @@ La liste des permissions de de leurs {id} se trouve par l'api **/api/permissions
 
 La particularité du point de terminaison **documents** est qu'il permet d'ajouter ou de télécharger un document.
 
-#### Exemple pour un document dans mercator:
+#### Exemple pour un document dans Mercator:
 
 - Ajout d'un document dans la base
 ```bash
@@ -164,7 +164,7 @@ echo "$RESPONSE" | jq .
 DOC_ID=$(echo "$RESPONSE" | jq -r '.id // empty' 2>/dev/null)
 ```
 
-- Téléchargement d'un document de mercator:
+- Téléchargement d'un document de Mercator:
 ```bash
  OUTFILE="./downloaded_${DOC_ID}.pdf"
     curl -s -X GET "$API/api/documents/$DOC_ID/download" \
@@ -201,9 +201,9 @@ DOC_ID=$(echo "$RESPONSE" | jq -r '.id // empty' 2>/dev/null)
 - <img src="/mercator/images/get.png" width="30"> /api/report/rto
 
 
-### Les rapports excel peuvent aussi être extraits en format csv.
+### Les rapports Excel peuvent aussi être extraits en format CSV.
 
-- Exemple de sortie excel
+- Exemple de sortie Excel
 ```bash
 curl -s -X GET http://localhost:8081/api/report/cve \
     -H "Authorization: Bearer ${TOKEN}" \
@@ -512,7 +512,7 @@ echo "Objet mis à jour: ${UPDATED_OBJECT}"
 
 ```
 
-### Powershell
+### PowerShell
 
 Le script PowerShell ci-dessous montre comment s’authentifier auprès de l’API et récupérer la liste des serveurs
 logiques.

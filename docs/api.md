@@ -163,7 +163,7 @@ echo "$RESPONSE" | jq .
 DOC_ID=$(echo "$RESPONSE" | jq -r '.id // empty' 2>/dev/null)
 ```
 
-- Exemple of downloading a document from mercator:
+- Example of downloading a document from mercator:
 ```bash
  OUTFILE="./downloaded_${DOC_ID}.pdf"
     curl -s -X GET "$API/api/documents/$DOC_ID/download" \
@@ -202,7 +202,12 @@ DOC_ID=$(echo "$RESPONSE" | jq -r '.id // empty' 2>/dev/null)
 - <img src="/mercator/images/get.png" width="30"> /api/report/impacts
 - <img src="/mercator/images/get.png" width="30"> /api/report/rto
 
+<<<<<<< HEAD
 ### Excel reports can be extracted as csv. 
+=======
+
+### Excel reports can be extracted as CSV.
+>>>>>>> origin/master
 
 - Example for report extracted with excel format
 ```bash
@@ -211,7 +216,7 @@ curl -s -X GET http://localhost:8081/api/report/cve \
     -H "Accept: application/octet-stream" \
     -o "rapport_cve_$(date +%Y%m%d).xlsx"
 ```
-- Exemple for a report extracted with csv format
+- Example for a report extracted with CSV format
 ```bash
 curl -s -X GET "http://localhost:8081/api/report/cve?format=csv" \
      -H "Authorization: Bearer ${TOKEN}" \
@@ -222,7 +227,7 @@ curl -s -X GET "http://localhost:8081/api/report/cve?format=csv" \
 
 ## Actions managed by the resource controller
 
-Requests and URIs for each api are shown in the table below.
+Requests and URIs for each API are shown in the table below.
 
 | Request   | URI                       | Action                                       |
 | --------- | ------------------------- | -------------------------------------------- |
@@ -246,8 +251,7 @@ To access the APIs, you must identify yourself as a Mercator application user.
 This user must have a role in Mercator that allows him/her to access/modify the objects
 objects accessed via the API.
 
-When authentication is successful, the API sends an "access_token", which must be passed in the "Authorization" header.
-header of the API request.
+When authentication is successful, the API sends an "access_token", which must be passed in the "Authorization" header of the API request.
 
 📌 Examples of connections are presented in the [Examples](#examples) section.
 
@@ -287,12 +291,12 @@ are: ['actors', 'tasks', 'activities', 'entities', 'applications', 'informations
 
 ## Examples
 
-Please find below few examples with differents languages
+Please find below few examples with different languages
 
 ### PHP
 Here are a few examples of how to use the API with PHP:
 
-#### Authentification
+#### Authentication
 
 ```php
 <?php
@@ -327,9 +331,9 @@ Here are a few examples of how to use the API with PHP:
             $access_token = json_decode($response)->access_token;
 
         } else {
-            set_error_handler("Login to api faild status 403");
+            set_error_handler("Login to API failed status 403");
             error_log($responseInfo['http_code']);
-            error_log("No login api status 403");
+            error_log("No login API status 403");
 
         }
     }

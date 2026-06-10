@@ -72,7 +72,7 @@ Every year, we recommend you print out this list and check that the equipment in
 actually present in the corresponding premises, sites and bays.
 
 ### Workstation inventory
-Liste of workstations by site/building with they configuration
+List of workstations by site/building with they configuration
 
 ---
 

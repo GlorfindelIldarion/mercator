@@ -446,7 +446,7 @@ UPDATED_OBJECT=$(curl -s -X GET "${API_URL}/${OBJECT}/${OBJECT_ID}" \
 echo "Updated object: ${UPDATED_OBJECT}"
 ```
 
-### Powershell
+### PowerShell
 
 The PowerShell script below shows how to authenticate with the API and use advanced filters.
 
