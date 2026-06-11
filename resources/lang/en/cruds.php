@@ -177,6 +177,8 @@ return [
             'attributes_helper' => 'List of application attributes',
             'security_devices' => 'Security devices',
             'security_devices_helper' => 'Logical security devices on which the application is installed',
+            'documents' => 'Documents',
+            'documents_helper' => 'Documents associated with the application',
         ],
         'title' => 'Applications',
         'title_short' => 'Applications',
@@ -477,6 +479,8 @@ return [
             'help' => 'This screen is used to configure optional Mercator parameters',
             'security_need_auth' => 'Authenticity',
             'security_need_auth_helper' => 'Adds the Authenticity security criterion to the existing Confidentiality, Integrity, Availability and Traceability criteria',
+            'application_documents' => 'Documents attached to applications',
+            'application_documents_helper' => 'Allows files (documents) to be associated with applications.',
         ],
         'import' => [
             'title' => 'Data Import / Export',

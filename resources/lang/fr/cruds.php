@@ -181,6 +181,8 @@ return [
             'version_helper' => "Version de l'application",
             'security_devices' => 'Dispositifs de sécurité',
             'security_devices_helper' => "Dispositifs de sécurité logiques sur lesquels l'application est installée",
+            'documents' => 'Documents',
+            'documents_helper' => "Documents associés à l'application",
         ],
         'title' => 'Applications',
         'title_short' => 'Applications',
@@ -483,6 +485,8 @@ return [
             'help' => 'Cet écran permet de configurer des paramètres optionnels de Mercator',
             'security_need_auth_helper' => 'Ajoute le critère de sécurité "Authenticité" aux critères Confidentialité, Intégrité, Disponibilité et Traçabilité déjà existants (exigence DORA).',
             'security_need_auth' => 'Authenticité',
+            'application_documents' => 'Documents associés aux applications',
+            'application_documents_helper' => 'Permet d\'associer des fichiers (documents) aux applications.',
         ],
         'import' => [
             'title' => 'Import / Export des données',

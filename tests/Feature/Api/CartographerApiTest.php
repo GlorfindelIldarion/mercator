@@ -220,7 +220,7 @@ it('deletes a cartographer when permitted', function () {
 
     $this->deleteJson("/api/cartographers/{$carto->id}")->assertOk();
 
-    $this->assertDatabaseMissing('cartographers', ['id' => $carto->id]);
+    $this->assertSoftDeleted('cartographers', ['id' => $carto->id]);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -244,8 +244,8 @@ it('mass destroys cartographers when permitted', function () {
         'ids' => [$cartoA->id, $cartoB->id],
     ])->assertNoContent();
 
-    $this->assertDatabaseMissing('cartographers', ['id' => $cartoA->id]);
-    $this->assertDatabaseMissing('cartographers', ['id' => $cartoB->id]);
+    $this->assertSoftDeleted('cartographers', ['id' => $cartoA->id]);
+    $this->assertSoftDeleted('cartographers', ['id' => $cartoB->id]);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════

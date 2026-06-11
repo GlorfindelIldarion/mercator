@@ -27,6 +27,7 @@ class ConfigurationController extends Controller
         return view('admin.config.parameters', [
             // Général
             'security_need_auth'       => $cfg['parameters']['security_need_auth'] ?? false,
+            'application_documents'    => $cfg['parameters']['application_documents'] ?? false,
             // Certificats
             'cert_mail_from'           => $cfg['cert']['mail-from']                     ?? '',
             'cert_mail_to'             => $cfg['cert']['mail-to']                       ?? '',
@@ -98,7 +99,8 @@ class ConfigurationController extends Controller
     private function handleGeneral(Request $request): array
     {
         $cfg = $this->readConfigFile();
-        $cfg['parameters']['security_need_auth'] = $request->boolean('security_need_auth');
+        $cfg['parameters']['security_need_auth']    = $request->boolean('security_need_auth');
+        $cfg['parameters']['application_documents'] = $request->boolean('application_documents');
         $this->writeConfigFile($cfg);
 
         return [trans('cruds.configuration.saved'), true];

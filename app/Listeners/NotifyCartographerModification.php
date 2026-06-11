@@ -88,6 +88,7 @@ class NotifyCartographerModification implements ShouldQueue
             ':id'                 => (string) $objectKey,
             ':name'               => $name !== null ? (string) $name : '#' . $objectKey,
             ':fields'             => implode(', ', array_keys($event->dirty)),
+            ':date'               => now()->format('d/m/Y'),
             ':timestamp'          => now()->format('d/m/Y H:i'),
         ];
 
@@ -107,9 +108,10 @@ class NotifyCartographerModification implements ShouldQueue
             return;
         }
 
-        $to = $recipients !== [] ? implode(',', $recipients) : $from;
+        $to       = $recipients !== [] ? implode(',', $recipients) : $bcc;
+        $bccFinal = $recipients !== [] ? $bcc : '';
 
-        $this->mailer->send($from, $to, $subject, $body, $bcc);
+        $this->mailer->send($from, $to, $subject, $body, $bccFinal);
 
         Log::info("[cartographer] notification sent for {$event->user->email} modified {$event->objectType}#{$objectKey} to: {$to}");
     }
