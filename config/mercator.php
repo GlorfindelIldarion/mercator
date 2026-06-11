@@ -21,7 +21,7 @@
   'parameters' => 
   array (
     'security_need_auth' => false,
-    'application_documents' => true,
+    'application_documents' => false,
   ),
   'cpe' => 
   array (
@@ -59,6 +59,6 @@ Si tu penses avoir reçu ce message par erreur, contacte ton administrateur.</em
   <p>L\'objet <a href=":object_url">:object</a> a été <a href=":object_history_url">modifié</a> par :user :email.</p>
 </body>
 </html>',
-    'reminder_last_sent' => '2026-06-06 21:46',
+    'reminder_last_sent' => '2026-06-11 20:36',
   ),
 );

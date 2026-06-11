@@ -96,6 +96,23 @@
                         </div>
                     </div>
                 </div>
+                <!------------------------------------------------------------------------------------------------------------->
+                @if (config('mercator.parameters.application_documents'))
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="form-group">
+                            <label for="documents">{{ trans('cruds.application.fields.documents') }}</label>
+                            <div class="dropzone dropzone-previews" id="dropzoneFileUpload"></div>
+                            @if($errors->has('documents'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('documents') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.application.fields.documents_helper') }}</span>
+                        </div>
+                    </div>
+                </div>
+              @endif
 
             </div>
             <!------------------------------------------------------------------------------------------------------------->
@@ -686,29 +703,6 @@
                 </div>
             </div>
         </div>
-        @if (config('mercator-config.parameters.application_documents'))
-        <div class="card">
-            <div class="card-header">
-                {{ trans('cruds.application.fields.documents') }}
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm">
-                        <div class="form-group">
-                            <label for="documents">{{ trans('cruds.application.fields.documents') }}</label>
-                            <div class="dropzone dropzone-previews" id="dropzoneFileUpload"></div>
-                            @if($errors->has('documents'))
-                                <div class="invalid-feedback">
-                                    {{ $errors->first('documents') }}
-                                </div>
-                            @endif
-                            <span class="help-block">{{ trans('cruds.application.fields.documents_helper') }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
         <div class="form-group">
             <a id="btn-cancel" class="btn btn-default" href="{{ route('admin.applications.index') }}">
                 {{ trans('global.back_to_list') }}
@@ -752,7 +746,7 @@
 
 @section('scripts')
     @parent
-    @if (config('mercator-config.parameters.application_documents'))
+    @if (config('mercator.parameters.application_documents'))
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             var image_uploader = new Dropzone("#dropzoneFileUpload", {
