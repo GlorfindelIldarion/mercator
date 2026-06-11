@@ -32,8 +32,6 @@ class PhysicalLink extends Model
 
     public static $searchable = [
         'type',
-        'src_port',
-        'dest_port',
     ];
 
     protected array $dates = [
