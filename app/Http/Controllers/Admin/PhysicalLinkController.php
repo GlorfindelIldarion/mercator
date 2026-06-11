@@ -42,6 +42,17 @@ class PhysicalLinkController extends Controller
                 foreach (PhysicalLink::$searchable as $field) {
                     $q->orWhere($field, 'like', "%{$search}%");
                 }
+                $nameRelations = [
+                    'peripheralSrc', 'phoneSrc', 'physicalRouterSrc', 'physicalSecurityDeviceSrc',
+                    'physicalServerSrc', 'physicalSwitchSrc', 'storageDeviceSrc', 'wifiTerminalSrc',
+                    'workstationSrc', 'routerSrc', 'networkSwitchSrc', 'logicalServerSrc',
+                    'peripheralDest', 'phoneDest', 'physicalRouterDest', 'physicalSecurityDeviceDest',
+                    'physicalServerDest', 'physicalSwitchDest', 'storageDeviceDest', 'wifiTerminalDest',
+                    'workstationDest', 'routerDest', 'networkSwitchDest', 'logicalServerDest',
+                ];
+                foreach ($nameRelations as $relation) {
+                    $q->orWhereHas($relation, fn ($r) => $r->where('name', 'like', "%{$search}%"));
+                }
             });
         })
         ->orderBy('id')
