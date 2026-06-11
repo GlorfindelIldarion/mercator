@@ -16,96 +16,136 @@ php artisan passport:install
 
 - l'environnement Docker prend en charge cette fonctionnalité nativement, via l'entrypoint.
 
-## Les APIs de la cartographie
+## 📚 APIs de la cartographie
 
-Pour chaque objet du modèle de données de la cartographie, il existe une API.
-La liste des API se trouve dans le fichier /route/api.php
+### Descriptions
+Chaque entité du modèle de données de la cartographie expose un endpoint REST conforme aux conventions Laravel.  
+Les routes sont définies dans : `/routes/api.php`.
 
-*Note:* Pour visualiser le datamodel d'une API, cliquer sur son nom.
+---
+
+#### **GET /api/{resource}**  
+Retourne une **collection** d’objets `{resource}`.
+
+**Réponse :**  
+- `ResourceCollection` Laravel  
+- Contient uniquement les attributs principaux (vue simplifiée)
+
+**Exemple :**  
+`GET /api/processes`
+
+---
+
+#### **GET /api/{resource}/{id}**  
+Retourne la **Resource** complète correspondant à l’ID fourni.
+
+**Paramètres :**  
+- `id` — identifiant unique de l’objet
+
+**Réponse :**  
+- `Resource` Laravel  
+- Contient l’ensemble des attributs de l’objet
+
+**Exemple :**  
+`GET /api/processes/1`
+
+---
+
+#### 📌 Notes
+- Les endpoints de liste renvoient une **ResourceCollection**, donc une vue partielle.  
+- Pour obtenir la représentation complète d’un objet, utiliser son endpoint individuel.  
+- Pour visualiser le modèle de données associé à une API, cliquer sur son nom dans l’interface.
 
 ### Les points de terminaison du RGPD
 
-- [/api/data-processings](./model.fr.md#registre)
-- [/api/security-controls](./model.fr.md#mesures-de-securite)
+- [<img src="/mercator/images/get.png" width="30"> /api/data-processings](./model.fr.md#registre)
+- [<img src="/mercator/images/get.png" width="30"> /api/security-controls](./model.fr.md#mesures-de-securite)
 
 ### Les points de terminaison de l'écosystème
 
-- [/api/entities](./model.fr.md#entites)
-- [/api/relations](./model.fr.md#relations)
+- [<img src="/mercator/images/get.png" width="30"> /api/entities](./model.fr.md#entites)
+- [<img src="/mercator/images/get.png" width="30"> /api/relations](./model.fr.md#relations)
 
 ### Les points de terminaison du métier du système d'information
 
-- [/api/macro-processuses](./model.fr.md#macro-processus)
-- [/api/processes](./model.fr.md#processus)
-- [/api/activities](./model.fr.md#activites)
-- [/api/operations](./model.fr.md#operations)
-- [/api/tasks](./model.fr.md#taches)
-- [/api/actors](./model.fr.md#acteurs)
-- [/api/information](./model.fr.md#information)
+- [<img src="/mercator/images/get.png" width="30"> /api/macro-processuses](./model.fr.md#macro-processus)
+- [<img src="/mercator/images/get.png" width="30"> /api/processes](./model.fr.md#processus)
+- [<img src="/mercator/images/get.png" width="30"> /api/activities](./model.fr.md#activites)
+- [<img src="/mercator/images/get.png" width="30"> /api/operations](./model.fr.md#operations)
+- [<img src="/mercator/images/get.png" width="30"> /api/tasks](./model.fr.md#taches)
+- [<img src="/mercator/images/get.png" width="30"> /api/actors](./model.fr.md#acteurs)
+- [<img src="/mercator/images/get.png" width="30"> /api/information](./model.fr.md#information)
 
 ### Les points de terminaison des applications
 
-- [/api/application-blocks](./model.fr.md#blocs-applicatif)
-- [/api/applications](./model.fr.md#applications)
-- [/api/application-services](./model.fr.md#services-applicatif)
-- [/api/application-modules](./model.fr.md#modules-applicatif)
-- [/api/databases](./model.fr.md#bases-de-donnees)
-- [/api/application-flows](./model.fr.md#flux-applicatifs)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-blocks](./model.fr.md#blocs-applicatif)
+- [<img src="/mercator/images/get.png" width="30"> /api/applications](./model.fr.md#applications)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-services](./model.fr.md#services-applicatif)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-modules](./model.fr.md#modules-applicatif)
+- [<img src="/mercator/images/get.png" width="30"> /api/databases](./model.fr.md#bases-de-donnees)
+- [<img src="/mercator/images/get.png" width="30"> /api/application-flows](./model.fr.md#flux-applicatifs)
 
 ### Les points de terminaison de l'administration
 
-- [/api/zone-admins](./model.fr.md#zones-dadministration)
-- [/api/annuaires](./model.fr.md#services-dannuaire-dadministration)
-- [/api/forest-ads](./model.fr.md#forets-active-directory-arborescence-ldap)
-- [/api/domains](./model.fr.md#domaines-active-directory-ldap)
-- [/api/admin-users](./model.fr.md#utilisateurs)
+- [<img src="/mercator/images/get.png" width="30"> /api/zone-admins](./model.fr.md#zones-dadministration)
+- [<img src="/mercator/images/get.png" width="30"> /api/annuaires](./model.fr.md#services-dannuaire-dadministration)
+- [<img src="/mercator/images/get.png" width="30"> /api/forest-ads](./model.fr.md#forets-active-directory-arborescence-ldap)
+- [<img src="/mercator/images/get.png" width="30"> /api/domains](./model.fr.md#domaines-active-directory-ldap)
+- [<img src="/mercator/images/get.png" width="30"> /api/admin-users](./model.fr.md#utilisateurs)
 
 ### Les points de terminaison de l'infrastructure logique
 
-- [/api/networks](./model.fr.md#reseaux)
-- [/api/subnetworks](./model.fr.md#sous-reseaux)
-- [/api/gateways](./model.fr.md#passerelles-dentrees-depuis-lexterieur)
-- [/api/external-connected-entities](./model.fr.md#entites-exterieures-connectees)
-- [/api/network-switches](./model.fr.md#commutateurs-reseau)
-- [/api/routers](./model.fr.md#routeurs-logiques)
-- [/api/security-devices](./model.fr.md#equipements-de-securite)
-- [/api/dhcp-servers *(usage non recommandé)*](./model.fr.md#serveurs-dhcp)
-- [/api/dnsservers *(usage non recommandé)*](./model.fr.md#serveurs-dns)
-- [/api/clusters](./model.fr.md#clusters)
-- [/api/logical-servers](./model.fr.md#serveurs-logiques)
-- [/api/backups](./model.fr.md#plans-de-sauvegarde) ==> lié à logical-servers et storage-devices
-- [/api/logical-flows](./model.fr.md#flux-logiques)
-- [/api/containers](./model.fr.md#conteneurs)
-- [/api/certificates](./model.fr.md#certificats)
-- [/api/vlans](./model.fr.md#vlans)
+- [<img src="/mercator/images/get.png" width="30"> /api/networks](./model.fr.md#reseaux)
+- [<img src="/mercator/images/get.png" width="30"> /api/subnetworks](./model.fr.md#sous-reseaux)
+- [<img src="/mercator/images/get.png" width="30"> /api/gateways](./model.fr.md#passerelles-dentrees-depuis-lexterieur)
+- [<img src="/mercator/images/get.png" width="30"> /api/external-connected-entities](./model.fr.md#entites-exterieures-connectees)
+- [<img src="/mercator/images/get.png" width="30"> /api/network-switches](./model.fr.md#commutateurs-reseau)
+- [<img src="/mercator/images/get.png" width="30"> /api/routers](./model.fr.md#routeurs-logiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/security-devices](./model.fr.md#equipements-de-securite)
+- [<img src="/mercator/images/get.png" width="30"> /api/dhcp-servers *(usage non recommandé)*](./model.fr.md#serveurs-dhcp)
+- [<img src="/mercator/images/get.png" width="30"> /api/dnsservers *(usage non recommandé)*](./model.fr.md#serveurs-dns)
+- [<img src="/mercator/images/get.png" width="30"> /api/clusters](./model.fr.md#clusters)
+- [<img src="/mercator/images/get.png" width="30"> /api/logical-servers](./model.fr.md#serveurs-logiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/backups](./model.fr.md#plans-de-sauvegarde) ==> lié à logical-servers et storage-devices
+- [<img src="/mercator/images/get.png" width="30"> /api/logical-flows](./model.fr.md#flux-logiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/containers](./model.fr.md#conteneurs)
+- [<img src="/mercator/images/get.png" width="30"> /api/certificates](./model.fr.md#certificats)
+- [<img src="/mercator/images/get.png" width="30"> /api/vlans](./model.fr.md#vlans)
 
 ### Les points de terminaison de l'infrastructure physique
 
-- [/api/sites](./model.fr.md#sites)
-- [/api/buildings](./model.fr.md#batiments-salles)
-- [/api/bays](./model.fr.md#baies)
-- [/api/zones](./model.fr.md#zones-de-securite)
-- [/api/physical-servers](./model.fr.md#serveurs-physiques)
-- [/api/workstations](./model.fr.md#postes-de-travail)
-- [/api/storage-devices](./model.fr.md#infrastructures-de-stockage) (recommandé pour backups)
-- [/api/peripherals](./model.fr.md#peripheriques)
-- [/api/phones](./model.fr.md#telephones)
-- [/api/physical-switches](./model.fr.md#commutateurs-physiques)
-- [/api/physical-routers](./model.fr.md#routeurs-physiques)
-- [/api/wifi-terminals](./model.fr.md#bornes-wifi)
-- [/api/physical-security-devices](./model.fr.md#equipements-de-securite-physique)
-- [/api/physical-links](./model.fr.md#liens-physiques)
-- [/api/wans](./model.fr.md#wans)
-- [/api/mans](./model.fr.md#mans)
-- [/api/lans](./model.fr.md#lans)
+- [<img src="/mercator/images/get.png" width="30"> /api/sites](./model.fr.md#sites)
+- [<img src="/mercator/images/get.png" width="30"> /api/buildings](./model.fr.md#batiments-salles)
+- [<img src="/mercator/images/get.png" width="30"> /api/bays](./model.fr.md#baies)
+- [<img src="/mercator/images/get.png" width="30"> /api/zones](./model.fr.md#zones-de-securite)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-servers](./model.fr.md#serveurs-physiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/workstations](./model.fr.md#postes-de-travail)
+- [<img src="/mercator/images/get.png" width="30"> /api/storage-devices](./model.fr.md#infrastructures-de-stockage) (recommandé pour backups)
+- [<img src="/mercator/images/get.png" width="30"> /api/peripherals](./model.fr.md#peripheriques)
+- [<img src="/mercator/images/get.png" width="30"> /api/phones](./model.fr.md#telephones)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-switches](./model.fr.md#commutateurs-physiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-routers](./model.fr.md#routeurs-physiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/wifi-terminals](./model.fr.md#bornes-wifi)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-security-devices](./model.fr.md#equipements-de-securite-physique)
+- [<img src="/mercator/images/get.png" width="30"> /api/physical-links](./model.fr.md#liens-physiques)
+- [<img src="/mercator/images/get.png" width="30"> /api/wans](./model.fr.md#wans)
+- [<img src="/mercator/images/get.png" width="30"> /api/mans](./model.fr.md#mans)
+- [<img src="/mercator/images/get.png" width="30"> /api/lans](./model.fr.md#lans)
 
 
 ## Les API de la Configuration
 
-- [/api/users](./model.md#utilisateurs)
-- [/api/roles](./model.md#roles)
-- [/api/permissions](./model.md#permissions) *access impossible pour le moment*
-- [/api/documents](./model.md#documents)
+- [<img src="/mercator/images/get.png" width="30"> /api/users](./model.md#utilisateurs)
+- [<img src="/mercator/images/get.png" width="30"> /api/roles](./model.md#roles)
+
+Le rôle contient des permissions: *permission_roles*
+*permission_roles* n'existe pas comme endpoint API. C'est une table pivot gérée en interne par Laravel. Pour récupérer les associations rôle↔permission, on doit passer par **/api/roles/{id}?include=permissions** — les permissions liées à chaque rôle seront imbriquées dans la réponse du rôle.
+La liste des permissions de de leurs {id} se trouve par l'api **/api/permissions**
+
+
+- [<img src="/mercator/images/get.png" width="30"> /api/cartographers](./model.md#cartographie)
+- [<img src="/mercator/images/get.png" width="30"> /api/permissions](./model.md#permissions) `LECTURE UNIQUEMENT`
+- [<img src="/mercator/images/get.png" width="30"> /api/documents](./model.md#documents)
 
 La particularité du point de terminaison **documents** est qu'il permet d'ajouter ou de télécharger un document.
 
@@ -134,26 +174,31 @@ DOC_ID=$(echo "$RESPONSE" | jq -r '.id // empty' 2>/dev/null)
         -w "HTTP %{http_code}\n"
 ```
 ## Les APIs des requêtes
-- /api/queries
-- /api/queries/***id***
+- <img src="/mercator/images/get.png" width="30"> /api/queries
+- <img src="/mercator/images/get.png" width="30"> /api/queries/***id***
 
-## Les APIs des rapports
-- /api/report/cartography
-- /api/report/entities
-- /api/report/applicationsByBlocks
-- /api/report/directory
-- /api/report/logicalServers
-- /api/report/securityNeeds
-- /api/report/logicalServerConfigs
-- /api/report/externalAccess
-- /api/report/physicalInventory
-- /api/report/vlans
-- /api/report/workstations
-- /api/report/cve
-- /api/report/activityList
-- /api/report/activityReport
-- /api/report/impacts
-- /api/report/rto
+### Les requêtes peuvent aussi être exécutées par api
+- <img src="/mercator/images/get.png" width="30"> /api/queries/execute/1
+    - l'id de la requête doit être fourni.
+    - La requête doit être de type liste.
+    
+## Les APIs des rapports
+- <img src="/mercator/images/get.png" width="30"> /api/report/cartography
+- <img src="/mercator/images/get.png" width="30"> /api/report/entities
+- <img src="/mercator/images/get.png" width="30"> /api/report/applicationsByBlocks
+- <img src="/mercator/images/get.png" width="30"> /api/report/directory
+- <img src="/mercator/images/get.png" width="30"> /api/report/logicalServers
+- <img src="/mercator/images/get.png" width="30"> /api/report/securityNeeds
+- <img src="/mercator/images/get.png" width="30"> /api/report/logicalServerConfigs
+- <img src="/mercator/images/get.png" width="30"> /api/report/externalAccess
+- <img src="/mercator/images/get.png" width="30"> /api/report/physicalInventory
+- <img src="/mercator/images/get.png" width="30"> /api/report/vlans
+- <img src="/mercator/images/get.png" width="30"> /api/report/workstations
+- <img src="/mercator/images/get.png" width="30"> /api/report/cve
+- <img src="/mercator/images/get.png" width="30"> /api/report/activityList
+- <img src="/mercator/images/get.png" width="30"> /api/report/activityReport
+- <img src="/mercator/images/get.png" width="30"> /api/report/impacts
+- <img src="/mercator/images/get.png" width="30"> /api/report/rto
 
 
 ### Les rapports Excel peuvent aussi être extraits en format CSV.
@@ -201,6 +246,8 @@ accédés par l'API.
 
 Lorsque l'authentification réussit, l'API envoie un "access_token" qui doit être passé dans
 l'entête "Authorization" de la requête de l'API.
+
+📌 Des exemples de connections sont présentés dans le chapitre [Exemples.](#exemples)
 
 ## Liaison entre les objets
 

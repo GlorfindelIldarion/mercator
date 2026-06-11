@@ -20,11 +20,17 @@ class CartographerActivityObserver
             return;
         }
 
+        $dirty = $model->getDirty();
+
+        if (empty($dirty)) {
+            return;
+        }
+
         if ($user->isCartographerOf($model)) {
             CartographerModifiedObject::dispatch(
                 $user,
                 $model,
-                $model->getDirty(),
+                $dirty,
                 class_basename($model),
             );
         }

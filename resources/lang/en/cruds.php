@@ -177,6 +177,8 @@ return [
             'attributes_helper' => 'List of application attributes',
             'security_devices' => 'Security devices',
             'security_devices_helper' => 'Logical security devices on which the application is installed',
+            'documents' => 'Documents',
+            'documents_helper' => 'Documents associated with the application',
         ],
         'title' => 'Applications',
         'title_short' => 'Applications',
@@ -351,8 +353,8 @@ return [
         ],
     ],
     'cartographer' => [
-        'title'          => 'Cartography',
-        'title_singular' => 'Cartography',
+        'title'          => 'Cartographers',
+        'title_singular' => 'Cartographer',
         'my_objects' => [
             'title'   => 'My mapped objects',
             'empty'   => 'You are not a cartographer of any object.',
@@ -360,15 +362,15 @@ return [
         ],
         'description'    => 'Targeted read and edit access on specific cartography objects, without create or delete rights.',
         'fields' => [
-            'type'        => 'Object type',
-            'type_helper' => 'Class of the cartographied model',
+            'type'            => 'Object type',
+            'type_helper'     => 'Class of the cartographied model',
             'object'          => 'Object',
             'object_helper'   => 'Identifier of the cartographied object',
-            'user'                     => 'User',
-            'user_helper'              => 'Authorised user (exclusive with role)',
-            'role'                     => 'Role',
-            'role_helper'              => 'Authorised role (exclusive with user)',
-            'last_updated'             => 'Last modified',
+            'user'            => 'User',
+            'user_helper'     => 'Authorised user (exclusive with role)',
+            'role'            => 'Role',
+            'role_helper'     => 'Authorised role (exclusive with user)',
+            'last_updated'    => 'Object last modified',
         ],
         'errors' => [
             'user_or_role_required'   => 'Please select a user or a role.',
@@ -477,6 +479,8 @@ return [
             'help' => 'This screen is used to configure optional Mercator parameters',
             'security_need_auth' => 'Authenticity',
             'security_need_auth_helper' => 'Adds the Authenticity security criterion to the existing Confidentiality, Integrity, Availability and Traceability criteria',
+            'application_documents' => 'Documents attached to applications',
+            'application_documents_helper' => 'Allows files (documents) to be associated with applications.',
         ],
         'import' => [
             'title' => 'Data Import / Export',
@@ -910,6 +914,8 @@ return [
             'address_ip_helper' => 'Filter: (IPv4|IPv6), ...',
             'applications' => 'Applications',
             'applications_helper' => 'Installed apps',
+            'backups' => 'Backups',
+            'backups_helper' => 'List of backups for this logical server',
             'certificates' => 'Certificates',
             'certificates_helper' => 'Certificates installed on this server',
             'configuration' => 'Configuration',
@@ -1399,7 +1405,10 @@ return [
     'tools' => [
         'patching' => 'Patching',
         'explore' => 'Exploration',
-
+        'query' => [
+            'title' => 'Query Engine',
+            'title_short' => 'Queries',
+        ]
     ],
     'report' => [
         'cartography' => [
@@ -1829,6 +1838,12 @@ return [
     'notifications' => [
         'tab_title'             => 'Cartography',
 
+        'tab_title_reminders'   => 'Reminders',
+        'tab_legend_reminders'  => 'Configure reminders sent to cartographers when an object has not been updated for a certain period of time.',
+
+        'tab_title_notifications'  => 'Notifications',
+        'tab_legend_notifications' => 'Configure e-mail notifications sent when a cartography object is modified.',
+
         'section_reminders'     => 'Cartographer reminders',
         'reminders_enabled'     => 'Enable reminders',
         'reminder_from'         => 'Sender',
@@ -1836,15 +1851,16 @@ return [
         'reminder_body'         => 'Reminder body',
         'reminder_months'       => 'No update since (months)',
         'reminder_every_days'   => 'Send a reminder every (days)',
-        'btn_test_reminder'     => 'Test reminder',
+        'btn_test_reminder'     => 'Test',
         'last_reminder_sent'    => 'Last reminder sent',
 
         'section_modification'  => 'Modification notifications',
         'modification_enabled'  => 'Enable modification notifications',
-        'modification_to'       => 'Recipient',
+        'modification_from'     => 'Sender',
+        'modification_copy_to'  => 'Carbon copy to',
         'modification_subject'  => 'Notification subject',
         'modification_body'     => 'Notification body',
-        'btn_test_modification' => 'Test notification',
+        'btn_test_modification' => 'Test',
 
         'test_success'          => 'Test email sent successfully.',
         'test_error'            => 'Failed to send: :error',

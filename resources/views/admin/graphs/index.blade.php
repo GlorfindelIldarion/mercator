@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-@can('entity_create')
+@can('graph_create')
     <div style="margin-bottom: 10px;" class="row">
         <div class="col-lg-12">
             <a id="btn-new" class="btn btn-success" href="{{ route('admin.graphs.create') }}">

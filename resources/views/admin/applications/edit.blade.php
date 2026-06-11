@@ -96,6 +96,23 @@
                         </div>
                     </div>
                 </div>
+                <!------------------------------------------------------------------------------------------------------------->
+                @if (config('mercator.parameters.application_documents'))
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="form-group">
+                            <label for="documents">{{ trans('cruds.application.fields.documents') }}</label>
+                            <div class="dropzone dropzone-previews" id="dropzoneFileUpload"></div>
+                            @if($errors->has('documents'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('documents') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.application.fields.documents_helper') }}</span>
+                        </div>
+                    </div>
+                </div>
+              @endif
 
             </div>
             <!------------------------------------------------------------------------------------------------------------->
@@ -728,6 +745,47 @@
 @endsection
 
 @section('scripts')
+    @parent
+    @if (config('mercator.parameters.application_documents'))
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var image_uploader = new Dropzone("#dropzoneFileUpload", {
+                url: '/admin/documents/store',
+                headers: {'x-csrf-token': '{{csrf_token()}}'},
+                paramName: 'file',
+                addRemoveLinks: true,
+                timeout: 50000,
+                removedfile: function (file) {
+                    $.ajax({
+                        headers: {'X-CSRF-TOKEN': '{{csrf_token()}}'},
+                        type: 'GET',
+                        url: '{{ url("/admin/documents/delete") }}' + '/' + file.id,
+                    });
+                    var fileRef;
+                    return (fileRef = file.previewElement) != null ?
+                        fileRef.parentNode.removeChild(file.previewElement) : void 0;
+                },
+                success: function (file, response) {
+                    file.id = response.id;
+                },
+                error: function (file, response) {
+                    return false;
+                },
+                init: function () {
+                    var existingFiles = [
+                        @foreach($application->documents as $document)
+                        { name: "{{ $document->filename }}", size: {{ $document->size }}, id: {{ $document->id }} },
+                        @endforeach
+                    ];
+                    for (var i = 0; i < existingFiles.length; i++) {
+                        this.emit("addedfile", existingFiles[i]);
+                        this.emit("complete", existingFiles[i]);
+                    }
+                }
+            });
+        });
+    </script>
+    @endif
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 

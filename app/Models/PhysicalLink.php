@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Factories\PhysicalLinkFactory;
 use App\Traits\Auditable;
+use App\Traits\HasCartographers;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasCartographers;
 
 class PhysicalLink extends Model
 {
@@ -31,6 +31,7 @@ class PhysicalLink extends Model
     ];
 
     public static $searchable = [
+        'type',
     ];
 
     protected array $dates = [

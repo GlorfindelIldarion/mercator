@@ -205,6 +205,12 @@ class Application extends Model implements HasIconContract, HasPrefix
         return $this->belongsToMany(AdminUser::class);
     }
 
+    /** @return BelongsToMany<Document, $this> */
+    public function documents(): BelongsToMany
+    {
+        return $this->belongsToMany(Document::class);
+    }
+
     /** @return HasMany<ApplicationEvent, $this> */
     public function events(): HasMany
     {

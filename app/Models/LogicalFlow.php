@@ -283,6 +283,7 @@ class LogicalFlow extends Model implements HasPrefix
                 return false;
             }
             [$net, $maskBits] = $parts;
+            $maskBits = (int) $maskBits;
 
             // Size
             $size = ! str_contains($ip, ':') ? 4 : 16;

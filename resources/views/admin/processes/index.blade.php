@@ -48,6 +48,9 @@
                         <th>
                             {{ trans('cruds.process.fields.owner') }}
                         </th>
+                        <th data-column="in_out">
+                            {{ trans('cruds.process.fields.in_out') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -103,6 +106,9 @@
                             <td>
                                 {{ $process->owner ?? '' }}
                             </td>
+                            <td>
+                                {{ $process->in_out }}
+                            </td>
                             <td nowrap>
                                 @can('process_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.processes.show', $process->id) }}">
@@ -147,7 +153,8 @@
     'title' => trans("cruds.process.title_singular"),
     'URL' => route('admin.processes.massDestroy'),
     'canDelete' => auth()->user()->can('process_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['in_out'],
 ));
 </script>
 @endsection

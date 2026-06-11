@@ -102,13 +102,13 @@
 @endsection
 
 @section('scripts')
-    <script>
-        @include('partials.datatable', array(
-            'id' => '#dataTable',
-            'title' => trans("cruds.site.title_singular"),
-            'URL' => route('admin.sites.massDestroy'),
-            'canDelete' => auth()->user()->can('site_delete') ? true : false,
-    'serverSidePagination' => true
+<script>
+    @include('partials.datatable', array(
+        'id' => '#dataTable',
+        'title' => trans("cruds.site.title_singular"),
+        'URL' => route('admin.sites.massDestroy'),
+        'canDelete' => auth()->user()->can('site_delete') ? true : false,
+        'serverSidePagination' => true
 ));
-    </script>
+</script>
 @endsection

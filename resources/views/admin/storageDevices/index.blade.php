@@ -45,6 +45,9 @@
                         <th>
                             {{ trans('cruds.storageDevice.fields.bay') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.storageDevice.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -87,6 +90,9 @@
                                 @if ($storageDevice->bay!==null)
                                     <x-show-link :model="$storageDevice->bay" />
                                 @endif
+                            </td>
+                            <td>
+                                {!! $storageDevice->description !!}
                             </td>
                             <td nowrap>
                                 @can('storage_device_show')
@@ -133,7 +139,8 @@
             'title' => trans("cruds.storageDevice.title_singular"),
             'URL' => route('admin.storage-devices.massDestroy'),
             'canDelete' => auth()->user()->can('storage_device_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

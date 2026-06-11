@@ -42,6 +42,42 @@
                         <th>
                             {{ trans('cruds.dataProcessing.fields.information') }}
                         </th>
+                        <th data-column="responsible">
+                            {{ trans('cruds.dataProcessing.fields.responsible') }}
+                        </th>
+                        <th data-column="purpose">
+                            {{ trans('cruds.dataProcessing.fields.purpose') }}
+                        </th>
+                        <th data-column="categories">
+                            {{ trans('cruds.dataProcessing.fields.categories') }}
+                        </th>
+                        <th data-column="recipients">
+                            {{ trans('cruds.dataProcessing.fields.recipients') }}
+                        </th>
+                        <th data-column="transfert">
+                            {{ trans('cruds.dataProcessing.fields.transfert') }}
+                        </th>
+                        <th data-column="retention">
+                            {{ trans('cruds.dataProcessing.fields.retention') }}
+                        </th>
+                        <th data-column="controls">
+                            {{ trans('cruds.dataProcessing.fields.controls') }}
+                        </th>
+                        <th data-column="lawfulness">
+                            {{ trans('cruds.dataProcessing.fields.lawfulness') }}
+                        </th>
+                        <th data-column="data_source">
+                            {{ trans('cruds.dataProcessing.fields.data_source') }}
+                        </th>
+                        <th data-column="data_collection_obligation">
+                            {{ trans('cruds.dataProcessing.fields.data_collection_obligation') }}
+                        </th>
+                        <th data-column="data_subject_rights">
+                            {{ trans('cruds.dataProcessing.fields.data_subject_rights') }}
+                        </th>
+                        <th data-column="automated_decision_making">
+                            {{ trans('cruds.dataProcessing.fields.automated_decision_making') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -95,6 +131,42 @@
                                     @endif
                                 @endforeach
                             </td>
+                            <td>
+                                {{ $processing->responsible }}
+                            </td>
+                            <td>
+                                {{ $processing->purpose }}
+                            </td>
+                            <td>
+                                {{ $processing->categories }}
+                            </td>
+                            <td>
+                                {{ $processing->recipients }}
+                            </td>
+                            <td>
+                                {{ $processing->transfert }}
+                            </td>
+                            <td>
+                                {{ $processing->retention }}
+                            </td>
+                            <td>
+                                {{ $processing->controls }}
+                            </td>
+                            <td>
+                                {{ $processing->lawfulness }}
+                            </td>
+                            <td>
+                                {{ $processing->data_source }}
+                            </td>
+                            <td>
+                                {{ $processing->data_collection_obligation }}
+                            </td>
+                            <td>
+                                {{ $processing->data_subject_rights }}
+                            </td>
+                            <td>
+                                {{ $processing->automated_decision_making }}
+                            </td>
                             <td nowrap>
                                 @can('data_processing_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.data-processings.show', $processing->id) }}">
@@ -136,7 +208,8 @@
     'title' => trans("cruds.dataProcessing.title_singular"),
     'URL' => route('admin.data-processings.massDestroy'),
     'canDelete' => auth()->user()->can('data_processing_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['responsible', 'purpose', 'categories', 'recipients', 'transfert', 'retention', 'controls', 'lawfulness', 'data_source', 'data_collection_obligation', 'data_subject_rights', 'automated_decision_making'],
 ));
 </script>
 @endsection

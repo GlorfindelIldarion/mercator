@@ -27,6 +27,7 @@ class ConfigurationController extends Controller
         return view('admin.config.parameters', [
             // Général
             'security_need_auth'       => $cfg['parameters']['security_need_auth'] ?? false,
+            'application_documents'    => $cfg['parameters']['application_documents'] ?? false,
             // Certificats
             'cert_mail_from'           => $cfg['cert']['mail-from']                     ?? '',
             'cert_mail_to'             => $cfg['cert']['mail-to']                       ?? '',
@@ -50,8 +51,9 @@ class ConfigurationController extends Controller
             'notif_reminder_months'      => $cfg['cartography']['reminder_months']      ?? 6,
             'notif_reminder_every_days'  => $cfg['cartography']['reminder_every_days']  ?? 30,
             'notif_reminder_last_sent'   => $cfg['cartography']['reminder_last_sent']   ?? null,
-            'notif_modification_enabled' => $cfg['cartography']['notifier_enabled'] ?? false,
-            'notif_modification_to'      => $cfg['cartography']['notifier_to']      ?? '',
+            'notif_modification_enabled'  => $cfg['cartography']['notifier_enabled'] ?? false,
+            'notif_modification_from'    => $cfg['cartography']['notifier_from']    ?? '',
+            'notif_modification_copy_to' => $cfg['cartography']['notifier_to']      ?? '',
             'notif_modification_subject' => $cfg['cartography']['notifier_subject'] ?? '[Mercator] Un objet a été mis à jour',
             'notif_modification_body'    => $cfg['cartography']['notifier_body']    ?? '',
             // Documents
@@ -80,7 +82,8 @@ class ConfigurationController extends Controller
         [$msg, $ok] = match ($tab) {
             'cert'          => $this->handleCert($action, $request),
             'cve'           => $this->handleCve($action, $request),
-            'notifications' => $this->handleNotifications($action, $request),
+            'reminders'     => $this->handleReminders($action, $request),
+            'notifications' => $this->handleModification($action, $request),
             default         => $this->handleGeneral($request),
         };
 
@@ -96,7 +99,8 @@ class ConfigurationController extends Controller
     private function handleGeneral(Request $request): array
     {
         $cfg = $this->readConfigFile();
-        $cfg['parameters']['security_need_auth'] = $request->boolean('security_need_auth');
+        $cfg['parameters']['security_need_auth']    = $request->boolean('security_need_auth');
+        $cfg['parameters']['application_documents'] = $request->boolean('application_documents');
         $this->writeConfigFile($cfg);
 
         return [trans('cruds.configuration.saved'), true];
@@ -183,7 +187,7 @@ class ConfigurationController extends Controller
             $request->input('mail_subject'),
         );
     }
-    private function handleNotifications(string $action, Request $request): array
+    private function handleReminders(string $action, Request $request): array
     {
         if ($action === 'test_reminder') {
             return $this->sendTestMail(
@@ -193,23 +197,11 @@ class ConfigurationController extends Controller
             );
         }
 
-        if ($action === 'test_modification') {
-            return $this->sendTestMail(
-                $request->input('modification_to'),
-                $request->input('modification_to'),
-                $request->input('modification_subject'),
-            );
-        }
-
         $cfg = $this->readConfigFile();
 
-        $remindersEnabled    = $request->boolean('reminders_enabled');
-        $modificationEnabled = $request->boolean('modification_enabled');
-
+        $remindersEnabled = $request->boolean('reminders_enabled');
         $cfg['cartography']['reminders_enabled'] = $remindersEnabled;
-        $cfg['cartography']['notifier_enabled']  = $modificationEnabled;
 
-        // Disabled fieldsets are not submitted — only overwrite sub-fields when the section is enabled.
         if ($remindersEnabled) {
             $cfg['cartography']['reminder_from']       = $request->input('reminder_from');
             $cfg['cartography']['reminder_subject']    = $request->input('reminder_subject');
@@ -218,8 +210,27 @@ class ConfigurationController extends Controller
             $cfg['cartography']['reminder_every_days'] = (int) $request->input('reminder_every_days', 30);
         }
 
+        $this->writeConfigFile($cfg);
+
+        return [trans('cruds.configuration.saved'), true];
+    }
+
+    private function handleModification(string $action, Request $request): array
+    {
+        if ($action === 'test_modification') {
+            $from = $request->input('modification_from');
+            $to   = $request->input('modification_copy_to') ?: $from;
+            return $this->sendTestMail($from, $to, $request->input('modification_subject'));
+        }
+
+        $cfg = $this->readConfigFile();
+
+        $modificationEnabled = $request->boolean('modification_enabled');
+        $cfg['cartography']['notifier_enabled'] = $modificationEnabled;
+
         if ($modificationEnabled) {
-            $cfg['cartography']['notifier_to']      = $request->input('modification_to');
+            $cfg['cartography']['notifier_from']    = $request->input('modification_from');
+            $cfg['cartography']['notifier_to']      = $request->input('modification_copy_to');
             $cfg['cartography']['notifier_subject'] = $request->input('modification_subject');
             $cfg['cartography']['notifier_body']    = $request->input('modification_body');
         }

@@ -35,6 +35,7 @@ class CartographerController extends Controller
         abort_if(Gate::denies('cartographer_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $models = $this->cartographiableModels();
+        asort($models);
         $users  = User::orderBy('name')->pluck('name', 'id');
         $roles  = Role::orderBy('title')->pluck('title', 'id');
 
@@ -75,6 +76,7 @@ class CartographerController extends Controller
         abort_if(Gate::denies('edit-object', $cartographer), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $models = $this->cartographiableModels();
+        asort($models);
         $users  = User::orderBy('name')->pluck('name', 'id');
         $roles  = Role::orderBy('title')->pluck('title', 'id');
 

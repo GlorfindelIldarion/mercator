@@ -52,12 +52,21 @@
         </button>
     </li>
     <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold {{ $tab === 'reminders' ? 'active' : '' }}"
+                id="tab-reminders-btn" data-bs-toggle="tab" data-bs-target="#tab-reminders"
+                type="button" role="tab"
+                aria-controls="tab-reminders" aria-selected="{{ $tab === 'reminders' ? 'true' : 'false' }}">
+            <i class="fas fa-clock me-1"></i>
+            {{ trans('cruds.notifications.tab_title_reminders') }}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
         <button class="nav-link fw-bold {{ $tab === 'notifications' ? 'active' : '' }}"
                 id="tab-notifications-btn" data-bs-toggle="tab" data-bs-target="#tab-notifications"
                 type="button" role="tab"
                 aria-controls="tab-notifications" aria-selected="{{ $tab === 'notifications' ? 'true' : 'false' }}">
             <i class="fas fa-bell me-1"></i>
-            {{ trans('cruds.notifications.tab_title') }}
+            {{ trans('cruds.notifications.tab_title_notifications') }}
         </button>
     </li>
     <li class="nav-item" role="presentation">
@@ -71,7 +80,6 @@
     </li>
 </ul>
 
-{{-- ─── Tab content ─────────────────────────────────────────────────────── --}}
 <div class="tab-content" id="configTabsContent">
 
     {{-- ================================================================== --}}
@@ -89,6 +97,22 @@
                 <div class="card-body">
                     <div class="form-group mb-3">
                         <label>{{ trans('cruds.configuration.parameters.help') }}</label>
+                    </div>
+                </div>
+                <div class="card-body border-top">
+                    <h6 class="fw-bold mb-3">{{ trans('cruds.menu.application.title_short') }}</h6>
+                    <div class="form-group mb-3">
+                        <label class="d-block mb-1">
+                            {{ trans('cruds.configuration.parameters.application_documents_helper') }}
+                        </label>
+                        <div class="form-check form-switch">
+                            <input name="application_documents" id="application_documents"
+                                   type="checkbox" class="form-check-input"
+                                   {{ $application_documents ? 'checked' : '' }}>
+                            <label class="form-check-label" for="application_documents">
+                                {{ trans('cruds.configuration.parameters.application_documents') }}
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body border-top">
@@ -367,22 +391,22 @@
     </div>{{-- /tab-cve --}}
 
     {{-- ================================================================== --}}
-    {{-- TAB 4 : Cartographie                                                --}}
+    {{-- TAB 4 : Rappels                                                     --}}
     {{-- ================================================================== --}}
-    <div class="tab-pane fade {{ $tab === 'notifications' ? 'show active' : '' }}"
-         id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications-btn">
+    <div class="tab-pane fade {{ $tab === 'reminders' ? 'show active' : '' }}"
+         id="tab-reminders" role="tabpanel" aria-labelledby="tab-reminders-btn">
 
-        {{-- ── Main save form ──────────────────────────────────────────── --}}
         <form method="POST" action="{{ route('admin.config.parameters') }}">
             @method('PUT')
             @csrf
-            <input type="hidden" name="active_tab" value="notifications">
+            <input type="hidden" name="active_tab" value="reminders">
 
             <div class="card">
                 <div class="card-body">
 
-                    {{-- Section A : Rappels cartographes --}}
-                    <h5 class="fw-bold mb-3">{{ trans('cruds.notifications.section_reminders') }}</h5>
+                    <p class="text-muted mb-3">
+                        {{ trans('cruds.notifications.tab_legend_reminders') }}
+                    </p>
 
                     <div class="form-group mb-3">
                         <div class="form-check form-switch">
@@ -399,78 +423,73 @@
                               {{ $notif_reminders_enabled ? '' : 'disabled' }}
                               class="{{ $notif_reminders_enabled ? '' : 'opacity-50' }}">
 
+                        <div class="row">
+                        <div class="col-6">
                         <div class="form-group mb-3">
                             <label for="reminder_from">{{ trans('cruds.notifications.reminder_from') }}</label>
                             <input class="form-control" type="email"
                                    name="reminder_from" id="reminder_from"
                                    value="{{ $notif_reminder_from }}"/>
                         </div>
+                        </div>
+                        </div>
 
+                        <div class="row">
+                        <div class="col-6">
                         <div class="form-group mb-3">
                             <label for="reminder_subject">{{ trans('cruds.notifications.reminder_subject') }}</label>
                             <input class="form-control" type="text"
                                    name="reminder_subject" id="reminder_subject"
                                    value="{{ $notif_reminder_subject }}"/>
                         </div>
-
-                        <div class="form-group mb-3">
-                            <label for="reminder_body">{{ trans('cruds.notifications.reminder_body') }}</label>
-                            <textarea class="form-control" name="reminder_body" id="reminder_body"
-                                      rows="4">{{ $notif_reminder_body }}</textarea>
+                        </div>
                         </div>
 
+                        <div class="row">
+                        <div class="col-9">
+                            <div class="form-group mb-3">
+                                <label for="reminder_body">{{ trans('cruds.notifications.reminder_body') }}</label>
+                                <textarea class="form-control" name="reminder_body" id="reminder_body"
+                                          rows="13">{{ $notif_reminder_body }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <br><br>
+                            <table class="table table-sm table-bordered table-hover" style="font-size: 14px; font-family: var(--font-mono);">
+                            <thead class="table-dark">
+                              <tr>
+                                <th style="width: 42%;">Variable</th>
+                                <th>Description</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td><code>:user</code></td><td>Nom de l'utilisateur</td></tr>
+                              <tr><td><code>:count</code></td><td>Nombre d'objets</td></tr>
+                              <tr><td><code>:list</code></td><td>Liste des objets</td></tr>
+                              <tr><td><code>:month</code></td><td>Récurence de mise à jour</td></tr>
+                              <tr><td><code>:mercator</code></td><td>URL de Mercator</td></tr>
+                            </tbody>
+                            </table>
+                        </div>
+                        </div>
+
+                        <div class="row">
+                        <div class="col-3">
                         <div class="form-group mb-3">
                             <label for="reminder_months">{{ trans('cruds.notifications.reminder_months') }}</label>
                             <input class="form-control" type="number" min="1"
                                    name="reminder_months" id="reminder_months"
                                    value="{{ $notif_reminder_months }}"/>
                         </div>
-
+                        </div>
+                        <div class="col-3">
                         <div class="form-group mb-3">
                             <label for="reminder_every_days">{{ trans('cruds.notifications.reminder_every_days') }}</label>
                             <input class="form-control" type="number" min="1"
                                    name="reminder_every_days" id="reminder_every_days"
                                    value="{{ $notif_reminder_every_days }}"/>
                         </div>
-
-                    </fieldset>
-
-                    {{-- Section B : Notifications de modification --}}
-                    <h5 class="fw-bold mb-3">{{ trans('cruds.notifications.section_modification') }}</h5>
-
-                    <div class="form-group mb-3">
-                        <div class="form-check form-switch">
-                            <input name="modification_enabled" id="modification_enabled"
-                                   type="checkbox" class="form-check-input"
-                                   {{ $notif_modification_enabled ? 'checked' : '' }}>
-                            <label class="form-check-label" for="modification_enabled">
-                                {{ trans('cruds.notifications.modification_enabled') }}
-                            </label>
                         </div>
-                    </div>
-
-                    <fieldset id="fieldset-modification"
-                              {{ $notif_modification_enabled ? '' : 'disabled' }}
-                              class="{{ $notif_modification_enabled ? '' : 'opacity-50' }}">
-
-                        <div class="form-group mb-3">
-                            <label for="modification_to">{{ trans('cruds.notifications.modification_to') }}</label>
-                            <input class="form-control" type="email"
-                                   name="modification_to" id="modification_to"
-                                   value="{{ $notif_modification_to }}"/>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="modification_subject">{{ trans('cruds.notifications.modification_subject') }}</label>
-                            <input class="form-control" type="text"
-                                   name="modification_subject" id="modification_subject"
-                                   value="{{ $notif_modification_subject }}"/>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="modification_body">{{ trans('cruds.notifications.modification_body') }}</label>
-                            <textarea class="form-control" name="modification_body" id="modification_body"
-                                      rows="4">{{ $notif_modification_body }}</textarea>
                         </div>
 
                     </fieldset>
@@ -490,6 +509,117 @@
                         {{ $notif_reminders_enabled ? '' : 'disabled' }}>
                     <i class="fas fa-paper-plane me-1"></i>{{ trans('cruds.notifications.btn_test_reminder') }}
                 </button>
+            </div>
+
+        </form>
+
+    </div>{{-- /tab-reminders --}}
+
+    {{-- ================================================================== --}}
+    {{-- TAB 5 : Notifications de modification                               --}}
+    {{-- ================================================================== --}}
+    <div class="tab-pane fade {{ $tab === 'notifications' ? 'show active' : '' }}"
+         id="tab-notifications" role="tabpanel" aria-labelledby="tab-notifications-btn">
+
+        <form method="POST" action="{{ route('admin.config.parameters') }}">
+            @method('PUT')
+            @csrf
+            <input type="hidden" name="active_tab" value="notifications">
+
+            <div class="card">
+                <div class="card-body">
+
+                    <p class="text-muted mb-3">
+                        {{ trans('cruds.notifications.tab_legend_notifications') }}
+                    </p>
+
+                    <div class="form-group mb-3">
+                        <div class="form-check form-switch">
+                            <input name="modification_enabled" id="modification_enabled"
+                                   type="checkbox" class="form-check-input"
+                                   {{ $notif_modification_enabled ? 'checked' : '' }}>
+                            <label class="form-check-label" for="modification_enabled">
+                                {{ trans('cruds.notifications.modification_enabled') }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <fieldset id="fieldset-modification"
+                              {{ $notif_modification_enabled ? '' : 'disabled' }}
+                              class="{{ $notif_modification_enabled ? '' : 'opacity-50' }}">
+
+                        <div class="row">
+                        <div class="col-3">
+                        <div class="form-group mb-3">
+                            <label for="modification_from">{{ trans('cruds.notifications.modification_from') }}</label>
+                            <input class="form-control" type="email"
+                                   name="modification_from" id="modification_from"
+                                   value="{{ $notif_modification_from }}"/>
+                        </div>
+                        </div>
+
+                        <div class="col-3">
+                        <div class="form-group mb-3">
+                            <label for="modification_copy_to">{{ trans('cruds.notifications.modification_copy_to') }}</label>
+                            <input class="form-control" type="email"
+                                   name="modification_copy_to" id="modification_copy_to"
+                                   value="{{ $notif_modification_copy_to }}"/>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="row">
+                        <div class="col-6">
+                        <div class="form-group mb-3">
+                            <label for="modification_subject">{{ trans('cruds.notifications.modification_subject') }}</label>
+                            <input class="form-control" type="text"
+                                   name="modification_subject" id="modification_subject"
+                                   value="{{ $notif_modification_subject }}"/>
+                        </div>
+                        </div>
+                        </div>
+
+                        <div class="row">
+                        <div class="col-9">
+                            <div class="form-group mb-3">
+                                <label for="modification_body">{{ trans('cruds.notifications.modification_body') }}</label>
+                                <textarea class="form-control" name="modification_body" id="modification_body"
+                                          rows="13">{{ $notif_modification_body }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <br><br>
+                            <table class="table table-sm table-bordered table-hover" style="font-size: 14px; font-family: var(--font-mono);">
+                            <thead class="table-dark">
+                              <tr>
+                                <th style="width: 42%;">Variable</th>
+                                <th>Description</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td><code>:user</code></td><td>Nom de l'utilisateur</td></tr>
+                              <tr><td><code>:email</code></td><td>Email de l'utilisateur</td></tr>
+                              <tr><td><code>:name</code></td><td>Nom de l'objet</td></tr>
+                              <tr><td><code>:object</code></td><td>Type d'objet</td></tr>
+                              <tr><td><code>:id</code></td><td>Identifiant de l'objet</td></tr>
+                              <tr><td><code>:object_url</code></td><td>URL de l'objet</td></tr>
+                              <tr><td><code>:object_history_url</code></td><td>URL de l'historique</td></tr>
+                              <tr><td><code>:fields</code></td><td>Champs modifiés</td></tr>
+                              <tr><td><code>:timestamp</code></td><td>Date et heure de la modification</td></tr>
+                            </tbody>
+                            </table>
+                        </div>
+                        </div>
+
+                    </fieldset>
+
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <button class="btn btn-success" type="submit" name="action" value="save">
+                    <i class="fas fa-save me-1"></i>{{ trans('global.save') }}
+                </button>
                 <button class="btn btn-secondary" type="submit" name="action" value="test_modification"
                         {{ $notif_modification_enabled ? '' : 'disabled' }}>
                     <i class="fas fa-paper-plane me-1"></i>{{ trans('cruds.notifications.btn_test_modification') }}
@@ -501,7 +631,7 @@
     </div>{{-- /tab-notifications --}}
 
     {{-- ================================================================== --}}
-    {{-- TAB 5 : Documents                                                   --}}
+    {{-- TAB 6 : Documents                                                   --}}
     {{-- ================================================================== --}}
     <div class="tab-pane fade {{ $tab === 'documents' ? 'show active' : '' }}"
          id="tab-documents" role="tabpanel" aria-labelledby="tab-documents-btn">
@@ -602,10 +732,10 @@
 
 (function () {
     'use strict';
-    function bindNotifToggle(cbId, fsId, btnVal) {
+    function bindNotifToggle(cbId, fsId, tabId, btnVal) {
         var cb  = document.getElementById(cbId);
         var fs  = document.getElementById(fsId);
-        var btn = document.querySelector('#tab-notifications button[value="' + btnVal + '"]');
+        var btn = document.querySelector('#' + tabId + ' button[value="' + btnVal + '"]');
         if (!cb || !fs) return;
         cb.addEventListener('change', function () {
             fs.disabled = !cb.checked;
@@ -613,8 +743,8 @@
             if (btn) btn.disabled = !cb.checked;
         });
     }
-    bindNotifToggle('reminders_enabled',    'fieldset-reminders',    'test_reminder');
-    bindNotifToggle('modification_enabled', 'fieldset-modification', 'test_modification');
+    bindNotifToggle('reminders_enabled',    'fieldset-reminders',    'tab-reminders',    'test_reminder');
+    bindNotifToggle('modification_enabled', 'fieldset-modification', 'tab-notifications', 'test_modification');
 })();
 </script>
 @endsection

@@ -52,6 +52,21 @@
                      height='60' alt="{{ $application->name }} icon"/>
             @endif
         </td>
-    </tr>
+        </tr>
+        @if (config('mercator.parameters.application_documents'))
+                <tr>
+                    <th>
+                        {{ trans('cruds.application.fields.documents') }}
+                    </th>
+                    <td colspan="5">
+                        @foreach($application->documents as $document)
+                            <a href="{{ route('admin.documents.show', $document->id) }}">{{ $document->filename }}</a>
+                            @if (!$loop->last)
+                                ,
+                            @endif
+                        @endforeach
+                    </td>
+                </tr>
+        @endif
     </tbody>
 </table>

@@ -45,6 +45,15 @@
                         <th>
                             {{ trans('cruds.physicalServer.fields.bay') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.physicalServer.fields.description') }}
+                        </th>
+                        <th data-column="configuration">
+                            {{ trans('cruds.physicalServer.fields.configuration') }}
+                        </th>
+                        <th data-column="address_ip">
+                            {{ trans('cruds.physicalServer.fields.address_ip') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -91,6 +100,15 @@
                                     <x-show-link :model="$physicalServer->bay" />
                                 @endif
                             </td>
+                            <td>
+                                {!! $physicalServer->description !!}
+                            </td>
+                            <td>
+                                {!! $physicalServer->configuration !!}
+                            </td>
+                            <td>
+                                {{ $physicalServer->address_ip }}
+                            </td>
                             <td nowrap>
                                 @can('physical_server_show')
                                     <a class="btn btn-xs btn-primary"
@@ -136,7 +154,8 @@
             'title' => trans("cruds.physicalServer.title_singular"),
             'URL' => route('admin.physical-servers.massDestroy'),
             'canDelete' => auth()->user()->can('physical_server_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description', 'configuration', 'address_ip'],
 ));
     </script>
 @endsection

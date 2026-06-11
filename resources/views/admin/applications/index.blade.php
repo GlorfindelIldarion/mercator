@@ -44,6 +44,15 @@
                         <th>
                             {{ trans('cruds.application.fields.attributes') }}
                         </th>
+                        <th data-column="vendor">
+                            {{ trans('cruds.application.fields.vendor') }}
+                        </th>
+                        <th data-column="editor">
+                            {{ trans('cruds.application.fields.editor') }}
+                        </th>
+                        <th data-column="functional_referent">
+                            {{ trans('cruds.application.fields.functional_referent') }}
+                        </th>
                         <th>
                         </th>
                     </tr>
@@ -102,6 +111,15 @@
                                     echo "<div class='badge badge-info'>$a</div> ";
                                 @endphp
                             </td>
+                            <td>
+                                {{ $application->vendor }}
+                            </td>
+                            <td>
+                                {{ $application->editor }}
+                            </td>
+                            <td>
+                                {{ $application->functional_referent }}
+                            </td>
                             <td nowrap>
                                 @can('application_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.applications.show', $application->id) }}">
@@ -142,7 +160,8 @@
     'title' => trans("cruds.application.title_singular"),
     'URL' => route('admin.applications.massDestroy'),
     'canDelete' => (bool) auth()->user()->can('application_delete'),
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['vendor', 'editor', 'functional_referent'],
     ));
 </script>
 @endsection

@@ -181,6 +181,8 @@ return [
             'version_helper' => "Version de l'application",
             'security_devices' => 'Dispositifs de sécurité',
             'security_devices_helper' => "Dispositifs de sécurité logiques sur lesquels l'application est installée",
+            'documents' => 'Documents',
+            'documents_helper' => "Documents associés à l'application",
         ],
         'title' => 'Applications',
         'title_short' => 'Applications',
@@ -355,8 +357,8 @@ return [
         ],
     ],
     'cartographer' => [
-        'title'          => 'Cartographie',
-        'title_singular' => 'Cartographie',
+        'title'          => 'Cartographes',
+        'title_singular' => 'Cartographe',
         'my_objects' => [
             'title'   => 'Mes objets cartographiés',
             'empty'   => "Vous n'êtes cartographe d'aucun objet.",
@@ -372,7 +374,7 @@ return [
             'user_helper'     => 'Utilisateur autorisé (exclusif avec le rôle)',
             'role'            => 'Rôle',
             'role_helper'     => 'Rôle autorisé (exclusif avec l\'utilisateur)',
-            'last_updated'    => 'Dernière modification',
+            'last_updated'    => 'Dernière modification de l\'objet',
         ],
         'errors' => [
             'user_or_role_required'   => 'Veuillez sélectionner un utilisateur ou un rôle.',
@@ -483,6 +485,8 @@ return [
             'help' => 'Cet écran permet de configurer des paramètres optionnels de Mercator',
             'security_need_auth_helper' => 'Ajoute le critère de sécurité "Authenticité" aux critères Confidentialité, Intégrité, Disponibilité et Traçabilité déjà existants (exigence DORA).',
             'security_need_auth' => 'Authenticité',
+            'application_documents' => 'Documents associés aux applications',
+            'application_documents_helper' => 'Permet d\'associer des fichiers (documents) aux applications.',
         ],
         'import' => [
             'title' => 'Import / Export des données',
@@ -928,6 +932,8 @@ return [
             'certificates_helper' => 'Certificats installés sur ce serveur',
             'configuration' => 'Configuration',
             'configuration_helper' => 'Autres caractéristiques techniques',
+            'backups' => 'Sauvegardes',
+            'backups_helper' => 'Liste des sauvegardes de ce serveur logiques',
             'domain' => 'Domain',
             'domain_helper' => 'Domain d\'administration du serveur',
             'description' => 'Description',
@@ -1868,6 +1874,12 @@ return [
     'notifications' => [
         'tab_title'             => 'Cartographie',
 
+        'tab_title_reminders'   => 'Rappels',
+        'tab_legend_reminders'  => 'Configurez les rappels envoyés aux cartographes lorsqu\'un objet n\'a pas été mis à jour depuis un certain temps.',
+
+        'tab_title_notifications'  => 'Notifications',
+        'tab_legend_notifications' => 'Configurez les notifications envoyées par e-mail lors de la modification d\'un objet de la cartographie.',
+
         'section_reminders'     => 'Rappels cartographes',
         'reminders_enabled'     => 'Activer les rappels',
         'reminder_from'         => 'Expéditeur',
@@ -1875,15 +1887,16 @@ return [
         'reminder_body'         => 'Corps du rappel',
         'reminder_months'       => 'Pas de mise à jour depuis (mois)',
         'reminder_every_days'   => 'Envoyer un rappel tous les (jours)',
-        'btn_test_reminder'     => 'Tester le rappel',
+        'btn_test_reminder'     => 'Tester',
         'last_reminder_sent'    => 'Dernier envoi des rappels',
 
         'section_modification'  => 'Notifications de modification',
         'modification_enabled'  => 'Activer les notifications de modification',
-        'modification_to'       => 'Destinataire',
+        'modification_from'     => 'Expéditeur',
+        'modification_copy_to'  => 'Copie cachée à',
         'modification_subject'  => 'Sujet de la notification',
         'modification_body'     => 'Corps de la notification',
-        'btn_test_modification' => 'Tester la notification',
+        'btn_test_modification' => 'Tester',
 
         'test_success'          => 'Email de test envoyé avec succès.',
         'test_error'            => 'Échec de l\'envoi : :error',

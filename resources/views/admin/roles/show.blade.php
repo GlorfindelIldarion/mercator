@@ -13,6 +13,11 @@
         @canEdit($role)
             <a class="btn btn-info" href="{{ route('admin.roles.edit', $role->id) }}">{{ trans('global.edit') }}</a>
         @endcanEdit
+        @can('role_create')
+            <a class="btn btn-warning" href="{{ route('admin.roles.clone', $role->id) }}">
+                {{ trans('global.clone') }}
+            </a>
+        @endcan
         @can('role_delete')
             <form action="{{ route('admin.roles.destroy', $role->id) }}" method="POST"
                   onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">

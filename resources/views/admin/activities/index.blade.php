@@ -52,6 +52,9 @@
                         <th>
                             {{ trans('cruds.activity.fields.processes') }}
                         </th>
+                        <th data-column="drp">
+                            {{ trans('cruds.activity.drp') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -90,6 +93,9 @@
                                     ,
                                     @endif
                                 @endforeach
+                            </td>
+                            <td>
+                                {{ $activity->drp }}
                             </td>
                             <td nowrap>
                                 @can('activity_show')
@@ -135,7 +141,8 @@
     'title' => trans("cruds.activity.title_singular"),
     'URL' => route('admin.activities.massDestroy'),
     'canDelete' => auth()->user()->can('activity_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['drp'],
 ));
 </script>
 @endsection

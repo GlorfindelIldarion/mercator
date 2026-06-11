@@ -36,6 +36,9 @@
                         <th>
                             {{ trans('cruds.annuaire.fields.zone_admin') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.annuaire.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -65,6 +68,9 @@
                                 @if ($annuaire->zoneAdmin!=null)
                                     <x-show-link :model="$annuaire->zoneAdmin" />
                                 @endif
+                            </td>
+                            <td>
+                                {!! $annuaire->description !!}
                             </td>
 
                             <td nowrap>
@@ -113,7 +119,8 @@
             'title' => trans("cruds.annuaire.title_singular"),
             'URL' => route('admin.annuaires.massDestroy'),
             'canDelete' => auth()->user()->can('annuaire_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

@@ -52,7 +52,13 @@
                             {{ trans('cruds.subnetwork.fields.vlan') }}
                         </th>
                         <th>
+                            {{ trans('cruds.vlan.fields.vlan_id') }}
+                        </th>
+                        <th>
                             {{ trans('cruds.subnetwork.fields.zone') }}
+                        </th>
+                        <th data-column="responsible_exp">
+                            {{ trans('cruds.subnetwork.fields.responsible_exp') }}
                         </th>
                         <th>
                             &nbsp;
@@ -108,7 +114,15 @@
                                 @endif
                             </td>
                             <td>
+                                @if ($subnetwork->vlan!=null)
+                                    <x-show-link :model="$subnetwork->vlan" :label="$subnetwork->vlan->vlan_id" />
+                                @endif
+                            </td>
+                            <td>
                                 {{ $subnetwork->zone }}
+                            </td>
+                            <td>
+                                {{ $subnetwork->responsible_exp }}
                             </td>
                             <td nowrap>
                                 @can('subnetwork_show')
@@ -155,7 +169,8 @@
             'title' => trans("cruds.subnetwork.title_singular"),
             'URL' => route('admin.subnetworks.massDestroy'),
             'canDelete' => auth()->user()->can('subnetwork_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['responsible_exp'],
 ));
     </script>
 @endsection

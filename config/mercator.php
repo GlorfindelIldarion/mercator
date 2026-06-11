@@ -20,7 +20,8 @@
   ),
   'parameters' => 
   array (
-    'security_need_auth' => true,
+    'security_need_auth' => false,
+    'application_documents' => false,
   ),
   'cpe' => 
   array (
@@ -28,7 +29,7 @@
   ),
   'cartography' => 
   array (
-    'reminders_enabled' => true,
+    'reminders_enabled' => false,
     'reminder_from' => 'mercator@localhost.com',
     'reminder_subject' => '[Mercator] Rappel',
     'reminder_body' => '<!DOCTYPE html>
@@ -48,7 +49,7 @@ Si tu penses avoir reçu ce message par erreur, contacte ton administrateur.</em
 </html>',
     'reminder_months' => 1,
     'reminder_every_days' => 30,
-    'notifier_enabled' => true,
+    'notifier_enabled' => false,
     'notifier_to' => 'mercator@localhost.com',
     'notifier_from' => 'mercator@localhost.com',
     'notifier_subject' => '[Mercator] Objet :name modifié',
@@ -58,6 +59,6 @@ Si tu penses avoir reçu ce message par erreur, contacte ton administrateur.</em
   <p>L\'objet <a href=":object_url">:object</a> a été <a href=":object_history_url">modifié</a> par :user :email.</p>
 </body>
 </html>',
-    'reminder_last_sent' => '2026-06-05 08:49',
+    'reminder_last_sent' => '2026-06-11 20:36',
   ),
 );

@@ -42,6 +42,9 @@
                         <th>
                             {{ trans('cruds.phone.fields.building') }}
                         </th>
+                        <th data-column="description">
+                            {{ trans('cruds.phone.fields.description') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -79,6 +82,9 @@
                                 @if ($phone->building!==null)
                                     <x-show-link :model="$phone->building" />
                                 @endif
+                            </td>
+                            <td>
+                                {!! $phone->description !!}
                             </td>
                             <td nowrap>
                                 @can('phone_show')
@@ -124,7 +130,8 @@
             'title' => trans("cruds.phone.title_singular"),
             'URL' => route('admin.phones.massDestroy'),
             'canDelete' => auth()->user()->can('phone_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['description'],
 ));
     </script>
 @endsection

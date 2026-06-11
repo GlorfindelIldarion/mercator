@@ -59,6 +59,8 @@ class ApplicationController extends Controller
     {
         abort_if(Gate::denies('application_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
+        session()->put('documents', []);
+
         return view('admin.applications.create', $this->getCreateFormData());
     }
 
@@ -213,6 +215,9 @@ class ApplicationController extends Controller
         $application->containers()->sync($request->input('containers', []));
         $application->securityDevices()->sync($request->input('security_devices', []));
         $application->administrators()->sync($request->input('administrators', []));
+        $application->documents()->sync(session()->get('documents', []));
+
+        session()->forget('documents');
 
         return redirect()->route('admin.applications.index');
     }
@@ -280,6 +285,12 @@ class ApplicationController extends Controller
 
         $application->load('entities', 'entityResp', 'processes', 'services', 'databases', 'logicalServers', 'applicationBlock');
 
+        $documents = [];
+        foreach ($application->documents as $doc) {
+            $documents[] = $doc->id;
+        }
+        session()->put('documents', $documents);
+
         return view(
             'admin.applications.edit',
             compact(
@@ -334,6 +345,9 @@ class ApplicationController extends Controller
         $application->containers()->sync($request->input('containers', []));
         $application->securityDevices()->sync($request->input('security_devices', []));
         $application->administrators()->sync($request->input('administrators', []));
+        $application->documents()->sync(session()->get('documents', []));
+
+        session()->forget('documents');
 
         return redirect()->route('admin.applications.index');
     }

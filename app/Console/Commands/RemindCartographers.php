@@ -105,8 +105,8 @@ class RemindCartographers extends Command
             $appUrl   = (string) config('app.url', '');
 
             $mailBody = str_replace(
-                [':name', ':count', ':list', ':months', ':mercator'],
-                [(string) $name, (string) $count, $list, (string) $months, $appUrl],
+                [':name', ':user', ':count', ':list', ':months', ':mercator_url'],
+                [(string) $name, (string) $name, (string) $count, $list, (string) $months, $appUrl],
                 $body,
             );
 

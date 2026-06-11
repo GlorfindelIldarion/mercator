@@ -97,51 +97,47 @@
 </div>{{-- .graph-card-sticky --}}
 
 <div class="report-scroll-area">
-    @can('entity_show')
-        @if($entities->count()>0)
-            <div class="card">
-                <div class="card-header">
-                    {{ trans('cruds.entity.title') }}
-                </div>
-                <div class="card-body">
-                    <p>{{ trans('cruds.entity.description') }}</p>
-                    @foreach($entities as $entity)
-                        <div class="row">
-                            <div class="col">
-                                @include('admin.entities._details', [
-                                    'entity' => $entity,
-                                    'withLink' => true,
-                                ])
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+    @if($entities->count()>0)
+        <div class="card">
+            <div class="card-header">
+                {{ trans('cruds.entity.title') }}
             </div>
-        @endif
-    @endcan
+            <div class="card-body">
+                <p>{{ trans('cruds.entity.description') }}</p>
+                @foreach($entities as $entity)
+                    <div class="row">
+                        <div class="col">
+                            @include('admin.entities._details', [
+                                'entity' => $entity,
+                                'withLink' => true,
+                            ])
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
-    @can('relation_show')
-        @if($relations->count()>0)
-            <div class="card">
-                <div class="card-header">
-                    {{ trans('cruds.relation.title') }}
-                </div>
-                <div class="card-body">
-                    <p>{{ trans('cruds.relation.description') }}</p>
-                    @foreach($relations as $relation)
-                        <div class="row">
-                            <div class="col">
-                                @include('admin.relations._details', [
-                                    'relation' => $relation,
-                                    'withLink' => true,
-                                ])
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+    @if($relations->count()>0)
+        <div class="card">
+            <div class="card-header">
+                {{ trans('cruds.relation.title') }}
             </div>
-        @endif
-    @endcan
+            <div class="card-body">
+                <p>{{ trans('cruds.relation.description') }}</p>
+                @foreach($relations as $relation)
+                    <div class="row">
+                        <div class="col">
+                            @include('admin.relations._details', [
+                                'relation' => $relation,
+                                'withLink' => true,
+                            ])
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </div>{{-- .report-scroll-area --}}
 @endsection
 
@@ -151,22 +147,18 @@
 let dotSrc = `
 digraph  {
 node [shape=none labelloc="b"  width=1 height=1.1]
-@can('entity_show')
-    @foreach($entities as $entity)
+@foreach($entities as $entity)
     E{{ $entity->id }} [label="{{ $entity->name }}"  image="{{ $entity->icon_id === null ? '/images/entity.png' : route('admin.documents.show', $entity->icon_id) }}" href="#{{ $entity->getUID() }}"]
     @if (($entity->parentEntity!=null)&&($entities->contains("id",$entity->parentEntity->id)))
     E{{ $entity->parentEntity->id }} -> E{{ $entity->id }}
     @endif
     @endforEach
-    @endcan
 
-    @can('relation_show')
     @foreach($relations as $relation)
     @if($entities->contains('id', $relation->source_id) && $entities->contains('id', $relation->destination_id))
     E{{ $relation->source_id }} -> E{{ $relation->destination_id }} [label=\"{{ $relation ->name }}\" href=\"#{{ $relation->getUID() }}\"]
     @endif
     @endforEach
-@endcan
 }`;
 
 document.addEventListener('graphvizReady', () => {

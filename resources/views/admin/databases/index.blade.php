@@ -42,6 +42,9 @@
                         <th>
                             {{ trans('cruds.database.fields.applications') }}
                         </th>
+                        <th data-column="responsible">
+                            {{ trans('cruds.database.fields.responsible') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -96,6 +99,9 @@
                                 @endforeach
                             </td>
 
+                            <td>
+                                {{ $database->responsible }}
+                            </td>
                             <td nowrap>
                                 @can('database_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.databases.show', $database->id) }}">
@@ -135,7 +141,8 @@
     'title' => trans("cruds.database.title_singular"),
     'URL' => route('admin.databases.massDestroy'),
     'canDelete' => auth()->user()->can('database_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['responsible'],
 ));
 </script>
 @endsection

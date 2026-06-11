@@ -142,7 +142,7 @@
         @endif
     @endcan
 
-    @can("gateway_access")
+    @canAccess(App\Models\Gateway::class)
         @if ($gateways->count()>0)
             <br>
             <div class="card">
@@ -190,7 +190,7 @@
         @endif
     @endcan
 
-    @can("router_access")
+    @canAccess(App\Models\Router::class)
         @if ($routers->count()>0)
             <br>
             <div class="card">
@@ -214,7 +214,7 @@
         @endif
     @endcan
 
-    @can("network_switch_access")
+    @canAccess(App\Models\NetworkSwitch::class)
         @if ($networkSwitches->count()>0)
             <br>
             <div class="card">

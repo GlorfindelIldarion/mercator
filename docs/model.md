@@ -2022,6 +2022,25 @@ This part allows to see Mercator roles list.
 | updated_at | timestamp        | Date of update       |
 | deleted_at | timestamp        | Date of deletion     |
 
+### Cartography
+
+This section allows you to define access rules on objects, applicable to roles or users.
+
+| Table                                         | api              |
+|:----------------------------------------------|:-----------------|
+| <span style="color: blue;">*cartographers*</span> | `/api/cartographers` |
+
+| Champ      | Type             | Description          |
+|------------|------------------|----------------------|
+| id         | int(10) unsigned | auto_increment       |
+| cartographiable_type     | varchar(255)     | Type d'objet        |
+| cartographiable_id | int(10)        | ID of the selected object     |
+| user_id | int(10)        | ID of the assigned user (may be null if a role is assigned)  |
+| role_id | int(10)        | ID of the assigned role (may be null if a user is assigned)  |
+| created_at | timestamp        | Date of creation     |
+| updated_at | timestamp        | Date of deletion  |
+| deleted_at | timestamp        | Date of deletion     |
+
 ### Permissions
 
 This part allows to see all Mercator permissions than can be allocated to roles.

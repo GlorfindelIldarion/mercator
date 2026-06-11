@@ -39,6 +39,12 @@
                         <th>
                             {{ trans('cruds.network.fields.security_need') }}
                         </th>
+                        <th data-column="responsible">
+                            {{ trans('cruds.network.fields.responsible') }}
+                        </th>
+                        <th data-column="responsible_sec">
+                            {{ trans('cruds.network.fields.responsible_sec') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -130,6 +136,12 @@
                                     @endif
                                 @endif
                             </td>
+                            <td>
+                                {{ $network->responsible }}
+                            </td>
+                            <td>
+                                {{ $network->responsible_sec }}
+                            </td>
                             <td nowrap>
                                 @can('network_show')
                                     <a class="btn btn-xs btn-primary"
@@ -174,7 +186,8 @@
             'title' => trans("cruds.network.title_singular"),
             'URL' => route('admin.networks.massDestroy'),
             'canDelete' => auth()->user()->can('network_delete') ? true : false,
-    'serverSidePagination' => true
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['responsible', 'responsible_sec'],
 ));
     </script>
 @endsection
