@@ -100,6 +100,22 @@
                     </div>
                 </div>
                 <div class="card-body border-top">
+                    <h6 class="fw-bold mb-3">{{ trans('cruds.menu.application.title_short') }}</h6>
+                    <div class="form-group mb-3">
+                        <label class="d-block mb-1">
+                            {{ trans('cruds.configuration.parameters.application_documents_helper') }}
+                        </label>
+                        <div class="form-check form-switch">
+                            <input name="application_documents" id="application_documents"
+                                   type="checkbox" class="form-check-input"
+                                   {{ $application_documents ? 'checked' : '' }}>
+                            <label class="form-check-label" for="application_documents">
+                                {{ trans('cruds.configuration.parameters.application_documents') }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body border-top">
                     <h6 class="fw-bold mb-3">{{ trans('cruds.menu.logical_infrastructure.title_short') }}</h6>
                     <div class="form-group mb-3">
                         <label class="d-block mb-1">

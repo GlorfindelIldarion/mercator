@@ -655,6 +655,32 @@
                 </tbody>
             </table>
         </div>
+        @if (config('mercator-config.parameters.application_documents'))
+        <!------------------------------------------------------------------------------------------------------------->
+        <div class="card-header">
+            {{ trans('cruds.application.fields.documents') }}
+        </div>
+        <!------------------------------------------------------------------------------------------------------------->
+        <div class="card-body">
+            <table class="table table-bordered table-striped table-report">
+                <tbody>
+                <tr>
+                    <th width="10%">
+                        {{ trans('cruds.application.fields.documents') }}
+                    </th>
+                    <td>
+                        @foreach($application->documents as $document)
+                            <a href="{{ route('admin.documents.show', $document->id) }}">{{ $document->filename }}</a>
+                            @if (!$loop->last)
+                                ,
+                            @endif
+                        @endforeach
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        @endif
         <div class="card-footer">
             {{ trans('global.created_at') }} {{ $application->created_at ? $application->created_at->format(trans('global.timestamp')) : '' }}
             |

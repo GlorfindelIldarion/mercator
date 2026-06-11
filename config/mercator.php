@@ -20,7 +20,8 @@
   ),
   'parameters' => 
   array (
-    'security_need_auth' => true,
+    'security_need_auth' => false,
+    'application_documents' => true,
   ),
   'cpe' => 
   array (
