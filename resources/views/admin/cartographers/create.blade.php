@@ -23,39 +23,6 @@
                 </div>
             @endif
 
-            <div class="row">
-                <div class="col-4">
-                    <div class="form-group">
-                        <label class="label-required" for="type-select">{{ trans('cruds.cartographer.fields.type') }}</label>
-                        <select id="type-select" name="cartographiable_type"
-                                class="form-control select2 {{ $errors->has('cartographiable_type') ? 'is-invalid' : '' }}" required>
-                            <option value="">-- Choisir un type --</option>
-                            @foreach($models as $class => $label)
-                                <option value="{{ $class }}" {{ old('cartographiable_type') === $class ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @if($errors->has('cartographiable_type'))
-                            <div class="invalid-feedback">{{ $errors->first('cartographiable_type') }}</div>
-                        @endif
-                        <span class="help-block">{{ trans('cruds.cartographer.fields.type_helper') }}</span>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="form-group">
-                        <label class="label-required" for="object-select">{{ trans('cruds.cartographer.fields.object') }}</label>
-                        <select id="object-select" name="cartographiable_id"
-                                class="form-control select2 {{ $errors->has('cartographiable_id') ? 'is-invalid' : '' }}" required>
-                            <option value="">-- Choisir un objet --</option>
-                        </select>
-                        @if($errors->has('cartographiable_id'))
-                            <div class="invalid-feedback">{{ $errors->first('cartographiable_id') }}</div>
-                        @endif
-                        <span class="help-block">{{ trans('cruds.cartographer.fields.object_helper') }}</span>
-                    </div>
-                </div>
-            </div>
 
             <div class="row">
                 <div class="col-4">
@@ -95,6 +62,42 @@
                     </div>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-4">
+                    <div class="form-group">
+                        <label class="label-required" for="type-select">{{ trans('cruds.cartographer.fields.type') }}</label>
+                        <select id="type-select" name="cartographiable_type"
+                                class="form-control select2 {{ $errors->has('cartographiable_type') ? 'is-invalid' : '' }}" required>
+                            <option value="">-- Choisir un type --</option>
+                            @foreach($models as $class => $label)
+                                <option value="{{ $class }}" {{ old('cartographiable_type') === $class ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if($errors->has('cartographiable_type'))
+                            <div class="invalid-feedback">{{ $errors->first('cartographiable_type') }}</div>
+                        @endif
+                        <span class="help-block">{{ trans('cruds.cartographer.fields.type_helper') }}</span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-group">
+                        <label class="label-required" for="object-select">{{ trans('cruds.cartographer.fields.object') }}</label>
+                        <select id="object-select" name="cartographiable_id"
+                                class="form-control select2 {{ $errors->has('cartographiable_id') ? 'is-invalid' : '' }}" required>
+                            <option value="">-- Choisir un objet --</option>
+                        </select>
+                        @if($errors->has('cartographiable_id'))
+                            <div class="invalid-feedback">{{ $errors->first('cartographiable_id') }}</div>
+                        @endif
+                        <span class="help-block">{{ trans('cruds.cartographer.fields.object_helper') }}</span>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
     </div>
     <div class="form-group">

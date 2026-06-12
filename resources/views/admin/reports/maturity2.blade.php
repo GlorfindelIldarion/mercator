@@ -513,7 +513,8 @@
                 <td><center>{{ $vlans>0 ? number_format($vlans_lvl1*100/$vlans,0):0 }}%</center></td>
             </tr>
             @endcanAccess
-            <tbody>
+            </tbody>
+        @endcanAccessAny
         </table>
         </div>
       </div>
@@ -533,4 +534,3 @@ window.chartData = {
 
 @endsection
 
-            @endcanAccessAny

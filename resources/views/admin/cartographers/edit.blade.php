@@ -24,27 +24,6 @@
                 </div>
             @endif
 
-            {{-- Type et objet : en lecture seule --}}
-            <div class="row mb-3">
-                <div class="col-4">
-                    <div class="form-group">
-                        <label>{{ trans('cruds.cartographer.fields.type') }}</label>
-                        <input type="text" class="form-control"
-                               value="{{ $models[$cartographer->cartographiable_type] ?? $cartographer->cartographiable_type }}"
-                               readonly>
-                        <span class="help-block">{{ trans('cruds.cartographer.fields.type_helper') }}</span>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="form-group">
-                        <label>{{ trans('cruds.cartographer.fields.object') }}</label>
-                        <input type="text" class="form-control"
-                               value="{{ $cartographer->cartographiable->name ?? '(id:'.$cartographer->cartographiable_id.')' }}"
-                               readonly>
-                        <span class="help-block">{{ trans('cruds.cartographer.fields.object_helper') }}</span>
-                    </div>
-                </div>
-            </div>
 
             {{-- Utilisateur et rôle : modifiables --}}
             <div class="row">
@@ -87,6 +66,29 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Type et objet : en lecture seule --}}
+            <div class="row mb-3">
+                <div class="col-4">
+                    <div class="form-group">
+                        <label>{{ trans('cruds.cartographer.fields.type') }}</label>
+                        <input type="text" class="form-control"
+                               value="{{ $models[$cartographer->cartographiable_type] ?? $cartographer->cartographiable_type }}"
+                               readonly>
+                        <span class="help-block">{{ trans('cruds.cartographer.fields.type_helper') }}</span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-group">
+                        <label>{{ trans('cruds.cartographer.fields.object') }}</label>
+                        <input type="text" class="form-control"
+                               value="{{ $cartographer->cartographiable->name ?? '(id:'.$cartographer->cartographiable_id.')' }}"
+                               readonly>
+                        <span class="help-block">{{ trans('cruds.cartographer.fields.object_helper') }}</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     <div class="form-group">
