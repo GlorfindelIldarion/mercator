@@ -30,16 +30,18 @@ class CartographerController extends Controller
         return view('admin.cartographers.index', compact('cartographers', 'models', 'routes'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         abort_if(Gate::denies('cartographer_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $models = $this->cartographiableModels();
+        $models   = $this->cartographiableModels();
         asort($models);
-        $users  = User::orderBy('name')->pluck('name', 'id');
-        $roles  = Role::orderBy('title')->pluck('title', 'id');
+        $users    = User::orderBy('name')->pluck('name', 'id');
+        $roles    = Role::orderBy('title')->pluck('title', 'id');
+        $userId   = $request->query('user_id');
+        $roleId   = $request->query('role_id');
 
-        return view('admin.cartographers.create', compact('models', 'users', 'roles'));
+        return view('admin.cartographers.create', compact('models', 'users', 'roles', 'userId', 'roleId'));
     }
 
     public function store(Request $request)
@@ -47,10 +49,10 @@ class CartographerController extends Controller
         abort_if(Gate::denies('cartographer_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $validated = $request->validate([
-            'cartographiable_type' => ['required', 'string', 'in:' . implode(',', array_keys($this->cartographiableModels()))],
-            'cartographiable_id'   => ['required', 'integer', 'min:1'],
-            'user_id'              => ['nullable', 'integer', 'exists:users,id'],
-            'role_id'              => ['nullable', 'integer', 'exists:roles,id'],
+            'user_id'   => ['nullable', 'integer', 'exists:users,id'],
+            'role_id'   => ['nullable', 'integer', 'exists:roles,id'],
+            'objects'   => ['required', 'array', 'min:1'],
+            'objects.*' => ['string'],
         ]);
 
         if (empty($validated['user_id']) && empty($validated['role_id'])) {
@@ -61,51 +63,71 @@ class CartographerController extends Controller
             return back()->withErrors(['user_id' => trans('cruds.cartographer.errors.user_and_role_exclusive')])->withInput();
         }
 
-        Cartographer::firstOrCreate(array_filter([
-            'cartographiable_type' => $validated['cartographiable_type'],
-            'cartographiable_id'   => $validated['cartographiable_id'],
-            'user_id'              => $validated['user_id'] ?? null,
-            'role_id'              => $validated['role_id'] ?? null,
-        ]));
+        $allowedTypes = $this->cartographiableModels();
 
-        return redirect()->route('admin.cartographers.index')->with('status', 'Cartographe ajouté.');
+        foreach ($validated['objects'] as $entry) {
+            $parts = explode('|', $entry, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+            [$type, $rawId] = $parts;
+            if (! array_key_exists($type, $allowedTypes)) {
+                continue;
+            }
+            $id = filter_var($rawId, FILTER_VALIDATE_INT);
+            if ($id === false || $id <= 0) {
+                continue;
+            }
+
+            Cartographer::firstOrCreate([
+                'cartographiable_type' => $type,
+                'cartographiable_id'   => $id,
+                'user_id'              => $validated['user_id'] ?? null,
+                'role_id'              => $validated['role_id'] ?? null,
+            ]);
+        }
+
+        return redirect()->route('admin.cartographers.index')->with('status', trans('cruds.cartographer.saved'));
     }
 
-    public function edit(Cartographer $cartographer)
+    public function associatedObjects(Request $request): JsonResponse
     {
-        abort_if(Gate::denies('edit-object', $cartographer), Response::HTTP_FORBIDDEN, '403 Forbidden');
+        abort_if(Gate::denies('cartographer_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $userId = $request->query('user_id');
+        $roleId = $request->query('role_id');
+
+        if (! $userId && ! $roleId) {
+            return response()->json([]);
+        }
 
         $models = $this->cartographiableModels();
-        asort($models);
-        $users  = User::orderBy('name')->pluck('name', 'id');
-        $roles  = Role::orderBy('title')->pluck('title', 'id');
 
-        return view('admin.cartographers.edit', compact('cartographer', 'models', 'users', 'roles'));
-    }
-
-    public function update(Request $request, Cartographer $cartographer)
-    {
-        abort_if(Gate::denies('edit-object', $cartographer), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-        $validated = $request->validate([
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
-        ]);
-
-        if (empty($validated['user_id']) && empty($validated['role_id'])) {
-            return back()->withErrors(['user_id' => trans('cruds.cartographer.errors.user_or_role_required')])->withInput();
+        $query = Cartographer::query()->with('cartographiable');
+        if ($userId) {
+            $query->where('user_id', (int) $userId);
+        } else {
+            $query->where('role_id', (int) $roleId);
         }
 
-        if (! empty($validated['user_id']) && ! empty($validated['role_id'])) {
-            return back()->withErrors(['user_id' => trans('cruds.cartographer.errors.user_and_role_exclusive')])->withInput();
+        $rows = $query->get();
+
+        $results = [];
+        foreach ($rows as $c) {
+            $typeLabel  = $models[$c->cartographiable_type] ?? $c->cartographiable_type;
+            $related    = $c->cartographiable;
+            $objectName = $related !== null
+                ? (string) ($related->getAttribute('name') ?? '(id:' . $c->cartographiable_id . ')')
+                : '(id:' . $c->cartographiable_id . ')';
+            $results[] = [
+                'type'  => $c->cartographiable_type,
+                'id'    => $c->cartographiable_id,
+                'name'  => $objectName,
+                'label' => $typeLabel . ' — ' . $objectName,
+            ];
         }
 
-        $cartographer->update([
-            'user_id' => $validated['user_id'] ?? null,
-            'role_id' => $validated['role_id'] ?? null,
-        ]);
-
-        return redirect()->route('admin.cartographers.index')->with('status', 'Cartographe modifié.');
+        return response()->json($results);
     }
 
     public function destroy(Cartographer $cartographer)
