@@ -28,12 +28,12 @@
                 <thead>
                     <tr>
                         <th width="10"></th>
-                        <th>{{ trans('cruds.cartographer.fields.type') }}</th>
-                        <th>{{ trans('cruds.cartographer.fields.object') }}</th>
-                        <th>{{ trans('cruds.cartographer.fields.last_updated') }}</th>
                         <th>{{ trans('cruds.cartographer.fields.user') }}</th>
                         <th>{{ trans('cruds.cartographer.fields.role') }}</th>
-                        <th></th>
+                        <th>{{ trans('cruds.cartographer.fields.type') }}</th>
+                         <th>{{ trans('cruds.cartographer.fields.object') }}</th>
+                         <th>{{ trans('cruds.cartographer.fields.last_updated') }}</th>
+                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,6 +43,25 @@
                     @endphp
                     <tr data-entry-id="{{ $cartographer->id }}">
                         <td></td>
+
+                        {{-- Utilisateur --}}
+                        <td>
+                            @if($cartographer->user)
+                                <x-show-link :model="$cartographer->user" />
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        {{-- Rôle --}}
+                        <td>
+                            @if($cartographer->role)
+                                <x-show-link :model="$cartographer->role" :label="$cartographer->role->title ?? ''" />
+                            @else
+                                -
+                            @endif
+                        </td>
+
 
                         {{-- Type --}}
                         <td>{{ $models[$cartographer->cartographiable_type] ?? $cartographer->cartographiable_type }}</td>
@@ -72,33 +91,16 @@
                             @endcan
                         </td>
 
-                        {{-- Utilisateur --}}
-                        <td>
-                            @if($cartographer->user)
-                                <x-show-link :model="$cartographer->user" />
-                            @else
-                                -
-                            @endif
-                        </td>
-
-                        {{-- Rôle --}}
-                        <td>
-                            @if($cartographer->role)
-                                <x-show-link :model="$cartographer->role" :label="$cartographer->role->title ?? ''" />
-                            @else
-                                -
-                            @endif
-                        </td>
-
-
                         {{-- Actions --}}
                         <td nowrap>
-                            @canEdit($cartographer)
+                            @can('cartographer_create')
                             <a class="btn btn-xs btn-info"
-                               href="{{ route('admin.cartographers.edit', $cartographer->id) }}">
+                               href="{{ $cartographer->user_id
+                                    ? route('admin.cartographers.create', ['user_id' => $cartographer->user_id])
+                                    : route('admin.cartographers.create', ['role_id' => $cartographer->role_id]) }}">
                                 {{ trans('global.edit') }}
                             </a>
-                            @endcanEdit
+                            @endcan
                             @can('cartographer_delete')
                             <form action="{{ route('admin.cartographers.destroy', $cartographer->id) }}" method="POST"
                                   onsubmit="return confirm('{{ trans('global.areYouSure') }}');"

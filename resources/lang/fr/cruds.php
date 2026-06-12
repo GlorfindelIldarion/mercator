@@ -375,11 +375,15 @@ return [
             'role'            => 'Rôle',
             'role_helper'     => 'Rôle autorisé (exclusif avec l\'utilisateur)',
             'last_updated'    => 'Dernière modification de l\'objet',
+            'objects'         => 'Objets associés',
+            'objects_helper'  => 'Objets déjà associés à cet utilisateur ou ce rôle',
+            'add_object'      => 'Ajouter',
         ],
         'errors' => [
             'user_or_role_required'   => 'Veuillez sélectionner un utilisateur ou un rôle.',
             'user_and_role_exclusive' => 'Un utilisateur et un rôle ne peuvent pas être sélectionnés simultanément.',
         ],
+        'saved'  => 'Associations de cartographes enregistrées.',
     ],
     'certificate' => [
         'description' => "Un certificat électronique (aussi appelé certificat numérique ou certificat de clé publique) peut être vu comme une carte d'identité numérique. Il est utilisé principalement pour identifier et authentifier une personne physique ou morale, mais aussi pour chiffrer des échanges.",

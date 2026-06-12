@@ -371,11 +371,15 @@ return [
             'role'            => 'Role',
             'role_helper'     => 'Authorised role (exclusive with user)',
             'last_updated'    => 'Object last modified',
+            'objects'         => 'Associated objects',
+            'objects_helper'  => 'Objects already associated with this user or role',
+            'add_object'      => 'Add',
         ],
         'errors' => [
             'user_or_role_required'   => 'Please select a user or a role.',
             'user_and_role_exclusive' => 'A user and a role cannot be selected at the same time.',
         ],
+        'saved'  => 'Cartographer associations saved.',
     ],
     'certificate' => [
         'description' => 'An electronic certificate (also called a digital certificate or public key certificate) can be thought of as a digital identity card. It is mainly used to identify and authenticate a natural or legal person, but also to encrypt exchanges.',
