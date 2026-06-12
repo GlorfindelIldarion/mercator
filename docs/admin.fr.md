@@ -10,9 +10,15 @@ La page des paramètres est organisée en quatre onglets.
 
 ---
 
-## Général
+## Paramètres
 
 Cet onglet regroupe les options de comportement générales de l'application.
+
+### Applications
+
+| Paramètre | Description | Défaut |
+|-----------|-------------|--------|
+| **Documents associés aux applications** | Permet de charger et d'associer des fichiers locaux (documents) aux applications. | `inactif` |
 
 ### Infrastructure logique
 
