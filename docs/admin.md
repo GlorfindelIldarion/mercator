@@ -10,9 +10,15 @@ The parameters page is organised into four tabs.
 
 ---
 
-## General
+## Parameters
 
 This tab groups application-level behavioural options.
+
+### Applications
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| **Documents attached to applications** | Allows local files (documents) to be uploaded and associated with applications. | `inactive` |
 
 ### Logical Infrastructure
 
