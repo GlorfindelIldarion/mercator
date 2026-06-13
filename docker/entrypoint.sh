@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+exec 1>/proc/1/fd/1 2>/proc/1/fd/2
 
 # ---------------------------------------------------------------------------
 # Mercator - Docker Entrypoint
@@ -59,8 +60,8 @@ if [ "$1" = "--init-only" ]; then
   php artisan passport:keys --force || true
 
   # Créer le client personnel uniquement s'il n'en existe pas
-  CLIENT_COUNT=$(php artisan tinker --execute="echo \DB::table('oauth_clients')->count();" 2>/dev/null \
-    | grep -E '^[0-9]+$' | tail -1)
+  CLIENT_COUNT=$(php artisan tinker --no-ansi --execute="echo \DB::table('oauth_clients')->count();" 2>/dev/null \
+    | grep -oE '[0-9]+' | tail -1)
   if [ "$CLIENT_COUNT" = "0" ] || [ -z "$CLIENT_COUNT" ]; then
     echo "🔑 Creating personal access client..."
     php artisan passport:client --personal --provider=users --no-interaction
