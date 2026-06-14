@@ -1,39 +1,43 @@
 {
-  "_ModelXmlSerializer-DRGL0Noo.js": {
-    "file": "assets/ModelXmlSerializer-DRGL0Noo.js",
+  "_ModelXmlSerializer-bb5ZzXHZ.js": {
+    "file": "assets/ModelXmlSerializer-bb5ZzXHZ.js",
     "name": "ModelXmlSerializer"
   },
-  "_UndoManager-CIUWOvvf.js": {
-    "file": "assets/UndoManager-CIUWOvvf.js",
+  "_UndoManager-BPB4z7FD.js": {
+    "file": "assets/UndoManager-BPB4z7FD.js",
     "name": "UndoManager",
     "imports": [
-      "_ModelXmlSerializer-DRGL0Noo.js"
+      "_ModelXmlSerializer-bb5ZzXHZ.js"
     ]
   },
-  "_bpmn-save-yoIT_UK-.js": {
-    "file": "assets/bpmn-save-yoIT_UK-.js",
+  "_bpmn-save-BCGuLcXP.js": {
+    "file": "assets/bpmn-save-BCGuLcXP.js",
     "name": "bpmn-save",
     "imports": [
-      "_ModelXmlSerializer-DRGL0Noo.js",
-      "_UndoManager-CIUWOvvf.js"
+      "_ModelXmlSerializer-bb5ZzXHZ.js",
+      "_UndoManager-BPB4z7FD.js"
     ]
   },
-  "_chart-BqLOyswL.js": {
-    "file": "assets/chart-BqLOyswL.js",
+  "_chart-CNK8zqEL.js": {
+    "file": "assets/chart-CNK8zqEL.js",
     "name": "chart"
   },
-  "_chartjs-plugin-datalabels.esm-CG9UK7Sp.js": {
-    "file": "assets/chartjs-plugin-datalabels.esm-CG9UK7Sp.js",
+  "_chartjs-plugin-datalabels.esm-CTcaW7_s.js": {
+    "file": "assets/chartjs-plugin-datalabels.esm-CTcaW7_s.js",
     "name": "chartjs-plugin-datalabels.esm",
     "imports": [
-      "_chart-BqLOyswL.js"
+      "_chart-CNK8zqEL.js"
     ]
   },
-  "_index-EaXFLmQy.js": {
-    "file": "assets/index-EaXFLmQy.js",
-    "name": "index",
+  "_chunk-aKtaBQYM.js": {
+    "file": "assets/chunk-aKtaBQYM.js",
+    "name": "chunk"
+  },
+  "_js-6VohDMNv.js": {
+    "file": "assets/js-6VohDMNv.js",
+    "name": "js",
     "imports": [
-      "_chart-BqLOyswL.js"
+      "_chart-CNK8zqEL.js"
     ]
   },
   "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": {
@@ -45,121 +49,137 @@
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-B4IX1kdG.css",
+    "file": "assets/app-COau4-0B.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
     "src": "resources/css/app.css",
-    "isEntry": true
+    "isEntry": true,
+    "assets": [
+      "assets/bootstrap-icons-mSm7cUeB.woff2",
+      "assets/bootstrap-icons-BeopsB42.woff"
+    ]
   },
   "resources/css/mapping.css": {
-    "file": "assets/mapping-xOZU8kvR.css",
+    "file": "assets/mapping-BXgpzxFn.css",
+    "name": "mapping",
+    "names": [
+      "mapping.css"
+    ],
     "src": "resources/css/mapping.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DxrfR9d7.js",
+    "file": "assets/app-DT4dVLOD.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "imports": [
+      "_chunk-aKtaBQYM.js"
+    ],
     "css": [
-      "assets/app-Du3nTU9k.css"
+      "assets/app-BEp0SxZ_.css"
     ]
   },
   "resources/js/chart-home.js": {
-    "file": "assets/chart-home-CUFYYaT9.js",
+    "file": "assets/chart-home-CFDcCHnM.js",
     "name": "chart-home",
     "src": "resources/js/chart-home.js",
     "isEntry": true,
     "imports": [
-      "_chart-BqLOyswL.js",
-      "_chartjs-plugin-datalabels.esm-CG9UK7Sp.js",
-      "_index-EaXFLmQy.js"
+      "_chart-CNK8zqEL.js",
+      "_chartjs-plugin-datalabels.esm-CTcaW7_s.js",
+      "_js-6VohDMNv.js"
     ]
   },
   "resources/js/chart-maturity.js": {
-    "file": "assets/chart-maturity-DSSUAmhg.js",
+    "file": "assets/chart-maturity-QuIbHETL.js",
     "name": "chart-maturity",
     "src": "resources/js/chart-maturity.js",
     "isEntry": true,
     "imports": [
-      "_chart-BqLOyswL.js",
-      "_index-EaXFLmQy.js"
+      "_chart-CNK8zqEL.js",
+      "_js-6VohDMNv.js"
     ]
   },
   "resources/js/chart-patching.js": {
-    "file": "assets/chart-patching-BhvDDPZn.js",
+    "file": "assets/chart-patching-CstbjPvH.js",
     "name": "chart-patching",
     "src": "resources/js/chart-patching.js",
     "isEntry": true,
     "imports": [
-      "_chart-BqLOyswL.js",
-      "_chartjs-plugin-datalabels.esm-CG9UK7Sp.js"
+      "_chart-CNK8zqEL.js",
+      "_chartjs-plugin-datalabels.esm-CTcaW7_s.js"
     ]
   },
   "resources/js/chart-relation.js": {
-    "file": "assets/chart-relation-D7wTTKdv.js",
+    "file": "assets/chart-relation-Drr7d_8v.js",
     "name": "chart-relation",
     "src": "resources/js/chart-relation.js",
     "isEntry": true,
     "imports": [
-      "_chart-BqLOyswL.js"
+      "_chart-CNK8zqEL.js"
     ]
   },
   "resources/js/graphviz.js": {
-    "file": "assets/graphviz-XM6IvNUP.js",
+    "file": "assets/graphviz-DrHE7G3G.js",
     "name": "graphviz",
     "src": "resources/js/graphviz.js",
     "isEntry": true
   },
   "resources/js/map.edit.ts": {
-    "file": "assets/map.edit-BD4ExWeV.js",
+    "file": "assets/map.edit-CP7f7Jzk.js",
     "name": "map.edit",
     "src": "resources/js/map.edit.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-DRGL0Noo.js",
-      "_UndoManager-CIUWOvvf.js"
+      "_ModelXmlSerializer-bb5ZzXHZ.js",
+      "_UndoManager-BPB4z7FD.js"
     ]
   },
   "resources/js/map.show.ts": {
-    "file": "assets/map.show-CXzhV2ic.js",
+    "file": "assets/map.show-CHwgqgoV.js",
     "name": "map.show",
     "src": "resources/js/map.show.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-DRGL0Noo.js"
+      "_ModelXmlSerializer-bb5ZzXHZ.js"
     ]
   },
   "resources/js/sql-parser.js": {
-    "file": "assets/sql-parser-Bz6_uEVa.js",
+    "file": "assets/sql-parser-B7P4stFK.js",
     "name": "sql-parser",
     "src": "resources/js/sql-parser.js",
     "isEntry": true
   },
   "resources/js/vis-network.js": {
-    "file": "assets/vis-network-DLTjHDOc.js",
+    "file": "assets/vis-network-9TQc9A8w.js",
     "name": "vis-network",
     "src": "resources/js/vis-network.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_chunk-aKtaBQYM.js"
+    ]
   },
   "resources/ts/bpmn-show.ts": {
-    "file": "assets/bpmn-show-DTiTDgfO.js",
+    "file": "assets/bpmn-show-CTyyxxNX.js",
     "name": "bpmn-show",
     "src": "resources/ts/bpmn-show.ts",
     "isEntry": true,
     "imports": [
-      "_bpmn-save-yoIT_UK-.js",
-      "_ModelXmlSerializer-DRGL0Noo.js",
-      "_UndoManager-CIUWOvvf.js"
+      "_ModelXmlSerializer-bb5ZzXHZ.js",
+      "_bpmn-save-BCGuLcXP.js"
     ]
   },
   "resources/ts/bpmn.ts": {
-    "file": "assets/bpmn-Su8xMZ5s.js",
+    "file": "assets/bpmn-Cq-Z1QvM.js",
     "name": "bpmn",
     "src": "resources/ts/bpmn.ts",
     "isEntry": true,
     "imports": [
-      "_bpmn-save-yoIT_UK-.js",
-      "_ModelXmlSerializer-DRGL0Noo.js",
-      "_UndoManager-CIUWOvvf.js"
+      "_ModelXmlSerializer-bb5ZzXHZ.js",
+      "_bpmn-save-BCGuLcXP.js"
     ]
   }
 }
