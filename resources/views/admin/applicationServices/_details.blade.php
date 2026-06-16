@@ -1,3 +1,7 @@
+@props([
+    'applicationService',
+    'withLink' => false,
+])
 <table class="table table-bordered table-striped table-report" id="{{ $applicationService->getUID() }}">
     <tbody>
         <tr>
@@ -5,7 +9,15 @@
                 {{ trans('cruds.applicationService.fields.name') }}
             </th>
             <td>
+            @if ($withLink)
+                @canShow($applicationService)
+                <a href='{{ route("admin.application-services.show", $applicationService->id) }}'>{{ $applicationService->name }}</a>
+                @elsecanShow
+                    {{ $applicationService->name }}
+                @endcanShow
+            @else
                 {{ $applicationService->name }}
+            @endif
             </td>
         </tr>
         <tr>
