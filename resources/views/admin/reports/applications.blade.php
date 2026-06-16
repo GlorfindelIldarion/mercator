@@ -265,13 +265,14 @@ A{{ $application->id }} [label="{{ $application->name }}" shape=none labelloc="b
     AB{{ $application->application_block_id }} -> A{{ $application->id}}
 @endif
 
+@endforeach
+
 @foreach($applicationServices as $service)
 AS{{ $service->id }} [label="{{ $service->name }}" shape=none labelloc="b"  width=1 height=1.1 image="/images/applicationservice.png" href="#{{$service->getUID()}}"]
 @foreach($service->modules as $module)
     @if($applicationModules->contains('id', $module->id))
     AS{{ $service->id }} -> M{{$module->id}}
     @endif
-@endforeach
 @endforeach
 @endforeach
 
