@@ -106,7 +106,7 @@
                                     class="form-control js-icon-picker"
                                     data-icons='@json($icons)'
                                     data-selected="{{ $entity->icon_id ?? '-1' }}"
-                                    data-default-img="{{ asset('images/application.png') }}"
+                                    data-default-img="{{ asset('images/entity.png') }}"
                                     data-url-template="{{ route('admin.documents.show', ':id') }}"
                                     data-upload="#iconFile">
                             </select>
