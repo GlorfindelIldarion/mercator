@@ -1,9 +1,9 @@
 # Mercator
 
-[![Latest Release](https://img.shields.io/github/release/dbarzin/mercator.svg?style=flat-square)](https://github.com/dbarzin/mercator/releases/latest)
-![License](https://img.shields.io/github/license/dbarzin/mercator.svg?style=flat-square)
-![Contributors](https://img.shields.io/github/contributors/dbarzin/mercator.svg?style=flat-square)
-![Stars](https://img.shields.io/github/stars/dbarzin/mercator?style=flat-square)
+[![Latest Release](https://img.shields.io/github/release/sourcentis/mercator.svg?style=flat-square)](https://github.com/sourcentis/mercator/releases/latest)
+![License](https://img.shields.io/github/license/sourcentis/mercator.svg?style=flat-square)
+![Contributors](https://img.shields.io/github/contributors/sourcentis/mercator.svg?style=flat-square)
+![Stars](https://img.shields.io/github/stars/sourcentis/mercator?style=flat-square)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/mercator)](https://artifacthub.io/packages/search?repo=mercator)
 [![OW2 Project](https://img.shields.io/badge/OW2-Mercator-blue)](https://projects.ow2.org/view/mercator/)
 
@@ -18,7 +18,7 @@ Mercator helps you visualize dependencies, identify critical assets, track compl
 Recognized for its practical relevance and adopted by organizations across healthcare, public sector, and critical infrastructure, Mercator is the reference open source tool for information system governance.
 
 📚 [Explore the Documentation](https://sourcentis.github.io/mercator/) |
-🔍 [View the Application Sources](https://github.com/dbarzin/mercator/tree/master/app)
+🔍 [View the Application Sources](https://github.com/sourcentis/mercator/tree/master/app)
 
 📖 _Read this in other languages:_ [French](README.fr.md)
 
@@ -79,29 +79,29 @@ Recognized for its practical relevance and adopted by organizations across healt
 
 For detailed instructions, please refer to the installation guides:
 
-- [Installation on Ubuntu](https://github.com/dbarzin/mercator/blob/master/guides/INSTALL_VM.md)
-- [Installation on RedHat](https://github.com/dbarzin/mercator/blob/master/guides/INSTALL.RedHat.md)
+- [Installation on Ubuntu](https://github.com/sourcentis/mercator/blob/master/guides/INSTALL_VM.md)
+- [Installation on RedHat](https://github.com/sourcentis/mercator/blob/master/guides/INSTALL.RedHat.md)
 
 ### 🐳 Docker Installation
 
 Get up and running quickly using Docker. Run a local instance in development mode:
 
 ```bash
-docker run -it --rm -e USE_DEMO_DATA=1 -p 8080:8080 --name mercator ghcr.io/dbarzin/mercator:latest
+docker run -it --rm -e USE_DEMO_DATA=1 -p 8080:8080 --name mercator ghcr.io/sourcentis/mercator:latest
 ```
 
 If you don't want to use the demo database, the first time you start the Docker you have to seed the database to create
 the admin user :
 
 ```bash
-docker run -it --rm -e SEED_DATABASE=1 -p 8080:8080 --name mercator ghcr.io/dbarzin/mercator:latest
+docker run -it --rm -e SEED_DATABASE=1 -p 8080:8080 --name mercator ghcr.io/sourcentis/mercator:latest
 ```
 
 To persist your data using SQLite:
 
 ```bash
 touch ./db.sqlite && chmod a+w ./db.sqlite
-docker run -it --rm -e APP_ENV=development -p 8080:8080 -v $PWD/db.sqlite:/var/www/mercator/sql/db.sqlite ghcr.io/dbarzin/mercator:latest
+docker run -it --rm -e APP_ENV=development -p 8080:8080 -v $PWD/db.sqlite:/var/www/mercator/sql/db.sqlite ghcr.io/sourcentis/mercator:latest
 ```
 
 Populate the database with demo data:
@@ -112,7 +112,7 @@ docker run -it --rm \
            -p 8080:8080 \
            -v $PWD/db.sqlite:/var/www/mercator/sql/db.sqlite \
            -e USE_DEMO_DATA=1 \
-           ghcr.io/dbarzin/mercator:latest
+           ghcr.io/sourcentis/mercator:latest
 ```
 
 Access your instance at [http://127.0.0.1:8080](http://127.0.0.1:8080).
