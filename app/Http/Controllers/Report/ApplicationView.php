@@ -39,128 +39,75 @@ class ApplicationView extends Controller
             $request->session()->put('application', null);
             $application = null;
         } else {
-            if ($request->applicationBlock != null) {
-                $applicationBlock = intval($request->applicationBlock);
-                $request->session()->put('applicationBlock', $applicationBlock);
-            } else {
-                $applicationBlock = $request->session()->get('applicationBlock');
-            }
+            $applicationBlock = intval($request->applicationBlock);
+            $request->session()->put('applicationBlock', $applicationBlock);
 
             if ($request->application == null) {
                 $request->session()->put('application', null);
                 $application = null;
-            } elseif ($request->application != null) {
+            } else {
                 $application = intval($request->application);
                 $request->session()->put('application', $application);
-            } else {
-                $application = $request->session()->get('application');
             }
         }
 
         $all_applicationBlocks = Cartographer::scopedQuery(ApplicationBlock::query())->orderBy('name')->get();
 
         if ($applicationBlock !== null) {
-            $applicationBlocks = Cartographer::scopedQuery(ApplicationBlock::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applicationBlock) {
-                    return $item->id === $applicationBlock;
-                });
+            $applicationBlocks = Cartographer::scopedQuery(ApplicationBlock::query())
+                ->where('id', $applicationBlock)
+                ->get();
 
-            $applications = Cartographer::scopedQuery(Application::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applicationBlock, $application) {
-                    if ($application !== null) {
-                        return $item->id === $application;
-                    }
+            $all_applications = Cartographer::scopedQuery(Application::query())
+                ->where('application_block_id', $applicationBlock)
+                ->orderBy('name')
+                ->get();
 
-                    return $item->application_block_id = $applicationBlock;
-                });
+            $applications = Cartographer::scopedQuery(Application::query())
+                ->with(['services', 'databases'])
+                ->when($application !== null, fn ($q) => $q->where('id', $application))
+                ->when($application === null, fn ($q) => $q->where('application_block_id', $applicationBlock))
+                ->orderBy('name')
+                ->get();
 
-            $all_applications = Cartographer::scopedQuery(Application::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applicationBlock) {
-                    return $item->application_block_id === $applicationBlock;
-                });
+            $serviceIds = $applications->flatMap(fn ($app) => $app->services->pluck('id'))->unique();
 
-            $applications = Cartographer::scopedQuery(Application::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applicationBlock, $application) {
-                    if ($application === null) {
-                        return $item->application_block_id === $applicationBlock;
-                    }
+            $applicationServices = Cartographer::scopedQuery(ApplicationService::query())
+                ->with(['modules'])
+                ->whereIn('id', $serviceIds)
+                ->orderBy('name')
+                ->get();
 
-                    return $item->id === $application;
-                });
+            $moduleIds = $applicationServices->flatMap(fn ($svc) => $svc->modules->pluck('id'))->unique();
 
-            $applicationServices = Cartographer::scopedQuery(ApplicationService::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applications) {
-                    foreach ($applications as $application) {
-                        foreach ($application->services as $service) {
-                            if ($item->id === $service->id) {
-                                return true;
-                            }
-                        }
-                    }
+            $applicationModules = Cartographer::scopedQuery(ApplicationModule::query())
+                ->whereIn('id', $moduleIds)
+                ->orderBy('name')
+                ->get();
 
-                    return false;
-                });
+            $databaseIds = $applications->flatMap(fn ($app) => $app->databases->pluck('id'))->unique();
 
-            $applicationModules = Cartographer::scopedQuery(ApplicationModule::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applicationServices) {
-                    foreach ($applicationServices as $service) {
-                        foreach ($service->modules as $module) {
-                            if ($item->id === $module->id) {
-                                return true;
-                            }
-                        }
-                    }
+            $databases = Cartographer::scopedQuery(Database::query())
+                ->whereIn('id', $databaseIds)
+                ->orderBy('name')
+                ->get();
 
-                    return false;
-                });
-
-            $databases = Cartographer::scopedQuery(Database::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applications) {
-                    foreach ($applications as $application) {
-                        foreach ($application->databases as $database) {
-                            if ($item->id === $database->id) {
-                                return true;
-                            }
-                        }
-                    }
-
-                    return false;
-                });
-
-            // TODO : improve me
-            $flows = Cartographer::scopedQuery(ApplicationFlow::query())->get()->sortBy('name')
-                ->filter(function ($item) use ($applications, $applicationModules, $databases) {
-                    foreach ($applications as $application) {
-                        if ($item->application_source_id === $application->id) {
-                            return true;
-                        }
-                        if ($item->application_dest_id === $application->id) {
-                            return true;
-                        }
-                    }
-                    foreach ($applicationModules as $module) {
-                        if ($item->module_source_id === $module->id) {
-                            return true;
-                        }
-                        if ($item->module_dest_id === $module->id) {
-                            return true;
-                        }
-                    }
-                    foreach ($databases as $database) {
-                        if ($item->database_source_id === $database->id) {
-                            return true;
-                        }
-                        if ($item->database_dest_id === $database->id) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                });
+            $appIds = $applications->pluck('id');
+            $flows = Cartographer::scopedQuery(ApplicationFlow::query())
+                ->where(function ($q) use ($appIds, $moduleIds, $databaseIds) {
+                    $q->whereIn('application_source_id', $appIds)
+                        ->orWhereIn('application_dest_id', $appIds)
+                        ->orWhereIn('module_source_id', $moduleIds)
+                        ->orWhereIn('module_dest_id', $moduleIds)
+                        ->orWhereIn('database_source_id', $databaseIds)
+                        ->orWhereIn('database_dest_id', $databaseIds);
+                })
+                ->orderBy('name')
+                ->get();
         } else {
             $applicationBlocks = Cartographer::scopedQuery(ApplicationBlock::query())->orderBy('name')->get();
-            $applications = Cartographer::scopedQuery(Application::query())->orderBy('name')->get();
-            $applicationServices = Cartographer::scopedQuery(ApplicationService::query())->orderBy('name')->get();
+            $applications = Cartographer::scopedQuery(Application::query())->with(['services', 'databases'])->orderBy('name')->get();
+            $applicationServices = Cartographer::scopedQuery(ApplicationService::query())->with(['modules'])->orderBy('name')->get();
             $applicationModules = Cartographer::scopedQuery(ApplicationModule::query())->orderBy('name')->get();
             $databases = Cartographer::scopedQuery(Database::query())->orderBy('name')->get();
             $flows = Cartographer::scopedQuery(ApplicationFlow::query())->orderBy('name')->get();
