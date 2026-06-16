@@ -1,9 +1,9 @@
 # Mercator
 
-[![Latest Release](https://img.shields.io/github/release/dbarzin/mercator.svg?style=flat-square)](https://github.com/dbarzin/mercator/releases/latest)
-![License](https://img.shields.io/github/license/dbarzin/mercator.svg?style=flat-square)
-![Contributors](https://img.shields.io/github/contributors/dbarzin/mercator.svg?style=flat-square)
-![Stars](https://img.shields.io/github/stars/dbarzin/mercator?style=flat-square)
+[![Latest Release](https://img.shields.io/github/release/sourcentis/mercator.svg?style=flat-square)](https://github.com/sourcentis/mercator/releases/latest)
+![License](https://img.shields.io/github/license/sourcentis/mercator.svg?style=flat-square)
+![Contributors](https://img.shields.io/github/contributors/sourcentis/mercator.svg?style=flat-square)
+![Stars](https://img.shields.io/github/stars/sourcentis/mercator?style=flat-square)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/mercator)](https://artifacthub.io/packages/search?repo=mercator)
 [![OW2 Project](https://img.shields.io/badge/OW2-Mercator-blue)](https://projects.ow2.org/view/mercator/)
 
@@ -18,7 +18,7 @@ Mercator permet de visualiser les dépendances, d'identifier les actifs critique
 Reconnu pour sa pertinence opérationnelle et adopté par des organisations dans les secteurs de la santé, du secteur public et des infrastructures critiques, Mercator est l'outil Open Source de référence pour la gouvernance des systèmes d'information.
 
 
-📚 [Explorer la Documentation](https://sourcentis.github.io/mercator/) | 🔍 [Voir les Sources de l'Application](https://github.com/dbarzin/mercator/tree/master/app)
+📚 [Explorer la Documentation](https://sourcentis.github.io/mercator/) | 🔍 [Voir les Sources de l'Application](https://github.com/sourcentis/mercator/tree/master/app)
 
 📖 _Lire ceci dans d'autres langues :_ [Anglais](README.md)
 
@@ -68,28 +68,28 @@ Reconnu pour sa pertinence opérationnelle et adopté par des organisations dans
 ### 🔧 Installation Manuelle
 
 Pour des instructions détaillées, veuillez vous référer aux guides d'installation :
-- [Installation sur Ubuntu](https://github.com/dbarzin/mercator/blob/master/guides/INSTALL_VM.fr.md)
-- [Installation sur RedHat](https://github.com/dbarzin/mercator/blob/master/guides/INSTALL.RedHat.fr.md)
+- [Installation sur Ubuntu](https://github.com/sourcentis/mercator/blob/master/guides/INSTALL_VM.fr.md)
+- [Installation sur RedHat](https://github.com/sourcentis/mercator/blob/master/guides/INSTALL.RedHat.fr.md)
 
 ### 🐳 Installation via Docker
 
 Démarrez rapidement avec Docker. Exécutez une instance locale en mode développement avec la base de données de démonstration :
 
 ```bash
-docker run -it --rm -e USE_DEMO_DATA=1 -p 8080:8080 --name mercator ghcr.io/dbarzin/mercator:latest
+docker run -it --rm -e USE_DEMO_DATA=1 -p 8080:8080 --name mercator ghcr.io/sourcentis/mercator:latest
 ```
 
 Si vous ne souhaitez pas utiliser la base de données de démonstration, la première fois que vous démarrez Docker, vous devez initialiser la base de données pour créer l'utilisateur administrateur avec l'option SEED_DATABASE:
 
 ```bash
-docker run -it --rm -e SEED_DATABASE=1 -p 8080:8080 --name mercator ghcr.io/dbarzin/mercator:latest
+docker run -it --rm -e SEED_DATABASE=1 -p 8080:8080 --name mercator ghcr.io/sourcentis/mercator:latest
 ```
 
 Pour rendre vos données persistantes avec SQLite :
 
 ```bash
 touch ./db.sqlite && chmod a+w ./db.sqlite
-docker run -it --rm -e APP_ENV=development -p 8080:8080 -v $PWD/db.sqlite:/var/www/mercator/sql/db.sqlite ghcr.io/dbarzin/mercator:latest
+docker run -it --rm -e APP_ENV=development -p 8080:8080 -v $PWD/db.sqlite:/var/www/mercator/sql/db.sqlite ghcr.io/sourcentis/mercator:latest
 ```
 
 Populez la base de données avec des données de démonstration :
@@ -100,7 +100,7 @@ docker run -it --rm \
            -p 8080:8080 \
            -v $PWD/db.sqlite:/var/www/mercator/sql/db.sqlite \
            -e USE_DEMO_DATA=1 \
-           ghcr.io/dbarzin/mercator:latest
+           ghcr.io/sourcentis/mercator:latest
 ```
 
 Accédez à votre instance via [http://127.0.0.1:8080](http://127.0.0.1:8080).
