@@ -385,7 +385,9 @@
                     filter.length === 0
                     || (filter.includes(targetNode.vue) && edge.edgeType !== 'CABLE' && edge.edgeType !== 'FLUX')
                     || (filter.includes("8") && edge.edgeType === 'CABLE')
-                    || (filter.includes("9") && edge.edgeType === 'FLUX');
+                    || (filter.includes("9") && edge.edgeType === 'FLUX')
+                    || (filter.includes("1") && edge.edgeType === 'FLUX')
+                    || (filter.includes("2") && edge.edgeType === 'FLUX');
 
                 if (passesFilter && nodes.get(targetNode.id) != null) {
                     addEdge(newNode.id, targetNode.id);
@@ -441,6 +443,7 @@
                         || (filter.includes(targetNode.vue) && edge.edgeType !== 'CABLE' && edge.edgeType !== 'FLUX')
                         || (filter.includes("8") && edge.edgeType === 'CABLE')
                         || (filter.includes("9") && edge.edgeType === 'FLUX')
+                        || (filter.includes("1") && edge.edgeType === 'FLUX')
                         || (filter.includes("2") && edge.edgeType === 'FLUX')
                     ) && matchAttr;
 
@@ -462,6 +465,7 @@
                         || neighborEdge.edgeType === 'LINK'
                         || (filter.includes("8") && neighborEdge.edgeType === 'CABLE')
                         || (filter.includes("9") && neighborEdge.edgeType === 'FLUX')
+                        || (filter.includes("1") && neighborEdge.edgeType === 'FLUX')
                         || (filter.includes("2") && neighborEdge.edgeType === 'FLUX');
 
                     if (neighborPassesFilter) {
