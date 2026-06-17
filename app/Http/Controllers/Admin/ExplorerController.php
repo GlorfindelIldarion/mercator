@@ -1748,8 +1748,8 @@ class ExplorerController extends Controller
                 $this->addFluxEdge(
                     null,
                     false,
-                    $this->formatId(Entity::$prefix, $entity->id),
-                    $this->formatId(Entity::$prefix, $entity->parent_entity_id)
+                    $this->formatId(Entity::$prefix, $entity->parent_entity_id),
+                    $this->formatId(Entity::$prefix, $entity->id)
                 );
             }
         }
