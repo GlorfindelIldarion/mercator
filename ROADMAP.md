@@ -10,6 +10,8 @@ Changements prévus en 2026 et plus :
 - [x] Langage de requête pour générer des listes ou des graphes ( https://github.com/dbarzin/mercator/issues/1768 et https://github.com/dbarzin/mercator/discussions/1767 )
 - [x] Cartographes et gestion des utilisateurs https://github.com/sourcentis/mercator/discussions/2322
 - [ ] Lien avec Monarc : générer un modèle d'analyse de risques pour Monarc
+- [ ] Nouvel outil de dessin de la cartographie
+- [ ] Améliorer/Terminer l'éditeur BPMN
 - [ ] Purge de la DB : https://github.com/dbarzin/mercator/discussions/1525
 - [ ] Utiliser un modèle de document pour les rapports
 - [ ] Identifier les chemins critiques
