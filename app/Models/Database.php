@@ -46,6 +46,7 @@ class Database extends Model implements HasIconContract, HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'icon_id',

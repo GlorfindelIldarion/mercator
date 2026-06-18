@@ -33,6 +33,7 @@ class Activity extends Model implements HasPrefix, HasIconContract
     public static string $icon = '/images/activity.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'responsible',

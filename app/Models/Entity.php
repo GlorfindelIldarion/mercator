@@ -47,6 +47,7 @@ class Entity extends Model implements HasIconContract, HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'icon_id',
         'description',

@@ -30,6 +30,7 @@ class Wan extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/wan.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'created_at',
         'updated_at',

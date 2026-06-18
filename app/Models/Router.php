@@ -43,6 +43,7 @@ class Router extends Model implements HasPrefix, HasIconContract
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'description',

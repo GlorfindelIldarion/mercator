@@ -42,6 +42,7 @@ class Phone extends Model implements HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'type',

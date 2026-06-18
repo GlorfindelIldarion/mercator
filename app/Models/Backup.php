@@ -26,6 +26,7 @@ class Backup extends Model implements HasIconContract
     public static string $icon = '/images/backup.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'attributes',

@@ -40,6 +40,7 @@ class Certificate extends Model implements HasPrefix, HasIconContract
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'type',

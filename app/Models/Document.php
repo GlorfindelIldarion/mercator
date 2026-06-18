@@ -26,6 +26,7 @@ class Document extends Model
     ];
 
     protected $fillable = [
+        'ext_refs',
         'filename',
         'mimetype',
         'size',

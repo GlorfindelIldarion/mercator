@@ -45,6 +45,7 @@ class SecurityDevice extends Model implements HasIconContract, HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'address_ip',

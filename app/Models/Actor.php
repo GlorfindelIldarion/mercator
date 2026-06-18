@@ -32,6 +32,7 @@ class Actor extends Model implements HasPrefix, HasIconContract
     public static string $icon = '/images/actor.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'contact',
         'nature',

@@ -43,6 +43,7 @@ class Domain extends Model implements HasPrefix, HasIconContract
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'domain_ctrl_cnt',

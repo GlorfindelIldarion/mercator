@@ -34,6 +34,7 @@ class Process extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/process.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'icon_id',
         'description',

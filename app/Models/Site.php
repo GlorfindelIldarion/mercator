@@ -31,6 +31,7 @@ class Site extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/site.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'icon_id',
         'description',

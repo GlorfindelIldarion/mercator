@@ -43,6 +43,7 @@ class ForestAd extends Model implements HasPrefix, HasIconContract
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'zone_admin_id',

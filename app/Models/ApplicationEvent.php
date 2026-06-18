@@ -21,6 +21,7 @@ class ApplicationEvent extends Model
     ];
 
     protected $fillable = [
+        'ext_refs',
         'user_id',
         'application_id',
         'message',

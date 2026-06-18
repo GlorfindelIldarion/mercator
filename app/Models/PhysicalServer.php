@@ -32,6 +32,7 @@ class PhysicalServer extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/server.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'description',

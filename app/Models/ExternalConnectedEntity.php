@@ -46,6 +46,7 @@ class ExternalConnectedEntity extends Model implements HasIconContract, HasPrefi
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'entity_id',
