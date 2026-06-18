@@ -31,6 +31,7 @@ class MacroProcessus extends Model implements HasPrefix, HasIconContract
     public static string $icon = '/images/macroprocess.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'io_elements',

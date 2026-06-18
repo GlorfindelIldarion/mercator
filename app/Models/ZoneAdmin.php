@@ -28,6 +28,7 @@ class ZoneAdmin extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/zoneadmin.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'created_at',

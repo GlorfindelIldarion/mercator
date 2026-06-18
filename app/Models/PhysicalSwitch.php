@@ -32,6 +32,7 @@ class PhysicalSwitch extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/switch.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'icon_id',

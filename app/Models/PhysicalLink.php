@@ -19,6 +19,7 @@ class PhysicalLink extends Model
     public $table = 'physical_links';
 
     protected $fillable = [
+        'ext_refs',
         'type',
         'color',
         'src_port',

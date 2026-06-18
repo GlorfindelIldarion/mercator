@@ -58,6 +58,7 @@ class ApplicationFlow extends Model implements HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'nature',
         'attributes',

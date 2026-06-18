@@ -30,6 +30,7 @@ class PhysicalRouter extends Model implements HasPrefix
     public static string $icon = '/images/router.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'type',

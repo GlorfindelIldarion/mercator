@@ -32,6 +32,7 @@ class Vlan extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/vlan.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'vlan_id',
         'description',

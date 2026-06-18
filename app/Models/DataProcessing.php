@@ -50,6 +50,7 @@ class DataProcessing extends Model implements HasPrefix, HasIconContract
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'legal_basis',
         'description',

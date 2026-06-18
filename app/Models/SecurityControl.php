@@ -30,6 +30,7 @@ class SecurityControl extends Model
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
     ];

@@ -43,6 +43,7 @@ class WifiTerminal extends Model implements HasIconContract, HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'type',

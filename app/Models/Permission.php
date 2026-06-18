@@ -24,6 +24,7 @@ class Permission extends Model
     ];
 
     protected $fillable = [
+        'ext_refs',
         'title',
         'module',
         'created_at',

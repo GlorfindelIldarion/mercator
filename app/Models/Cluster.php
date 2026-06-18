@@ -45,6 +45,7 @@ class Cluster extends Model implements HasIconContract, HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'attributes',

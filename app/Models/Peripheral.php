@@ -46,6 +46,7 @@ class Peripheral extends Model implements HasIconContract, HasPrefix
     ];
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'domain',
         'type',

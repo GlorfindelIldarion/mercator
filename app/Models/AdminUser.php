@@ -43,6 +43,7 @@ class AdminUser extends Model implements HasPrefix, HasIconContract
     ];
 
     protected $fillable = [
+        'ext_refs',
         'user_id',
         'type',
         'attributes',

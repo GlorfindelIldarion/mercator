@@ -20,6 +20,7 @@ Le registre des activités de traitement contient les informations prévues à l
 | Champ                          | Type         | Description                                                                                                     |
 |:-------------------------------|:-------------|:----------------------------------------------------------------------------------------------------------------|
 | id                             | int unsigned | auto_increment                                                                                                  |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                           | varchar(255) | Nom du traitement                                                                                               |
 | description                    | longtext     | Description du traitement                                                                                       |
 | legal_basis                    | varchar(255) | Base légale du traitement                                                                                       |
@@ -74,6 +75,7 @@ Par défaut cette table est complétée avec les mesures de sécurité de la nor
 | Champ       | Type         | Description              |
 |:------------|:-------------|:-------------------------|
 | id          | int unsigned | auto_increment           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la mesure         |
 | description | longtext     | Description de la mesure |
 | created_at  | timestamp    | Date de création         |
@@ -105,6 +107,7 @@ travers de relations.
 | Champ            | Type         | Description                                   |
 |:-----------------|:-------------|:----------------------------------------------|
 | id               | int unsigned | auto_increment                                |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name             | varchar(255) | Nom de l'entité                               |
 | icon_id          | int unsigned | Référence vers une image spécifique           |
 | entity_type      | varchar(255) | Type d'entité                                 |
@@ -144,6 +147,7 @@ d’information.
 | Champ              | Type         | Description                                      |
 |:-------------------|:-------------|:-------------------------------------------------|
 | id                 | int unsigned | auto_increment                                   |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom de la relation                               |
 | type               | varchar(255) | Type (Nature) de la relation                     |
 | description        | longtext     | Description de la relation                       |
@@ -199,6 +203,7 @@ Les macro-processus représentent des ensembles de processus.
 | Champ              | Type         | Description                    |
 |:-------------------|:-------------|:-------------------------------|
 | id                 | int unsigned | auto_increment                 |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom du macro processus         |
 | description        | longtext     | Description du macro-processus |
 | io_elements        | longtext     | Elements entrant et sortants   |
@@ -233,6 +238,7 @@ celui-ci.
 | Champ              | Type         | Description                         |
 |:-------------------|:-------------|:------------------------------------|
 | id                 | int unsigned | auto_increment                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom du processus                    |
 | description        | longtext     | Description du processus            |
 | icon_id            | int unsigned | Référence vers une image spécifique |
@@ -290,6 +296,7 @@ pas forcément à une structure organisationnelle de l’entreprise.
 | Champ                       | Type         | Description                                      |
 |:----------------------------|:-------------|:-------------------------------------------------|
 | id                          | int unsigned | auto_increment                                   |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                        | varchar(255) | Nom de l'activité                                |
 | description                 | longtext     | Description de l'activité                        |
 | recovery_time_objective     | int signed   | RTO, Temps cible de rétablissement de l'activité |
@@ -344,6 +351,7 @@ Une opération est composée d’acteurs et de tâches.
 | Champ       | Type         | Description                                              |
 |:------------|:-------------|:---------------------------------------------------------|
 | id          | int unsigned | auto_increment                                           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de l'opération                                       |
 | description | longtext     | Description de l'opération                               |
 | process_id  | int unsigned | Référence vers le processus dont fait partie l'opération |
@@ -372,6 +380,7 @@ de travail dans la chaîne de valeur ajoutée d’un processus.
 | Champ       | Type         | Description          |
 |:------------|:-------------|:---------------------|
 | id          | int unsigned | auto_increment       |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la tâche      |
 | description | longtext     | Description de tâche |
 | created_at  | timestamp    | Date de création     |
@@ -394,6 +403,7 @@ décisions dans le cadre des processus. Ce rôle peut être porté par une perso
 | Champ      | Type         | Description                     |
 |:-----------|:-------------|:--------------------------------|
 | id         | int unsigned | auto_increment                  |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name       | varchar(255) | Nom de l'acteur                 |
 | nature     | varchar(255) | Nature de l'acteur              |
 | type       | varchar(255) | Type d'acteur                   |
@@ -420,6 +430,7 @@ Les informations peuvent former des hiérarchies parent-enfant via des liaisons 
 | Champ              | Type         | Description                                          |
 |:-------------------|:-------------|:-----------------------------------------------------|
 | id                 | int unsigned | auto_increment                                       |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom de l'information                                 |
 | description        | longtext     | Description de l'information                         |
 | owner              | varchar(255) | Propriétaire de l'information                        |
@@ -476,6 +487,7 @@ Un bloc applicatif peut être : les applications bureautique, de gestion, d’an
 | Champ       | Type         | Description                    |
 |:------------|:-------------|:-------------------------------|
 | id          | int unsigned | auto_increment                 |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de l'information           |
 | description | longtext     | Description du bloc applicatif |
 | responsible | varchar(255) | Responsable du bloc applicatif |
@@ -502,6 +514,7 @@ a un serveur logique par serveur physique.
 | Champ                | Type         | Description                                                         |
 |:---------------------|:-------------|:--------------------------------------------------------------------|
 | id                   | int unsigned | auto_increment                                                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                 | varchar(255) | Nom de l'application                                                |
 | application_block_id | int unsigned | Lien vers la bloc applicatif                                        |
 | attributes           | varchar(255) | Attributs (tags) d'une application                                  |
@@ -597,6 +610,7 @@ Ils ne sont ni importables, ni exportables à travers l'outil graphique.
 | Champ          | Type         | Description                                         |
 |:---------------|:-------------|:----------------------------------------------------|
 | id             | int unsigned | auto_increment                                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | user_id        | int unsigned | Utilisateur de Mercator ayant renseigné l'évènement |
 | application_id | int unsigned | Référence vers l'application ayant subi l'évènement |
 | message        | longtext     | Description de l'évènement                          |
@@ -617,6 +631,7 @@ Un service applicatif peut, par exemple, être un service dans le nuage (Cloud).
 | Champ        | Type         | Description                         |
 |:-------------|:-------------|:------------------------------------|
 | id           | int unsigned | auto_increment                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name         | varchar(255) | Nom du service applicatif           |
 | description  | longtext     | Description du service applicatif   |
 | exposition   | varchar(255) | Exposition du service applicatif    |
@@ -647,6 +662,7 @@ d’informatique et une homogénéité technologique.
 | Champ                | Type         | Description                                  |
 |:---------------------|:-------------|:---------------------------------------------|
 | id                   | int unsigned | auto_increment                               |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                 | varchar(255) | Nom du service applicatif                    |
 | description          | longtext     | Description du module applicatif             |
 | application_services | List int [,] | Liens vers les IDs des applications-services |
@@ -671,6 +687,7 @@ Une base de données est un ensemble structuré et ordonné d’informations des
 | Champ              | Type         | Description                               |
 |:-------------------|:-------------|:------------------------------------------|
 | id                 | int unsigned | auto_increment                            |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom de la base de données                 |
 | description        | longtext     | Description de la base de données         |
 | type               | varchar(255) | Type de technologie de la base de données |
@@ -720,6 +737,7 @@ Par exemple, les requêtes DNS ou NTP ne devraient pas être représentées comm
 | Champ                                             | Type         | Description                               |
 |:--------------------------------------------------|:-------------|:------------------------------------------|
 | id                                                | int unsigned | auto_increment                            |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                                              | varchar(255) | Nom du flux                               |
 | attributes                                        | varchar(255) | Attributs (tags) du flux                  |
 | description                                       | longtext     | Description du flux                       |
@@ -770,6 +788,7 @@ LDAP.
 | Champ       | Type         | Description            |
 |:------------|:-------------|:-----------------------|
 | id          | int unsigned | auto_increment         |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la zone         |
 | description | longtext     | Description de la zone |
 | created_at  | timestamp    | Date de création       |
@@ -791,6 +810,7 @@ comme Mercator.
 | Champ         | Type         | Description                             |
 |:--------------|:-------------|:----------------------------------------|
 | id            | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name          | varchar(255) | Nom de l'annuaire                       |
 | description   | longtext     | Description de l'annuaire               |
 | solution      | varchar(255) | Solution technique                      |
@@ -810,6 +830,7 @@ Ces objets représentent un regroupement organisé de domaines Active Directory 
 | Champ         | Type         | Description                                                        |
 |:--------------|:-------------|:-------------------------------------------------------------------|
 | id            | int unsigned | auto_increment                                                     |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name          | varchar(255) | Nom de la forêt Active Directory ou de l'arborescence LDAP         |
 | description   | longtext     | Description de la forêt Active Directory ou de l'arborescence LDAP |
 | zone_admin_id | int unsigned | Référence vers la zone d'administration                            |
@@ -834,6 +855,7 @@ GPO, par exemple) ainsi que les droits des objets.
 | Champ                 | Type         | Description                              |
 |:----------------------|:-------------|:-----------------------------------------|
 | id                    | int unsigned | auto_increment                           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                  | varchar(255) | Nom du domaine AD / LDAP                 |
 | description           | longtext     | Description du domaine                   |
 | domain_ctrl_cnt       | int signed   | Nombre de contrôleurs de domaine         |
@@ -860,6 +882,7 @@ Les utilisateurs représentent les comptes ayant des droits privilégiés sur le
 | Champ       | Type         | Description                                    |
 |:------------|:-------------|:-----------------------------------------------|
 | id          | int unsigned | auto_increment                                 |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | user_id     | varchar(255) | ID unique / matricule / autre d'un utilisateur | 
 | firstname   | varchar(255) | Prénom d'un utilisateur                        |
 | lastname    | varchar(255) | Nom d'un utilisateur                           |
@@ -897,6 +920,7 @@ Les réseaux sont un ensemble d’équipements reliés logiquement entre eux et 
 | Champ              | Type         | Description                   |
 |:-------------------|:-------------|:------------------------------|
 | id                 | int unsigned | auto_increment                |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom du réseau                 |
 | description        | longtext     | Description du réseau         |
 | protocol_type      | varchar(255) | Protocoles utilisés           |
@@ -926,6 +950,7 @@ Les sous-réseaux sont une subdivision logique d’un réseau de taille plus imp
 | Champ                | Type         | Description                         |
 |:---------------------|:-------------|:------------------------------------|
 | id                   | int unsigned | auto_increment                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                 | varchar(255) | Nom du réseau                       |
 | description          | longtext     | Description du réseau               |
 | network_id           | int unsigned | Lien vers le réseau associé         |
@@ -957,6 +982,7 @@ Les passerelles sont des composants permettant de relier un réseau local avec l
 | Champ            | Type         | Description                                       |
 |:-----------------|:-------------|:--------------------------------------------------|
 | id               | int unsigned | auto_increment                                    |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name             | varchar(255) | Nom de la passerelle                              |
 | description      | longtext     | Description de la passerelle                      |
 | ip               | varchar(255) | Adresse(s) IP publique et privée de la passerelle |
@@ -978,6 +1004,7 @@ Les entités extérieures connectées représentent les entités externes connec
 | Champ       | Type         | Description                                           |
 |:------------|:-------------|:------------------------------------------------------|
 | id          | int unsigned | auto_increment                                        |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de l'entité                                       |
 | type        | varchar(255) | Type de connexion                                     |
 | description | longtext     | Raison de la connexion de l'entité                    |
@@ -1010,6 +1037,7 @@ Les commutateurs réseau sont les composants gérant les connexions entre les di
 | Champ             | Type         | Description                               |
 |:------------------|:-------------|:------------------------------------------|
 | id                | int unsigned | auto_increment                            |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name              | varchar(255) | Nom du commutateur                        |
 | description       | longtext     | Description du commutateur                |
 | ip                | varchar(255) | Adresse IP du commutateur                 |
@@ -1033,6 +1061,7 @@ Les routeurs logiques sont des composants logiques gérant les connexions entre 
 | Champ        | Type         | Description              |
 |:-------------|:-------------|:-------------------------|
 | id           | int unsigned | auto_increment           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name         | varchar(255) | Nom du routeur           |
 | type         | varchar(255) | Type du routeur          |
 | ip_addresses | text         | Adresse(s) IP du routeur |
@@ -1061,6 +1090,7 @@ systèmes de prévention d'intrusion (ou IPS : Intrusion Prevention System), des
 | Champ       | Type         | Description                             |
 |:------------|:-------------|:----------------------------------------|
 | id          | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de l'équipement                     |
 | type        | varchar(255) | Type de l'équipement                    |
 | attributes  | varchar(255) | Attributs de l'équipement               |
@@ -1098,6 +1128,7 @@ Les serveurs DHCP sont des équipements physiques ou virtuels permettant la gest
 | Champ       | Type         | Description              |
 |:------------|:-------------|:-------------------------|
 | id          | int unsigned | auto_increment           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du serveur           |
 | description | longtext     | Description du serveur   |
 | address_ip  | varchar(255) | Adresse(s) IP du serveur |
@@ -1122,6 +1153,7 @@ la conversion d’un nom de domaine en adresse IP.
 | Champ       | Type         | Description              |
 |:------------|:-------------|:-------------------------|
 | id          | int unsigned | auto_increment           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du serveur           |
 | description | longtext     | Description du serveur   |
 | address_ip  | varchar(255) | Adresse(s) IP du serveur |
@@ -1140,6 +1172,7 @@ Les clusters représentent un ensemble de serveurs logiques hébergés sur un ou
 | Champ       | Type         | Description                         |
 |:------------|:-------------|:------------------------------------|
 | id          | int unsigned | auto_increment                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du serveur                      |
 | icon_id     | int unsigned | Référence vers une image spécifique |
 | type        | varchar(255) | Type de cluster                     |
@@ -1168,6 +1201,7 @@ est découpé en un seul serveur logique.
 | Champ              | Type         | Description                                       |
 |:-------------------|:-------------|:--------------------------------------------------|
 | id                 | int unsigned | auto_increment                                    |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom du serveur                                    |
 | icon_id            | int unsigned | Référence vers une image spécifique               |
 | type               | varchar(255) | Type du serveur (appli, DB, etc.)                 |
@@ -1240,6 +1274,7 @@ Cette table constitue la base de référence permettant d’auditer la conformit
 | Champ             | Type              | Description |
 |-------------------|-------------------|-------------|
 | **id**            | int unsigned      | Identifiant unique du plan de sauvegarde (auto‑increment). |
+| **ext_refs**      | varchar(255)      | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | **logical_server_id** | int unsigned | Identifiant du **serveur logique** concerné par la stratégie de sauvegarde. |
 | **storage_device_id** | int unsigned | Identifiant de l’**infrastructure de stockage** utilisée pour recevoir la sauvegarde. |
 | **backup_frequency**  | tinyint unsigned  | Fréquence de sauvegarde. Valeur codée (ex. : horaire, quotidienne, hebdomadaire, mensuelle). |
@@ -1281,6 +1316,7 @@ sur des serveurs logiques internes ou externes (cloud).
 | Champ       | Type         | Description                                  |
 |:------------|:-------------|:---------------------------------------------|
 | id          | int unsigned | auto_increment                               |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du conteneur                             |
 | description | longtext     | Description du conteneur                     |
 | type        | varchar(255) | Type du conteneur (docker, Kubernetes, etc.) |
@@ -1311,6 +1347,7 @@ Principe général :
 | Champ                                                  | Type         | Description                                   |
 |:-------------------------------------------------------|:-------------|:----------------------------------------------|
 | id                                                     | int unsigned | auto_increment                                |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                                                   | varchar(255) | Nom du flux logique                           |
 | description                                            | text         | Description du flux logique                   |
 | chain                                                  | varchar(255) | INPUT / OUTPUT / FORWARD                      |
@@ -1360,6 +1397,7 @@ applications.
 | Champ             | Type         | Description                                     |
 |:------------------|:-------------|:------------------------------------------------|
 | id                | int unsigned | auto_increment                                  |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name              | varchar(255) | Nom du certificat                               |
 | description       | longtext     | Description du certificat                       |
 | type              | varchar(255) | Type de certificat (SSL, HTTPS ...)             |
@@ -1393,6 +1431,7 @@ en s’affranchissant des contraintes physiques.
 | Champ       | Type         | Description         |
 |:------------|:-------------|:--------------------|
 | id          | int unsigned | auto_increment      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du VLAN         |
 | description | varchar(255) | Description du VLAN |
 | vlan_id     | int signed   | Numéro du VLAN      |
@@ -1427,6 +1466,7 @@ Les sites sont des emplacements géographiques rassemblant un ensemble de person
 | Champ       | Type         | Description                         |
 |:------------|:-------------|:------------------------------------|
 | id          | int unsigned | auto_increment                      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du site                         |
 | icon_id     | int unsigned | Référence vers une image spécifique |
 | description | longtext     | Description du site                 |
@@ -1447,6 +1487,7 @@ Les bâtiments ou salles représentent la localisation des personnes ou ressourc
 | Champ       | Type         | Description                                          |
 |:------------|:-------------|:-----------------------------------------------------|
 | id          | int unsigned | auto_increment                                       |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du site                                          |
 | icon_id     | int unsigned | Référence vers une image spécifique                  |
 | type        | varchar(255) | Type de salle / bâtiment                             |
@@ -1472,6 +1513,7 @@ Les baies sont des armoires techniques rassemblant des équipements de réseau i
 | Champ       | Type         | Description                        |
 |:------------|:-------------|:-----------------------------------|
 | id          | int unsigned | auto_increment                     |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la baie                     |
 | description | longtext     | Description de la baie             |
 | room_id     | int unsigned | Référence vers le building / salle |
@@ -1492,6 +1534,7 @@ Une zone est un espace physiquement sécurisé, accessible uniquement avec une a
 | Champ       | Type         | Description                  |
 |:------------|:-------------|:------------------------|
 | id          | int unsigned | auto_increment          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la zone          |
 | description | longtext     | Description de la zone  |
 | type        | varchar(255) | Type de la zone         |
@@ -1514,6 +1557,7 @@ Les serveurs physiques sont des machines physiques exécutant un ensemble de ser
 | Champ            | Type         | Description                                          |
 |:-----------------|:-------------|:-----------------------------------------------------|
 | id               | int unsigned | auto_increment                                       |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name             | varchar(255) | Nom du serveur                                       |
 | icon_id          | int unsigned | Référence vers une image spécifique                  |
 | description      | longtext     | Description du serveur                               |
@@ -1567,6 +1611,7 @@ Les postes de travail sont des machines physiques permettant à un utilisateur d
 | Champ             | Type         | Description                                                     |
 |:------------------|:-------------|:----------------------------------------------------------------|
 | id                | int unsigned | auto_increment                                                  |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name              | varchar(255) | Nom du poste de travail                                         |
 | icon_id           | int unsigned | Référence vers une image spécifique                             |
 | status            | varchar(255) | Status du poste (cycle de vie, incident)                         |
@@ -1637,6 +1682,7 @@ réseau (NAS), réseau de stockage (SAN), disque dur…
 | Champ       | Type         | Description                                 |
 |:------------|:-------------|:--------------------------------------------|
 | id          | int unsigned | auto_increment                              |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de l'infrastructure de stockage         |
 | type        | varchar(255) | Type de l’infrastructure de stockage        |
 | description | longtext     | Description de l'infrastructure de stockage |
@@ -1665,6 +1711,7 @@ fonctionnalités (ex. : clavier, souris, imprimante, scanner, etc.)
 | Champ       | Type         | Description                                        |
 |:------------|:-------------|:---------------------------------------------------|
 | id          | int unsigned | auto_increment                                     |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du périphérique                                |
 | description | longtext     | Description du périphérique                        |
 | type        | varchar(255) | Type / modèle du périphérique                      |
@@ -1697,6 +1744,7 @@ Les téléphones fixes ou portables appartenant à l’organisation.
 | Champ              | Type         | Description                             |
 |:-------------------|:-------------|:----------------------------------------|
 | id                 | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom du téléphone                        |
 | description        | longtext     | Description du téléphone                |
 | vendor             | varchar(255) | Vendeur / éditeur pour recherche CPE    |
@@ -1727,6 +1775,7 @@ d’un réseau.
 | Champ       | Type         | Description                             |
 |:------------|:-------------|:----------------------------------------|
 | id          | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du commutateur physique             |
 | description | longtext     | Description du commutateur physique     |
 | vendor      | varchar(255) | Vendeur / éditeur pour recherche CPE    |
@@ -1758,6 +1807,7 @@ Les routeurs physiques sont des composants physiques gérant les connexions entr
 | Champ       | Type         | Description                             |
 |:------------|:-------------|:----------------------------------------|
 | id          | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du routeur physique                 |
 | description | longtext     | Description du routeur physique         |
 | vendor      | varchar(255) | Vendeur / éditeur pour recherche CPE    |
@@ -1789,6 +1839,7 @@ Les bornes WiFi sont des équipements matériel permettant l’accès au réseau
 | Champ       | Type         | Description                             |
 |:------------|:-------------|:----------------------------------------|
 | id          | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la borne wifi                    |
 | description | longtext     | Description de la bornes wifi           |
 | vendor      | varchar(255) | Vendeur / éditeur pour recherche CPE    |
@@ -1818,6 +1869,7 @@ Les équipements de sécurité physique sont des sondes de températures, des ca
 | Champ            | Type         | Description                                                    |
 |:-----------------|:-------------|:---------------------------------------------------------------|
 | id               | int unsigned | auto_increment                                                 |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name             | varchar(255) | Nom de l'équipement de sécurité                                |
 | icon_id          | int unsigned | Référence vers une image spécifique                            |
 | description      | longtext     | Description de l'équipement de sécurité                        |
@@ -1854,6 +1906,7 @@ Principe général :
 | Champ           | Type         | Description                             |
 |:----------------|:-------------|:----------------------------------------|
 | id              | int unsigned | auto_increment                          |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | *device*_src_id | int unsigned | Actif source                            |
 | src_id          | varchar(255) | Port physique de l'actif source         |
 | *device*_dst_id | int unsigned | Actif de destination                    |
@@ -1891,6 +1944,7 @@ interconnectent généralement des MAN ou LAN entre eux.
 | Champ      | Type         | Description         |
 |:-----------|:-------------|:--------------------|
 | id         | int unsigned | auto_increment      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name       | varchar(255) | Nom du WAN          |
 | lans       | List int [,] | Liste des id de(s) LANs associés |
 | mans       | List int [,] | Liste des id de(s) MANs associés |
@@ -1913,6 +1967,7 @@ importantes. Ils interconnectent généralement des LAN entre eux.
 | Champ      | Type         | Description         |
 |:-----------|:-------------|:--------------------|
 | id         | int unsigned | auto_increment      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name       | varchar(255) | Nom du MAN          |
 | parent_man_id | int unsigned | ID du MAN parent de celui ci  |
 | created_at | timestamp    | Date de création    |
@@ -1934,6 +1989,7 @@ Les LAN (Local Area Network) sont des réseaux informatiques reliant des équipe
 | Champ       | Type         | Description         |
 |:------------|:-------------|:--------------------|
 | id          | int unsigned | auto_increment      |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du LAN          |
 | description | varchar(255) | Description du LAN  |
 | mans        | List int [,] | Liste des id de(s) MANs associés |
@@ -1960,6 +2016,7 @@ Cette partie permet de voir les documents attachés, mais aussi les icônes pers
 | Champ      | Type         | Description                              |
 |:-----------|:-------------|:-----------------------------------------|
 | id         | int unsigned | auto_increment                           |
+| ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | filename   | varchar(255) | Nom du document avec son extension       |
 | mimetype   | varchar(255) | Type du document. Rempli automatiquement |
 | size       | int unsigned | Remplie automatiquement                  |
@@ -2058,6 +2115,7 @@ Cette partie permet de voir la liste des permissions qui peuvent être affectée
 | Champ      | Type             | Description          |
 |------------|------------------|----------------------|
 | id         | int(10) unsigned | auto_increment       |
+| ext_refs | varchar(255)     | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | title      | varchar(255)     | Titre du role        |
 | module     | varchar(255)     |                      |
 | created_at | timestamp        | Date de création     |

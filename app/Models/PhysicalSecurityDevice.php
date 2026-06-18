@@ -32,6 +32,7 @@ class PhysicalSecurityDevice extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/security.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'attributes',

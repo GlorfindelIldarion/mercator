@@ -32,6 +32,7 @@ class Task extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/task.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'description',
         'created_at',

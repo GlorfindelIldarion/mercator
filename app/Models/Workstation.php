@@ -33,6 +33,7 @@ class Workstation extends Model implements HasIconContract, HasPrefix
     public static string $icon = '/images/workstation.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'icon_id',

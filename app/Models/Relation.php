@@ -31,6 +31,7 @@ class Relation extends Model implements HasPrefix, HasIconContract
     public static string $icon = '/images/relation.png';
 
     protected $fillable = [
+        'ext_refs',
         'name',
         'type',
         'description',
