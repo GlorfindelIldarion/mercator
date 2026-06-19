@@ -111,11 +111,10 @@ class UserController extends APIController
 
     public function massUpdate(MassUpdateUserRequest $request)
     {
-        $data      = $request->validated();
         $userModel = new User();
         $fillable  = $userModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id    = $rawItem['id'];
             $roles = $rawItem['roles'] ?? null;
 

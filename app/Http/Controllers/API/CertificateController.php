@@ -120,11 +120,10 @@ class CertificateController extends APIController
     public function massUpdate(MassUpdateCertificateRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data            = $request->validated();
         $certificateModel = new Certificate();
         $fillable        = $certificateModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id             = $rawItem['id'];
             $logicalServers = $rawItem['logical_servers'] ?? null;
             $applications   = $rawItem['applications'] ?? null;

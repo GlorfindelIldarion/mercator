@@ -97,11 +97,10 @@ class RelationController extends APIController
     public function massUpdate(MassUpdateRelationRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `relation_edit`
-        $data          = $request->validated();
         $relationModel = new Relation();
         $fillable      = $relationModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Relation $relation */

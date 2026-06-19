@@ -98,11 +98,10 @@ class StorageDeviceController extends APIController
     public function massUpdate(MassUpdateStorageDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `storage_device_edit`
-        $data              = $request->validated();
         $storageDeviceModel = new StorageDevice();
         $fillable           = $storageDeviceModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var StorageDevice $storageDevice */

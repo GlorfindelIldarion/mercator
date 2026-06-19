@@ -162,11 +162,10 @@ class ProcessController extends APIController
     public function massUpdate(MassUpdateProcessRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `process_edit`
-        $data        = $request->validated();
         $processModel = new Process();
         $fillable     = $processModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id           = $rawItem['id'];
             $activities   = $rawItem['activities'] ?? null;
             $entities     = $rawItem['entities'] ?? null;

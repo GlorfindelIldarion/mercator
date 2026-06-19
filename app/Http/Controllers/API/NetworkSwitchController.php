@@ -161,11 +161,10 @@ class NetworkSwitchController extends APIController
     public function massUpdate(MassUpdateNetworkSwitchRequest $request)
     {
         // authorize() in the FormRequest already checks `network_switch_edit`
-        $data              = $request->validated();
         $networkSwitchModel = new NetworkSwitch();
         $fillable           = $networkSwitchModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id               = $rawItem['id'];
             $physicalSwitches = $rawItem['physical_switches'] ?? null;
             $vlans            = $rawItem['vlans'] ?? null;

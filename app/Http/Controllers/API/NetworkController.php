@@ -100,11 +100,10 @@ class NetworkController extends APIController
     public function massUpdate(MassUpdateNetworkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('network_edit')
-        $data    = $request->validated();
         $model   = new Network();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Network $network */

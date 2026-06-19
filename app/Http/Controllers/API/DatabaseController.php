@@ -140,11 +140,10 @@ class DatabaseController extends APIController
     public function massUpdate(MassUpdateDatabaseRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('database_edit')
-        $data     = $request->validated();
         $model    = new Database();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id             = $rawItem['id'];
             $entities       = $rawItem['entities'] ?? null;
             $informations   = $rawItem['informations'] ?? null;

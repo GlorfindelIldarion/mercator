@@ -111,11 +111,10 @@ class PeripheralController extends APIController
     public function massUpdate(MassUpdatePeripheralRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('peripheral_edit')
-        $data           = $request->validated();
         $peripheralModel = new Peripheral();
         $fillable        = $peripheralModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id           = $rawItem['id'];
             $applications = $rawItem['applications'] ?? null;
 

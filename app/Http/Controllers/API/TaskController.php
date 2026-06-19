@@ -98,11 +98,10 @@ class TaskController extends APIController
     public function massUpdate(MassUpdateTaskRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `task_edit`
-        $data      = $request->validated();
         $taskModel = new Task();
         $fillable  = $taskModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Task $task */

@@ -123,11 +123,10 @@ class ApplicationBlockController extends APIController
     public function massUpdate(MassUpdateApplicationBlockRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('application_block_edit')
-        $data     = $request->validated();
         $model    = new ApplicationBlock();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id           = $rawItem['id'];
             $applications = $rawItem['applications'] ?? null;
 

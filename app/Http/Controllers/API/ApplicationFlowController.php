@@ -93,11 +93,10 @@ class ApplicationFlowController extends APIController
 
     public function massUpdate(MassUpdateApplicationFlowRequest $request)
     {
-        $data     = $request->validated();
         $model    = new ApplicationFlow();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var ApplicationFlow $flow */

@@ -121,11 +121,10 @@ class ClusterController extends APIController
     public function massUpdate(MassUpdateClusterRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_server_edit')
-        $data     = $request->validated();
         $model    = new Cluster();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Cluster $cluster */

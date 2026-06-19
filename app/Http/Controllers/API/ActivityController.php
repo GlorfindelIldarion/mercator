@@ -85,9 +85,7 @@ class ActivityController extends APIController
     {
         abort_if(Gate::denies('activity_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $data = $request->validated();
-
-        $this->massUpdateItems($data['items']);
+        $this->massUpdateItems($request->input('items', []));
 
         return response()->json([
             'status' => 'ok',

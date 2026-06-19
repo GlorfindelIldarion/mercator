@@ -109,11 +109,10 @@ class SecurityDeviceController extends APIController
     public function massUpdate(MassUpdateSecurityDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `security_device_edit`
-        $data               = $request->validated();
         $securityDeviceModel = new SecurityDevice();
         $fillable            = $securityDeviceModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var SecurityDevice $securityDevice */

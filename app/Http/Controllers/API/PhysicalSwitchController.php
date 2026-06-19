@@ -103,11 +103,10 @@ class PhysicalSwitchController extends APIController
     public function massUpdate(MassUpdatePhysicalSwitchRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_switch_edit`
-        $data               = $request->validated();
         $physicalSwitchModel = new PhysicalSwitch();
         $fillable            = $physicalSwitchModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var PhysicalSwitch $physicalSwitch */

@@ -98,11 +98,10 @@ class SecurityControlController extends APIController
     public function massUpdate(MassUpdateSecurityControlRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `security_control_edit`
-        $data                = $request->validated();
         $securityControlModel = new SecurityControl();
         $fillable             = $securityControlModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var SecurityControl $securityControl */

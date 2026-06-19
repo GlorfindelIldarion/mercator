@@ -113,11 +113,10 @@ class DomainController extends APIController
     public function massUpdate(MassUpdateDomainRequest $request)
     {
         // L’authorize() du FormRequest gère déjà domain_edit
-        $data     = $request->validated();
         $model    = new Domain();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id        = $rawItem['id'];
             $forestAds = $rawItem['forestAds'] ?? null;
 

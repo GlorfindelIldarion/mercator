@@ -108,11 +108,10 @@ class ApplicationModuleController extends APIController
     public function massUpdate(MassUpdateApplicationModuleRequest $request)
     {
         // L’authorize() du FormRequest gère déjà l’appel Gate::denies('application_module_edit')
-        $data     = $request->validated();
         $model    = new ApplicationModule();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var ApplicationModule $applicationModule */

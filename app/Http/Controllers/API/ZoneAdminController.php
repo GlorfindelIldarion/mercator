@@ -94,10 +94,9 @@ class ZoneAdminController extends APIController
     public function massUpdate(MassUpdateZoneAdminRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data     = $request->validated();
         $fillable = (new ZoneAdmin())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var ZoneAdmin $zoneAdmin */

@@ -101,10 +101,9 @@ class BackupController extends APIController
 
     public function massUpdate(MassUpdateBackupRequest $request)
     {
-        $data       = $request->validated();
         $fillable   = (new Backup())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $backup = Backup::query()->findOrFail($rawItem['id']);
             $backup->update(collect($rawItem)->only($fillable)->all());
         }

@@ -97,11 +97,10 @@ class AdminUserController extends APIController
     public function massUpdate(MassUpdateAdminUserRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('admin_user_edit')
-        $data      = $request->validated();
         $userModel = new AdminUser();
         $fillable  = $userModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var AdminUser $adminUser */

@@ -100,11 +100,10 @@ class ForestAdController extends APIController
 
     public function massUpdate(MassUpdateForestAdRequest $request)
     {
-        $data     = $request->validated();
         $model    = new ForestAd();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var ForestAd $forestAd */

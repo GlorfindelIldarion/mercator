@@ -129,11 +129,10 @@ class LanController extends APIController
     public function massUpdate(MassUpdateLanRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('lan_edit')
-        $data    = $request->validated();
         $lanModel = new Lan();
         $fillable = $lanModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id   = $rawItem['id'];
             $mans = $rawItem['mans'] ?? null;
             $wans = $rawItem['wans'] ?? null;

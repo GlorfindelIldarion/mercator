@@ -103,11 +103,10 @@ class LogicalFlowController extends APIController
     public function massUpdate(MassUpdateLogicalFlowRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_flow_edit')
-        $data            = $request->validated();
         $logicalFlowModel = new LogicalFlow();
         $fillable         = $logicalFlowModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var LogicalFlow $logicalFlow */

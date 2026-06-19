@@ -98,11 +98,10 @@ class SubnetworkController extends APIController
     public function massUpdate(MassUpdateSubnetworkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `subnetwork_edit`
-        $data           = $request->validated();
         $subnetworkModel = new Subnetwork();
         $fillable        = $subnetworkModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Subnetwork $subnetwork */

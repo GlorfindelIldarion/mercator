@@ -142,11 +142,10 @@ class LogicalServerController extends APIController
     public function massUpdate(MassUpdateLogicalServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_server_edit')
-        $data               = $request->validated();
         $logicalServerModel = new LogicalServer();
         $fillable           = $logicalServerModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id              = $rawItem['id'];
             $physicalServers = $rawItem['physicalServers'] ?? null;
             $applications    = $rawItem['applications'] ?? null;

@@ -150,10 +150,9 @@ class ZoneController extends APIController
 
     public function massUpdate(MassUpdateZoneRequest $request)
     {
-        $data     = $request->validated();
         $fillable = (new Zone())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id          = $rawItem['id'];
             $parentZones = $rawItem['parentZones'] ?? null;
             $childZones  = $rawItem['childZones']  ?? null;

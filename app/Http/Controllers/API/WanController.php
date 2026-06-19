@@ -107,10 +107,9 @@ class WanController extends APIController
     public function massUpdate(MassUpdateWanRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data     = $request->validated();
         $fillable = (new Wan())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Wan $wan */

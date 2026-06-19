@@ -118,11 +118,10 @@ class GatewayController extends APIController
     public function massUpdate(MassUpdateGatewayRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('gateway_edit')
-        $data        = $request->validated();
         $gatewayModel = new Gateway();
         $fillable     = $gatewayModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id          = $rawItem['id'];
             $subnetworks = $rawItem['subnetworks'] ?? null;
 

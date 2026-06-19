@@ -94,10 +94,9 @@ class BayController extends APIController
     public function massUpdate(MassUpdateBayRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data     = $request->validated();
         $fillable = (new Bay())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Bay $bay */

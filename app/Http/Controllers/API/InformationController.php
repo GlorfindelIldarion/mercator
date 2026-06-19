@@ -120,11 +120,10 @@ class InformationController extends APIController
     public function massUpdate(MassUpdateInformationRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('information_edit')
-        $data            = $request->validated();
         $informationModel = new Information();
         $fillable         = $informationModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id        = $rawItem['id'];
             $processes = $rawItem['processes'] ?? null;
 

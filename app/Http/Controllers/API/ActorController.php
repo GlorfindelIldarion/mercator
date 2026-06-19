@@ -81,9 +81,7 @@ class ActorController extends APIController
 
     public function massUpdate(MassUpdateActorRequest $request)
     {
-        $data = $request->validated();
-
-        $this->massUpdateItems($data['items']);
+        $this->massUpdateItems($request->input('items', []));
 
         return response()->json([
             'status' => 'ok',

@@ -115,11 +115,10 @@ class ExternalConnectedEntityController extends APIController
     public function massUpdate(MassUpdateExternalConnectedEntityRequest $request)
     {
         // L’authorize() du FormRequest gère déjà external_connected_entity_edit
-        $data     = $request->validated();
         $model    = new ExternalConnectedEntity();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
             // $roles = $rawItem['roles'] ?? null;
 

@@ -99,11 +99,10 @@ class PermissionController extends APIController
     public function massUpdate(MassUpdatePermissionRequest $request)
     {
         // authorize() in the FormRequest already checks `permission_edit`
-        $data           = $request->validated();
         $permissionModel = new Permission();
         $fillable        = $permissionModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Permission $permission */

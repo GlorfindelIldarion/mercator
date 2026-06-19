@@ -118,11 +118,10 @@ class ApplicationServiceController extends APIController
     public function massUpdate(MassUpdateApplicationServiceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà l’appel Gate::denies('application_service_edit')
-        $data     = $request->validated();
         $model    = new ApplicationService();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id           = $rawItem['id'];
             $modules      = $rawItem['modules'] ?? null;
             $applications = $rawItem['applications'] ?? null;

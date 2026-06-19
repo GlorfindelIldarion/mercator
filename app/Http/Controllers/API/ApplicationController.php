@@ -170,11 +170,10 @@ class ApplicationController extends APIController
     public function massUpdate(MassUpdateApplicationRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('application_edit')
-        $data    = $request->validated();
         $model   = new Application();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id                 = $rawItem['id'];
             $entities           = $rawItem['entities'] ?? null;
             $processes          = $rawItem['processes'] ?? null;

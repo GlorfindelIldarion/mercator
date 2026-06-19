@@ -97,7 +97,7 @@ class CartographerController extends APIController
     public function massUpdate(MassUpdateCartographerRequest $request): JsonResponse
     {
         // L'authorize() du FormRequest gère déjà la permission `cartographer_edit`
-        foreach ($request->validated()['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $cartographer = Cartographer::query()->findOrFail($item['id']);
 
             $attributes = collect($item)

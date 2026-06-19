@@ -98,11 +98,10 @@ class ManController extends APIController
     public function massUpdate(MassUpdateManRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('man_edit')
-        $data    = $request->validated();
         $manModel = new Man();
         $fillable = $manModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Man $man */

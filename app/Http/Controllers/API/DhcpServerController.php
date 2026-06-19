@@ -109,11 +109,10 @@ class DhcpServerController extends APIController
     public function massUpdate(MassUpdateDhcpServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà dhcp_server_edit
-        $data     = $request->validated();
         $model    = new DhcpServer();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
             // $roles = $rawItem['roles'] ?? null;
 

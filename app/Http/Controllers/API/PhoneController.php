@@ -98,11 +98,10 @@ class PhoneController extends APIController
     public function massUpdate(MassUpdatePhoneRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `phone_edit`
-        $data      = $request->validated();
         $phoneModel = new Phone();
         $fillable   = $phoneModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Phone $phone */

@@ -110,11 +110,10 @@ class RouterController extends APIController
     public function massUpdate(MassUpdateRouterRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `router_edit`
-        $data       = $request->validated();
         $routerModel = new Router();
         $fillable    = $routerModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id              = $rawItem['id'];
             $physicalRouters = $rawItem['physicalRouters'] ?? null;
 

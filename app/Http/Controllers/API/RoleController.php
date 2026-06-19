@@ -103,11 +103,10 @@ class RoleController extends APIController
     public function massUpdate(MassUpdateRoleRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `role_edit`
-        $data     = $request->validated();
         $roleModel = new Role();
         $fillable  = $roleModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Role $role */

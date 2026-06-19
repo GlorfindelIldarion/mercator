@@ -112,11 +112,10 @@ class EntityController extends APIController
     public function massUpdate(MassUpdateEntityRequest $request)
     {
         // L’authorize() du FormRequest gère déjà entity_edit
-        $data     = $request->validated();
         $model    = new Entity();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id        = $rawItem['id'];
             $processes = $rawItem['processes'] ?? null;
 

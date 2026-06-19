@@ -114,11 +114,10 @@ class MacroProcessusController extends APIController
     public function massUpdate(MassUpdateMacroProcessusRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('macro_processus_edit')
-        $data               = $request->validated();
         $macroProcessusModel = new MacroProcessus();
         $fillable            = $macroProcessusModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id        = $rawItem['id'];
             $processes = $rawItem['processes'] ?? null;
 

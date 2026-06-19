@@ -131,11 +131,10 @@ class VlanController extends APIController
     public function massUpdate(MassUpdateVlanRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `vlan_edit`
-        $data      = $request->validated();
         $vlanModel = new Vlan();
         $fillable  = $vlanModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id          = $rawItem['id'];
             $subnetworks = $rawItem['subnetworks'] ?? null;
 
