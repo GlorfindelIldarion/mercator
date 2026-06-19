@@ -78,13 +78,12 @@ class PhysicalSecurityDeviceController extends APIController
     public function massStore(MassStorePhysicalSecurityDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_security_device_create`
-        $data = $request->validated();
 
         $createdIds             = [];
         $deviceModel            = new PhysicalSecurityDevice();
         $fillable               = $deviceModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)
@@ -106,11 +105,10 @@ class PhysicalSecurityDeviceController extends APIController
     public function massUpdate(MassUpdatePhysicalSecurityDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_security_device_edit`
-        $data        = $request->validated();
         $deviceModel = new PhysicalSecurityDevice();
         $fillable    = $deviceModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var PhysicalSecurityDevice $device */

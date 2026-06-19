@@ -71,13 +71,12 @@ class SubnetworkController extends APIController
     public function massStore(MassStoreSubnetworkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `subnetwork_create`
-        $data = $request->validated();
 
         $createdIds      = [];
         $subnetworkModel = new Subnetwork();
         $fillable        = $subnetworkModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)
@@ -99,11 +98,10 @@ class SubnetworkController extends APIController
     public function massUpdate(MassUpdateSubnetworkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `subnetwork_edit`
-        $data           = $request->validated();
         $subnetworkModel = new Subnetwork();
         $fillable        = $subnetworkModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Subnetwork $subnetwork */

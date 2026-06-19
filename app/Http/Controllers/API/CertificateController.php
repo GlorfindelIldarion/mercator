@@ -80,13 +80,12 @@ class CertificateController extends APIController
     public function massStore(MassStoreCertificateRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data = $request->validated();
 
         $createdIds      = [];
         $certificateModel = new Certificate();
         $fillable        = $certificateModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $logicalServers = $item['logical_servers'] ?? null;
             $applications   = $item['applications'] ?? null;
 
@@ -121,11 +120,10 @@ class CertificateController extends APIController
     public function massUpdate(MassUpdateCertificateRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data            = $request->validated();
         $certificateModel = new Certificate();
         $fillable        = $certificateModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id             = $rawItem['id'];
             $logicalServers = $rawItem['logical_servers'] ?? null;
             $applications   = $rawItem['applications'] ?? null;

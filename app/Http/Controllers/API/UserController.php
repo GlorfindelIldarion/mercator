@@ -78,13 +78,12 @@ class UserController extends APIController
 
     public function massStore(MassStoreUserRequest $request)
     {
-        $data = $request->validated();
 
         $createdIds = [];
         $userModel  = new User();
         $fillable   = $userModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $roles = $item['roles'] ?? null;
 
             // Colonnes du modèle uniquement (sans relations)
@@ -112,11 +111,10 @@ class UserController extends APIController
 
     public function massUpdate(MassUpdateUserRequest $request)
     {
-        $data      = $request->validated();
         $userModel = new User();
         $fillable  = $userModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id    = $rawItem['id'];
             $roles = $rawItem['roles'] ?? null;
 

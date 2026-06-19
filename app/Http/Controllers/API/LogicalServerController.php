@@ -98,13 +98,12 @@ class LogicalServerController extends APIController
     public function massStore(MassStoreLogicalServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_server_create')
-        $data = $request->validated();
 
         $createdIds         = [];
         $logicalServerModel = new LogicalServer();
         $fillable           = $logicalServerModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $physicalServers = $item['physicalServers'] ?? null;
             $applications    = $item['applications'] ?? null;
             $databases       = $item['databases'] ?? null;
@@ -143,11 +142,10 @@ class LogicalServerController extends APIController
     public function massUpdate(MassUpdateLogicalServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_server_edit')
-        $data               = $request->validated();
         $logicalServerModel = new LogicalServer();
         $fillable           = $logicalServerModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id              = $rawItem['id'];
             $physicalServers = $rawItem['physicalServers'] ?? null;
             $applications    = $rawItem['applications'] ?? null;

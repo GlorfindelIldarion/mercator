@@ -91,13 +91,12 @@ class PhysicalServerController extends APIController
     public function massStore(MassStorePhysicalServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_server_create`
-        $data = $request->validated();
 
         $createdIds          = [];
         $physicalServerModel = new PhysicalServer();
         $fillable            = $physicalServerModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $applications    = $item['applications'] ?? null;
             $logicalServers  = $item['logicalServers'] ?? null;
 
@@ -131,11 +130,10 @@ class PhysicalServerController extends APIController
     public function massUpdate(MassUpdatePhysicalServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_server_edit`
-        $data                = $request->validated();
         $physicalServerModel = new PhysicalServer();
         $fillable            = $physicalServerModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id             = $rawItem['id'];
             $applications   = $rawItem['applications'] ?? null;
             $logicalServers = $rawItem['logicalServers'] ?? null;

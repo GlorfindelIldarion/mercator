@@ -79,13 +79,12 @@ class ExternalConnectedEntityController extends APIController
     public function massStore(MassStoreExternalConnectedEntityRequest $request)
     {
         // L’authorize() du FormRequest gère déjà external_connected_entity_create
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new ExternalConnectedEntity();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // $roles = $item['roles'] ?? null;
 
             // Ne garde que les colonnes du modèle, sans les relations
@@ -116,11 +115,10 @@ class ExternalConnectedEntityController extends APIController
     public function massUpdate(MassUpdateExternalConnectedEntityRequest $request)
     {
         // L’authorize() du FormRequest gère déjà external_connected_entity_edit
-        $data     = $request->validated();
         $model    = new ExternalConnectedEntity();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
             // $roles = $rawItem['roles'] ?? null;
 

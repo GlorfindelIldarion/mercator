@@ -77,13 +77,12 @@ class PeripheralController extends APIController
     public function massStore(MassStorePeripheralRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('peripheral_create')
-        $data = $request->validated();
 
         $createdIds     = [];
         $peripheralModel = new Peripheral();
         $fillable        = $peripheralModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $applications = $item['applications'] ?? null;
 
             // Colonnes du modèle uniquement (sans les relations)
@@ -112,11 +111,10 @@ class PeripheralController extends APIController
     public function massUpdate(MassUpdatePeripheralRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('peripheral_edit')
-        $data           = $request->validated();
         $peripheralModel = new Peripheral();
         $fillable        = $peripheralModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id           = $rawItem['id'];
             $applications = $rawItem['applications'] ?? null;
 

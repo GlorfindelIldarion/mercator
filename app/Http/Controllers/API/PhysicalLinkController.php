@@ -71,13 +71,12 @@ class PhysicalLinkController extends APIController
     public function massStore(MassStorePhysicalLinkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_link_create`
-        $data = $request->validated();
 
         $createdIds        = [];
         $physicalLinkModel = new PhysicalLink();
         $fillable           = $physicalLinkModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)
@@ -99,11 +98,10 @@ class PhysicalLinkController extends APIController
     public function massUpdate(MassUpdatePhysicalLinkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_link_edit`
-        $data             = $request->validated();
         $physicalLinkModel = new PhysicalLink();
         $fillable          = $physicalLinkModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var PhysicalLink $physicalLink */

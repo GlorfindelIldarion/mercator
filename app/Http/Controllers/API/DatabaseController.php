@@ -84,13 +84,12 @@ class DatabaseController extends APIController
     public function massStore(MassStoreDatabaseRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('database_create')
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Database();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $entities       = $item['entities'] ?? null;
             $informations   = $item['informations'] ?? null;
             $applications   = $item['applications'] ?? null;
@@ -141,11 +140,10 @@ class DatabaseController extends APIController
     public function massUpdate(MassUpdateDatabaseRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('database_edit')
-        $data     = $request->validated();
         $model    = new Database();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id             = $rawItem['id'];
             $entities       = $rawItem['entities'] ?? null;
             $informations   = $rawItem['informations'] ?? null;

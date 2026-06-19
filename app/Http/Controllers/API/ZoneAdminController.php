@@ -70,12 +70,11 @@ class ZoneAdminController extends APIController
     public function massStore(MassStoreZoneAdminRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data = $request->validated();
 
         $createdIds = [];
         $fillable   = (new ZoneAdmin())->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)
                 ->only($fillable)
                 ->toArray();
@@ -95,10 +94,9 @@ class ZoneAdminController extends APIController
     public function massUpdate(MassUpdateZoneAdminRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data     = $request->validated();
         $fillable = (new ZoneAdmin())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var ZoneAdmin $zoneAdmin */

@@ -71,13 +71,12 @@ class PhoneController extends APIController
     public function massStore(MassStorePhoneRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `phone_create`
-        $data = $request->validated();
 
         $createdIds = [];
         $phoneModel = new Phone();
         $fillable   = $phoneModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)
@@ -99,11 +98,10 @@ class PhoneController extends APIController
     public function massUpdate(MassUpdatePhoneRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `phone_edit`
-        $data      = $request->validated();
         $phoneModel = new Phone();
         $fillable   = $phoneModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Phone $phone */

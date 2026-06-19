@@ -73,13 +73,12 @@ class DnsserverController extends APIController
     public function massStore(MassStoreDnsserverRequest $request)
     {
         // L’authorize() du FormRequest gère déjà dnsserver_create
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Dnsserver();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // $roles = $item['roles'] ?? null;
 
             // Ne garde que les colonnes du modèle, sans les relations
@@ -110,11 +109,10 @@ class DnsserverController extends APIController
     public function massUpdate(MassUpdateDnsserverRequest $request)
     {
         // L’authorize() du FormRequest gère déjà dnsserver_edit
-        $data     = $request->validated();
         $model    = new Dnsserver();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
             // $roles = $rawItem['roles'] ?? null;
 

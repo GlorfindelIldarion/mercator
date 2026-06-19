@@ -79,13 +79,12 @@ class DomainController extends APIController
     public function massStore(MassStoreDomainRequest $request)
     {
         // L’authorize() du FormRequest gère déjà domain_create
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Domain();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $forestAds = $item['forestAds'] ?? null;
 
             // Ne garde que les colonnes du modèle, sans les relations
@@ -114,11 +113,10 @@ class DomainController extends APIController
     public function massUpdate(MassUpdateDomainRequest $request)
     {
         // L’authorize() du FormRequest gère déjà domain_edit
-        $data     = $request->validated();
         $model    = new Domain();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id        = $rawItem['id'];
             $forestAds = $rawItem['forestAds'] ?? null;
 

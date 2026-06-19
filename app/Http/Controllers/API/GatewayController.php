@@ -83,13 +83,12 @@ class GatewayController extends APIController
     public function massStore(MassStoreGatewayRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('gateway_create')
-        $data = $request->validated();
 
         $createdIds  = [];
         $gatewayModel = new Gateway();
         $fillable     = $gatewayModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $subnetworks = $item['subnetworks'] ?? null;
 
             // On garde uniquement les colonnes du modèle, sans les relations
@@ -119,11 +118,10 @@ class GatewayController extends APIController
     public function massUpdate(MassUpdateGatewayRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('gateway_edit')
-        $data        = $request->validated();
         $gatewayModel = new Gateway();
         $fillable     = $gatewayModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id          = $rawItem['id'];
             $subnetworks = $rawItem['subnetworks'] ?? null;
 

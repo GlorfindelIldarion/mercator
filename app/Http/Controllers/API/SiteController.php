@@ -71,13 +71,12 @@ class SiteController extends APIController
     public function massStore(MassStoreSiteRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `site_create`
-        $data = $request->validated();
 
         $createdIds = [];
         $siteModel  = new Site();
         $fillable   = $siteModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)
@@ -99,11 +98,10 @@ class SiteController extends APIController
     public function massUpdate(MassUpdateSiteRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `site_edit`
-        $data     = $request->validated();
         $siteModel = new Site();
         $fillable  = $siteModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Site $site */

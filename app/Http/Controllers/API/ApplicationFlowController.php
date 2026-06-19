@@ -69,13 +69,12 @@ class ApplicationFlowController extends APIController
 
     public function massStore(MassStoreApplicationFlowRequest $request)
     {
-        $data = $request->validated();
 
         $createdIds = [];
         $model      = new ApplicationFlow();
         $fillable   = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Filtrer uniquement les colonnes du modèle
             $attributes = collect($item)->only($fillable)->toArray();
 
@@ -94,11 +93,10 @@ class ApplicationFlowController extends APIController
 
     public function massUpdate(MassUpdateApplicationFlowRequest $request)
     {
-        $data     = $request->validated();
         $model    = new ApplicationFlow();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var ApplicationFlow $flow */

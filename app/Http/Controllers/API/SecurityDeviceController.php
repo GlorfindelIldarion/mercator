@@ -77,13 +77,12 @@ class SecurityDeviceController extends APIController
     public function massStore(MassStoreSecurityDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `security_device_create`
-        $data = $request->validated();
 
         $createdIds          = [];
         $securityDeviceModel = new SecurityDevice();
         $fillable            = $securityDeviceModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement (sans relations)
             $attributes = collect($item)
                 ->only($fillable)
@@ -110,11 +109,10 @@ class SecurityDeviceController extends APIController
     public function massUpdate(MassUpdateSecurityDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `security_device_edit`
-        $data               = $request->validated();
         $securityDeviceModel = new SecurityDevice();
         $fillable            = $securityDeviceModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var SecurityDevice $securityDevice */

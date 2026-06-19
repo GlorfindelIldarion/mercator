@@ -76,13 +76,12 @@ class RouterController extends APIController
     public function massStore(MassStoreRouterRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `router_create`
-        $data = $request->validated();
 
         $createdIds  = [];
         $routerModel = new Router();
         $fillable    = $routerModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $physicalRouters = $item['physicalRouters'] ?? null;
 
             // Colonnes du modèle uniquement (sans les relations)
@@ -111,11 +110,10 @@ class RouterController extends APIController
     public function massUpdate(MassUpdateRouterRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `router_edit`
-        $data       = $request->validated();
         $routerModel = new Router();
         $fillable    = $routerModel->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id              = $rawItem['id'];
             $physicalRouters = $rawItem['physicalRouters'] ?? null;
 

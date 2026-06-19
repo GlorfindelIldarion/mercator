@@ -73,13 +73,12 @@ class NetworkController extends APIController
     public function massStore(MassStoreNetworkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('network_create')
-        $data = $request->validated();
 
         $createdIds = [];
         $model      = new Network();
         $fillable   = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)
@@ -101,11 +100,10 @@ class NetworkController extends APIController
     public function massUpdate(MassUpdateNetworkRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('network_edit')
-        $data    = $request->validated();
         $model   = new Network();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Network $network */

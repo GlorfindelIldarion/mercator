@@ -83,12 +83,11 @@ class WanController extends APIController
     public function massStore(MassStoreWanRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data = $request->validated();
 
         $createdIds = [];
         $fillable   = (new Wan())->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)
                 ->only($fillable)
                 ->toArray();
@@ -108,10 +107,9 @@ class WanController extends APIController
     public function massUpdate(MassUpdateWanRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data     = $request->validated();
         $fillable = (new Wan())->getFillable();
 
-        foreach ($data['items'] as $rawItem) {
+        foreach ($request->input('items', []) as $rawItem) {
             $id = $rawItem['id'];
 
             /** @var Wan $wan */

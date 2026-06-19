@@ -25,6 +25,7 @@ class UpdateSiteRequest extends BaseFormRequest
                     ->whereNull('deleted_at'),
             ],
             'iconFile' => ['nullable', 'file', 'mimes:png', 'max:65535'],
+            'description' => ['nullable', 'string'],
         ];
     }
 }
