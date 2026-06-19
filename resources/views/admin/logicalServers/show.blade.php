@@ -108,7 +108,7 @@
                         <dt>{{ trans('cruds.logicalServer.fields.domain') }}</dt>
                     </th>
                     <td>
-                        @if ($logicalServer->domain_id!==null)
+                        @if ($logicalServer->domain!==null)
                             @canShow($logicalServer->domain)
                                 <a href="{{ route('admin.domains.show', $logicalServer->domain_id) }}">
                                     {{ $logicalServer->domain->name }}
