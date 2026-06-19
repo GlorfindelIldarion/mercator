@@ -78,13 +78,12 @@ class EntityController extends APIController
     public function massStore(MassStoreEntityRequest $request)
     {
         // L’authorize() du FormRequest gère déjà entity_create
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Entity();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $processes = $item['processes'] ?? null;
 
             // Ne garde que les colonnes du modèle, sans les relations

@@ -71,13 +71,12 @@ class TaskController extends APIController
     public function massStore(MassStoreTaskRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `task_create`
-        $data = $request->validated();
 
         $createdIds = [];
         $taskModel  = new Task();
         $fillable   = $taskModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement (pas de relations ici)
             $attributes = collect($item)
                 ->only($fillable)

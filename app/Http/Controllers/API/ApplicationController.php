@@ -108,13 +108,12 @@ class ApplicationController extends APIController
     public function massStore(MassStoreApplicationRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('application_create')
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Application();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $entities            = $item['entities'] ?? null;
             $processes           = $item['processes'] ?? null;
             $activities          = $item['activities'] ?? null;

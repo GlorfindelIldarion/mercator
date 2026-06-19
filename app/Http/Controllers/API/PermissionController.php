@@ -72,13 +72,12 @@ class PermissionController extends APIController
     public function massStore(MassStorePermissionRequest $request)
     {
         // authorize() in the FormRequest already checks `permission_create`
-        $data = $request->validated();
 
         $createdIds      = [];
         $permissionModel = new Permission();
         $fillable        = $permissionModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Model columns only
             $attributes = collect($item)
                 ->only($fillable)

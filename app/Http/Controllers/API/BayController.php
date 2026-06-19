@@ -70,12 +70,11 @@ class BayController extends APIController
     public function massStore(MassStoreBayRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data = $request->validated();
 
         $createdIds = [];
         $fillable   = (new Bay())->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)
                 ->only($fillable)
                 ->toArray();

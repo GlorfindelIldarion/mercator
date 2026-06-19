@@ -76,13 +76,12 @@ class RoleController extends APIController
     public function massStore(MassStoreRoleRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `role_create`
-        $data = $request->validated();
 
         $createdIds = [];
         $roleModel  = new Role();
         $fillable   = $roleModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)

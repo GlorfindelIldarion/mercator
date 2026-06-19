@@ -84,13 +84,12 @@ class PhysicalRouterController extends APIController
     public function massStore(MassStorePhysicalRouterRequest $request)
     {
         // authorize() in the FormRequest already checks `physical_router_create`
-        $data = $request->validated();
 
         $createdIds          = [];
         $physicalRouterModel = new PhysicalRouter();
         $fillable            = $physicalRouterModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $vlans = $item['vlans'] ?? null;
 
             // Model columns only (no relations)

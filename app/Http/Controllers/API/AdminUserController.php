@@ -70,13 +70,12 @@ class AdminUserController extends APIController
     public function massStore(MassStoreAdminUserRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('admin_user_create')
-        $data       = $request->validated();
         $createdIds = [];
 
         $userModel = new AdminUser();
         $fillable  = $userModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Ne garde que les colonnes du modèle (ignore les champs inconnus)
             $attributes = collect($item)
                 ->only($fillable)

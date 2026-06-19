@@ -71,13 +71,12 @@ class StorageDeviceController extends APIController
     public function massStore(MassStoreStorageDeviceRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `storage_device_create`
-        $data = $request->validated();
 
         $createdIds          = [];
         $storageDeviceModel  = new StorageDevice();
         $fillable            = $storageDeviceModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)

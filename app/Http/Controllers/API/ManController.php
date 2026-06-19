@@ -71,13 +71,12 @@ class ManController extends APIController
     public function massStore(MassStoreManRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('man_create')
-        $data = $request->validated();
 
         $createdIds = [];
         $manModel   = new Man();
         $fillable   = $manModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)

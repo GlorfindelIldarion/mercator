@@ -79,13 +79,12 @@ class MacroProcessusController extends APIController
     public function massStore(MassStoreMacroProcessusRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('macro_processus_create')
-        $data = $request->validated();
 
         $createdIds         = [];
         $macroProcessusModel = new MacroProcessus();
         $fillable            = $macroProcessusModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $processes = $item['processes'] ?? null;
 
             // Colonnes du modèle uniquement (sans les relations)

@@ -81,13 +81,12 @@ class ApplicationModuleController extends APIController
     public function massStore(MassStoreApplicationModuleRequest $request)
     {
         // L’authorize() du FormRequest gère déjà l’appel Gate::denies('application_module_create')
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new ApplicationModule();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Ne garde que les colonnes du modèle
             $attributes = collect($item)
                 ->only($fillable)

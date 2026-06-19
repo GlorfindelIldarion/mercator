@@ -91,13 +91,12 @@ class OperationController extends APIController
     public function massStore(MassStoreOperationRequest $request)
     {
         // authorize() in the FormRequest already checks `operation_create`
-        $data = $request->validated();
 
         $createdIds   = [];
         $operationModel = new Operation();
         $fillable       = $operationModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $actors     = $item['actors'] ?? null;
             $tasks      = $item['tasks'] ?? null;
             $activities = $item['activities'] ?? null;

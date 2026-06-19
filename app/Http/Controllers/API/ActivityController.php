@@ -72,8 +72,7 @@ class ActivityController extends APIController
     {
         abort_if(Gate::denies('activity_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $data       = $request->validated();
-        $createdIds = $this->massStoreItems($data['items']);
+        $createdIds = $this->massStoreItems($request->input('items', []));
 
         return response()->json([
             'status' => 'ok',

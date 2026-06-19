@@ -73,13 +73,12 @@ class DhcpServerController extends APIController
     public function massStore(MassStoreDhcpServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà dhcp_server_create
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new DhcpServer();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // $roles = $item['roles'] ?? null;
 
             // Ne garde que les colonnes du modèle, sans les relations

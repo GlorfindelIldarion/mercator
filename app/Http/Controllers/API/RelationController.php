@@ -71,13 +71,12 @@ class RelationController extends APIController
     public function massStore(MassStoreRelationRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `relation_create`
-        $data = $request->validated();
 
         $createdIds    = [];
         $relationModel = new Relation();
         $fillable      = $relationModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)
                 ->only($fillable)
                 ->toArray();

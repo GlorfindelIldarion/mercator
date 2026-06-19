@@ -116,13 +116,12 @@ class NetworkSwitchController extends APIController
     public function massStore(MassStoreNetworkSwitchRequest $request)
     {
         // authorize() in the FormRequest already checks `network_switch_create`
-        $data = $request->validated();
 
         $createdIds        = [];
         $networkSwitchModel = new NetworkSwitch();
         $fillable           = $networkSwitchModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $physicalSwitches = $item['physical_switches'] ?? null;
             $vlans            = $item['vlans'] ?? null;
 

@@ -98,13 +98,12 @@ class LogicalServerController extends APIController
     public function massStore(MassStoreLogicalServerRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_server_create')
-        $data = $request->validated();
 
         $createdIds         = [];
         $logicalServerModel = new LogicalServer();
         $fillable           = $logicalServerModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $physicalServers = $item['physicalServers'] ?? null;
             $applications    = $item['applications'] ?? null;
             $databases       = $item['databases'] ?? null;

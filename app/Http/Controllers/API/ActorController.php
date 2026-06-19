@@ -70,8 +70,7 @@ class ActorController extends APIController
 
     public function massStore(MassStoreActorRequest $request)
     {
-        $data       = $request->validated();
-        $createdIds = $this->massStoreItems($data['items']);
+        $createdIds = $this->massStoreItems($request->input('items', []));
 
         return response()->json([
             'status' => 'ok',

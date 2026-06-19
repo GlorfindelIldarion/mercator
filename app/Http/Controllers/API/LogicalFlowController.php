@@ -76,13 +76,12 @@ class LogicalFlowController extends APIController
     public function massStore(MassStoreLogicalFlowRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_flow_create')
-        $data = $request->validated();
 
         $createdIds      = [];
         $logicalFlowModel = new LogicalFlow();
         $fillable         = $logicalFlowModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)

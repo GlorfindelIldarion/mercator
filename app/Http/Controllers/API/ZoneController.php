@@ -107,11 +107,10 @@ class ZoneController extends APIController
 
     public function massStore(MassStoreZoneRequest $request)
     {
-        $data       = $request->validated();
         $createdIds = [];
         $fillable   = (new Zone())->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $parentZones = $item['parentZones'] ?? null;
             $childZones  = $item['childZones']  ?? null;
             $buildings   = $item['buildings']   ?? null;

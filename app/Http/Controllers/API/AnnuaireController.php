@@ -70,13 +70,12 @@ class AnnuaireController extends APIController
     public function massStore(MassStoreAnnuaireRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('annuaire_create')
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Annuaire();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Ne garde que les colonnes du modèle (ignore les champs inconnus)
             $attributes = collect($item)
                 ->only($fillable)

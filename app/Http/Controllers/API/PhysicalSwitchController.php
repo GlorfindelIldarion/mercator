@@ -77,13 +77,12 @@ class PhysicalSwitchController extends APIController
     public function massStore(MassStorePhysicalSwitchRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `physical_switch_create`
-        $data = $request->validated();
 
         $createdIds            = [];
         $physicalSwitchModel   = new PhysicalSwitch();
         $fillable              = $physicalSwitchModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)
                 ->only($fillable)
                 ->toArray();

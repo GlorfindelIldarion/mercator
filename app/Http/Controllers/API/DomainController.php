@@ -79,13 +79,12 @@ class DomainController extends APIController
     public function massStore(MassStoreDomainRequest $request)
     {
         // L’authorize() du FormRequest gère déjà domain_create
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Domain();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $forestAds = $item['forestAds'] ?? null;
 
             // Ne garde que les colonnes du modèle, sans les relations

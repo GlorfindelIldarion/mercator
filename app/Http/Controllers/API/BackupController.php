@@ -83,10 +83,9 @@ class BackupController extends APIController
 
     public function massStore(MassStoreBackupRequest $request)
     {
-        $data       = $request->validated();
         $createdIds = [];
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $backup       = Backup::query()->create(
                 collect($item)->only((new Backup())->getFillable())->all()
             );

@@ -91,13 +91,12 @@ class VlanController extends APIController
     public function massStore(MassStoreVlanRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `vlan_create`
-        $data = $request->validated();
 
         $createdIds = [];
         $vlanModel  = new Vlan();
         $fillable   = $vlanModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $subnetworks = $item['subnetworks'] ?? null;
 
             // Colonnes du modèle uniquement (sans relations)

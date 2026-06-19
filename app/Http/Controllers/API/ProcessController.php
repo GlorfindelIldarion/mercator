@@ -107,13 +107,12 @@ class ProcessController extends APIController
     public function massStore(MassStoreProcessRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `process_create`
-        $data = $request->validated();
 
         $createdIds    = [];
         $processModel  = new Process();
         $fillable      = $processModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $activities   = $item['activities'] ?? null;
             $entities     = $item['entities'] ?? null;
             $informations = $item['informations'] ?? null;

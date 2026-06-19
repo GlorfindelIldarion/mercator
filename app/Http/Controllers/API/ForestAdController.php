@@ -77,13 +77,12 @@ class ForestAdController extends APIController
 
     public function massStore(MassStoreForestAdRequest $request)
     {
-        $data = $request->validated();
 
         $createdIds = [];
         $model      = new ForestAd();
         $fillable   = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)->only($fillable)->toArray();
 
             /** @var ForestAd $forestAd */

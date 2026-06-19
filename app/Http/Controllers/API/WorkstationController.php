@@ -77,12 +77,11 @@ class WorkstationController extends APIController
     public function massStore(MassStoreWorkstationRequest $request)
     {
         // L’authorize() du FormRequest protège déjà l’accès
-        $data = $request->validated();
 
         $createdIds = [];
         $fillable   = (new Workstation())->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $attributes = collect($item)
                 ->only($fillable)
                 ->toArray();

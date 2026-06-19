@@ -71,13 +71,12 @@ class SecurityControlController extends APIController
     public function massStore(MassStoreSecurityControlRequest $request)
     {
         // L’authorize() du FormRequest gère déjà la permission `security_control_create`
-        $data = $request->validated();
 
         $createdIds          = [];
         $securityControlModel = new SecurityControl();
         $fillable             = $securityControlModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Colonnes du modèle uniquement
             $attributes = collect($item)
                 ->only($fillable)

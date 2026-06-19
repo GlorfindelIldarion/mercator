@@ -86,13 +86,12 @@ class InformationController extends APIController
     public function massStore(MassStoreInformationRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('information_create')
-        $data = $request->validated();
 
         $createdIds      = [];
         $informationModel = new Information();
         $fillable         = $informationModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $processes = $item['processes'] ?? null;
 
             // Colonnes du modèle uniquement (sans les relations)

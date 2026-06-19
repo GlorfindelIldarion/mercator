@@ -90,13 +90,12 @@ class LanController extends APIController
     public function massStore(MassStoreLanRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('lan_create')
-        $data = $request->validated();
 
         $createdIds = [];
         $lanModel   = new Lan();
         $fillable   = $lanModel->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             $mans = $item['mans'] ?? null;
             $wans = $item['wans'] ?? null;
 

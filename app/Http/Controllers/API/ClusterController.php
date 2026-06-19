@@ -86,13 +86,12 @@ class ClusterController extends APIController
     public function massStore(MassStoreClusterRequest $request)
     {
         // L’authorize() du FormRequest gère déjà le Gate::denies('logical_server_create')
-        $data       = $request->validated();
         $createdIds = [];
 
         $model    = new Cluster();
         $fillable = $model->getFillable();
 
-        foreach ($data['items'] as $item) {
+        foreach ($request->input('items', []) as $item) {
             // Ne garde que les colonnes du modèle (les relations sont ignorées pour le moment)
             $attributes = collect($item)
                 ->only($fillable)

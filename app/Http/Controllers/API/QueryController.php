@@ -157,8 +157,7 @@ class QueryController extends APIController
 
     public function massStore(MassStoreSavedQueryRequest $request)
     {
-        $data       = $request->validated();
-        $createdIds = $this->massStoreItems($data['items']);
+        $createdIds = $this->massStoreItems($request->input('items', []));
 
         return response()->json([
             'status' => 'ok',
