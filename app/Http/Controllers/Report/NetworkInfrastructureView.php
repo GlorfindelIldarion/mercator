@@ -189,22 +189,11 @@ class NetworkInfrastructureView extends Controller
                 return false;
             });
             */
-            $physicalServers = Cartographer::scopedQuery(PhysicalServer::query()
-                ->where(function ($q) use ($buildingIds, $bayIds): void {
-                    $q->where(function ($q) use ($buildingIds): void {
-                        $q->whereNull('bay_id')
-                            ->whereIn('building_id', $buildingIds);
-                    });
-                    if ($bayIds->isNotEmpty()) {
-                        $q->orWhereIn('bay_id', $bayIds);
-                    }
-                })
-                ->orderBy('name'))
-                ->get();
-            /*
-            $physicalServers = PhysicalServer::All()->sortBy('name')
-                ->filter(function ($item) use ($site, $buildings, $bays) {
-                    if (($buildings === null) && ($item->site_id === $site)) {
+            $physicalServers = Cartographer::scopedQuery(PhysicalServer::query())->orderBy('name')->get()
+                ->filter(function ($item) use ($siteId, $buildings, $bays) {
+                    if (($item->bay_id === null) &&
+                        ($item->building_id === null) &&
+                        ($item->site_id === $siteId)) {
                         return true;
                     }
                     if ($item->bay_id === null) {
@@ -223,7 +212,6 @@ class NetworkInfrastructureView extends Controller
 
                     return false;
                 });
-            */
             $workstations = Cartographer::scopedQuery(Workstation::query())->orderBy('name')->get()
                 ->filter(function ($item) use ($siteId, $buildings) {
                     if (($item->building_id === null) && ($item->site_id === $siteId)) {

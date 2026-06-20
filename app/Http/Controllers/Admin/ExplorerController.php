@@ -353,7 +353,7 @@ class ExplorerController extends Controller
     private function buildPhysicalServers(): void
     {
         $servers = Cartographer::scopedQuery(PhysicalServer::query())
-            ->select('id', 'name', 'icon_id', 'bay_id')
+            ->select('id', 'name', 'icon_id', 'bay_id', 'building_id', 'site_id')
             ->get();
 
         foreach ($servers as $server) {
@@ -366,12 +366,12 @@ class ExplorerController extends Controller
                 615
             );
 
-            if ($server->bay_id !== null) {
-                $this->addLinkEdge(
-                    $this->formatId(PhysicalServer::$prefix, $server->id),
-                    $this->formatId(Bay::$prefix, $server->bay_id)
-                );
-            }
+            $this->linkToLocationOrSite(
+                $this->formatId(PhysicalServer::$prefix, $server->id),
+                $server->site_id,
+                $server->building_id,
+                $server->bay_id
+            );
         }
     }
 
@@ -394,8 +394,8 @@ class ExplorerController extends Controller
 
             $this->linkToLocationOrSite(
                 $this->formatId(Workstation::$prefix, $workstation->id),
-                $workstation->building_id,
-                $workstation->site_id
+                $workstation->site_id,
+                $workstation->building_id
             );
 
             foreach (explode(',', $workstation->address_ip ?? '') as $ip)
@@ -428,8 +428,8 @@ class ExplorerController extends Controller
 
             $this->linkToLocationOrSite(
                 $this->formatId(Phone::$prefix, $phone->id),
-                $phone->building_id,
-                $phone->site_id
+                $phone->site_id,
+                $phone->building_id
             );
 
             $this->linkDeviceToSubnetworks($phone->address_ip,
@@ -495,7 +495,7 @@ class ExplorerController extends Controller
     private function buildStorageDevices(): void {
         // Storage devices
         $storageDevices = Cartographer::scopedQuery(StorageDevice::query())
-            ->select('id', 'name', 'bay_id', 'address_ip')
+            ->select('id', 'name', 'bay_id', 'building_id', 'site_id', 'address_ip')
             ->get();
 
         foreach ($storageDevices as $storageDevice) {
@@ -508,11 +508,12 @@ class ExplorerController extends Controller
                 635,
                 $storageDevice->address_ip);
 
-            if ($storageDevice->bay_id !== null) {
-                $this->addLinkEdge(
-                    $this->formatId(StorageDevice::$prefix, $storageDevice->id),
-                    $this->formatId(Bay::$prefix, $storageDevice->bay_id));
-            }
+            $this->linkToLocationOrSite(
+                $this->formatId(StorageDevice::$prefix, $storageDevice->id),
+                $storageDevice->site_id,
+                $storageDevice->building_id,
+                $storageDevice->bay_id
+            );
 
             foreach (explode(',', $storageDevice->address_ip ?? '') as $address) {
                 $this->linkDeviceToSubnetworks(
@@ -540,8 +541,8 @@ class ExplorerController extends Controller
 
             $this->linkToLocationOrSite(
                 $this->formatId(PhysicalSwitch::$prefix, $switch->id),
-                $switch->building_id,
                 $switch->site_id,
+                $switch->building_id,
                 $switch->bay_id
             );
         }
@@ -567,8 +568,8 @@ class ExplorerController extends Controller
 
             $this->linkToLocationOrSite(
                 $this->formatId(PhysicalRouter::$prefix, $router->id),
-                $router->building_id,
                 $router->site_id,
+                $router->building_id,
                 $router->bay_id
             );
         }
@@ -590,8 +591,8 @@ class ExplorerController extends Controller
 
             $this->linkToLocationOrSite(
                 $this->formatId(WifiTerminal::$prefix, $wifiTerminal->id),
-                $wifiTerminal->building_id,
-                $wifiTerminal->site_id
+                $wifiTerminal->site_id,
+                $wifiTerminal->building_id
             );
 
             foreach (explode(',', $wifiTerminal->address_ip ?? '') as $address) {
@@ -623,8 +624,8 @@ class ExplorerController extends Controller
 
             $this->linkToLocationOrSite(
                 $this->formatId(PhysicalSecurityDevice::$prefix, $device->id),
-                $device->building_id,
                 $device->site_id,
+                $device->building_id,
                 $device->bay_id
             );
 
@@ -1853,7 +1854,7 @@ class ExplorerController extends Controller
         return $iconId === null ? $defaultIcon : "/admin/documents/{$iconId}";
     }
 
-    private function linkToLocationOrSite(string $nodeId, $buildingId = null, $siteId = null, $bayId = null): void
+    private function linkToLocationOrSite(string $nodeId, $siteId = null, $buildingId = null, $bayId = null): void
     {
         if ($bayId !== null) {
             $this->addLinkEdge($nodeId, $this->formatId(Bay::$prefix, $bayId));
