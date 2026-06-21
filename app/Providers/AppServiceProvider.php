@@ -39,6 +39,14 @@ class AppServiceProvider extends ServiceProvider
         // Startup log
         $this->logStartupInfo($version);
 
+        // Overlay admin-edited mercator settings (stored in the `parameters` table)
+        // on top of the static config/mercator.php defaults.
+        try {
+            \App\Support\MercatorSettings::applyToConfig();
+        } catch (\Throwable) {
+            // DB / parameters table not available yet (e.g. before first migrate).
+        }
+
         // start Paginator
         Paginator::useBootstrap();
 
