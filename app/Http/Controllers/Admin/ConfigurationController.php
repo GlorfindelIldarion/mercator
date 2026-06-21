@@ -241,40 +241,24 @@ class ConfigurationController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Lecture / écriture du fichier de config
+    // Lecture / écriture de la config (stockée dans la table `parameters`)
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Lit le fichier config/mercator.php en court-circuitant OPcache.
+     * Lit la config courante (défauts de config/mercator.php fusionnés avec
+     * les valeurs surchargées en base, déjà appliquées au boot).
      */
     private function readConfigFile(): array
     {
-        $path = config_path('mercator.php');
-
-        if (!file_exists($path)) {
-            return [];
-        }
-
-        // Invalide OPcache avant require pour être sûr de lire la version sur disque.
-        if (function_exists('opcache_invalidate')) {
-            opcache_invalidate($path, true);
-        }
-
-        return require $path;
+        return config('mercator', []);
     }
 
     /**
-     * Écrit le tableau de config dans config/mercator.php.
+     * Persiste le tableau de config dans la table `parameters`.
      */
     private function writeConfigFile(array $cfg): void
     {
-        $path = config_path('mercator.php');
-
-        file_put_contents($path, '<?php return ' . var_export($cfg, true) . ';');
-
-        if (function_exists('opcache_invalidate')) {
-            opcache_invalidate($path, true);
-        }
+        \App\Support\MercatorSettings::save($cfg);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

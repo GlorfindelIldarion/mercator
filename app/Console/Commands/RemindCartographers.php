@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\MailerService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 
 class RemindCartographers extends Command
@@ -118,7 +117,6 @@ class RemindCartographers extends Command
 
         $today = Carbon::now()->format('Y-m-d H:i');
         $this->persistLastSent($today);
-        Config::set('mercator.cartography.reminder_last_sent', $today);
 
         Log::info("[mercator:remind-cartographers] Done — {$sent} reminder(s) sent");
         $this->info("{$sent} reminder(s) sent.");
@@ -171,28 +169,14 @@ class RemindCartographers extends Command
     }
 
     /**
-     * Write reminder_last_sent into config/mercator.php using the same
-     * mechanism as the configuration admin page.
+     * Write reminder_last_sent into the stored mercator settings, using the
+     * same mechanism as the configuration admin page.
      */
     private function persistLastSent(string $date): void
     {
-        $path = config_path('mercator.php');
-
-        if (! file_exists($path)) {
-            return;
-        }
-
-        if (function_exists('opcache_invalidate')) {
-            opcache_invalidate($path, true);
-        }
-
-        $cfg = require $path;
+        $cfg = config('mercator', []);
         $cfg['cartography']['reminder_last_sent'] = $date;
 
-        file_put_contents($path, '<?php return ' . var_export($cfg, true) . ';');
-
-        if (function_exists('opcache_invalidate')) {
-            opcache_invalidate($path, true);
-        }
+        \App\Support\MercatorSettings::save($cfg);
     }
 }
