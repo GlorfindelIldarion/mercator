@@ -1340,6 +1340,9 @@ class ExplorerController extends Controller
         $this->linkJoinTable('application_logical_server',
             LogicalServer::$prefix, Application::$prefix,
             'logical_server_id', 'application_id');
+        $this->linkJoinTable('application_process',
+            Process::$prefix, Application::$prefix,
+            'process_id', 'application_id');
     }
 
 
