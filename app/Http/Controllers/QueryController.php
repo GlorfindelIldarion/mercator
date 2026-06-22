@@ -15,6 +15,7 @@ use Gate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
@@ -127,8 +128,14 @@ class QueryController extends Controller
 
     public function show(SavedQuery $query): View
     {
+        $exportUrl = URL::temporarySignedRoute(
+            'queries.export.signed',
+            now()->addDays(30),
+            ['query' => $query->id],
+        );
+
         return view('queries.show',
-            compact('query'));
+            compact('query', 'exportUrl'));
     }
 
     /**

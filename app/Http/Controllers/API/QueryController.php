@@ -65,6 +65,20 @@ class QueryController extends APIController
     {
         abort_if(Gate::denies('query_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
+        return $this->exportCsv($query);
+    }
+
+    /**
+     * Export CSV via URL signée (signature = autorisation).
+     * Pas de Gate ici : aucun utilisateur authentifié.
+     */
+    public function exportSigned(SavedQuery $query): StreamedResponse|JsonResponse
+    {
+        return $this->exportCsv($query);
+    }
+
+    private function exportCsv(SavedQuery $query): StreamedResponse|JsonResponse
+    {
         $dsl = $query->query;
 
         if (empty($dsl) || empty($dsl['from'])) {
