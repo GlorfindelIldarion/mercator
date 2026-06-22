@@ -25,12 +25,15 @@ filter[<field>_<operator>]=<value>          # Filter with operator
 
 #### Exact and Text Filters
 
-| Operator  | Syntax                | Description             | Example                |
-|-----------|-----------------------|-------------------------|------------------------|
-| (none)    | `filter[name]=Backup` | Exact equality          | `name = 'Backup'`      |
-| (partial) | `filter[name]=backup` | Partial search (LIKE) * | `name LIKE '%backup%'` |
+| Operator | Syntax                      | Description     | Example                |
+|----------|------------------------------|------------------|-------------------------|
+| (none)   | `filter[name]=Backup`        | Exact equality   | `name = 'Backup'`      |
+| `_like`  | `filter[name_like]=backup`   | Partial search (LIKE) | `name LIKE '%backup%'` |
 
-_* Automatic partial search applies to fields containing: `name`, `description`, `email`_
+By default, `filter[<field>]=<value>` always performs an **exact** match, regardless of the
+field type. To perform a partial (LIKE) search instead, use the `_like` suffix on any
+filterable field: `filter[<field>_like]=<value>`. LIKE meta-characters (`%`, `_`, `\`) in the
+value are automatically escaped, so they are matched literally rather than as wildcards.
 
 #### Numeric Comparisons
 
@@ -113,7 +116,7 @@ Example: `include=processes,operations`
 
 ```http
 # Activities with name containing "backup"
-GET /api/activities?filter[name]=backup
+GET /api/activities?filter[name_like]=backup
 
 # Activities with RTO less than or equal to 4 hours
 GET /api/activities?filter[recovery_time_objective_lte]=4
@@ -135,10 +138,10 @@ GET /api/activities?filter[actors.email]=john@example.com
 
 ```http
 # Activities with name containing "GDPR" and RTO >= 8
-GET /api/activities?filter[name]=GDPR&filter[recovery_time_objective_gte]=8
+GET /api/activities?filter[name_like]=GDPR&filter[recovery_time_objective_gte]=8
 
 # Servers created after January 1, 2024 with name containing "prod"
-GET /api/logical-servers?filter[created_at_after]=2024-01-01&filter[name]=prod
+GET /api/logical-servers?filter[created_at_after]=2024-01-01&filter[name_like]=prod
 
 # Applications with type different from "opensource" sorted by name
 GET /api/applications?filter[type_not]=opensource&sort=name
@@ -509,6 +512,7 @@ try {
 | Feature        | Syntax                            | Example                                 |
 |----------------|-----------------------------------|-----------------------------------------|
 | Exact filter   | `filter[field]=value`             | `filter[name]=Backup`                   |
+| Partial filter | `filter[field_like]=value`        | `filter[name_like]=backup`              |
 | Comparison     | `filter[field_operator]=value`    | `filter[recovery_time_objective_gte]=8` |
 | Negation       | `filter[field_not]=value`         | `filter[type_not]=opensource`           |
 | List of values | `filter[field_in]=v1,v2,v3`       | `filter[id_in]=1,2,3`                   |

@@ -356,6 +356,52 @@ it('filters activities by exact name', function () {
     expect($names->first())->toBe('Complaint management');
 });
 
+it('does not match partial name with the exact filter', function () {
+    Passport::actingAs($this->user);
+
+    ensureDemoActivities();
+
+    // "monitoring" n'est pas un nom exact d'activité
+    $response = $this->getJson('/api/activities?filter[name]=monitoring')
+        ->assertOk();
+
+    $data = activitiesFromResponse($response);
+
+    expect($data)->toBeEmpty();
+});
+
+it('filters activities by partial name with the _like operator', function () {
+    Passport::actingAs($this->user);
+
+    ensureDemoActivities();
+
+    // "monitoring" est contenu dans "IT monitoring" et "Application monitoring"
+    $response = $this->getJson('/api/activities?filter[name_like]=monitoring')
+        ->assertOk();
+
+    $data  = activitiesFromResponse($response);
+    $names = collect($data)->pluck('name');
+
+    expect($names)->toContain('Application monitoring');
+    expect($names)->toContain('IT monitoring');
+    expect($names)->not->toContain('Helpdesk');
+});
+
+it('escapes LIKE meta-characters in the _like operator', function () {
+    Passport::actingAs($this->user);
+
+    ensureDemoActivities();
+
+    $response = $this->getJson('/api/activities?' . http_build_query([
+        'filter' => ['name_like' => '%'],
+    ]))->assertOk();
+
+    $data = activitiesFromResponse($response);
+
+    // Le caractère "%" est échappé, donc aucune activité ne doit correspondre
+    expect($data)->toBeEmpty();
+});
+
 it('filters activities by numeric gte on recovery_time_objective', function () {
     Passport::actingAs($this->user);
 

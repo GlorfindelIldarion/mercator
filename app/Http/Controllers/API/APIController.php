@@ -127,13 +127,19 @@ abstract class APIController extends Controller
         $allowedFilters = [];
 
         foreach ($fillable as $field) {
-            // 1. Filtres partiels (LIKE) pour champs textuels
-            if (in_array($field, $this->getPartialFilterFields())) {
-                $allowedFilters[] = AllowedFilter::partial($field);
-            } else {
-                // 2. Filtre exact pour les autres champs
-                $allowedFilters[] = AllowedFilter::exact($field);
-            }
+            // 1. Filtre exact sur le champ
+            $allowedFilters[] = AllowedFilter::exact($field);
+
+            // 2. Filtre "_like" : recherche partielle (LIKE) sur le champ
+            $allowedFilters[] = AllowedFilter::callback(
+                $field . '_like',
+                function (Builder $query, $value) use ($field) {
+                    $escapedValue = $this->escapeLikeValue((string) $value);
+                    $pattern = "%{$escapedValue}%";
+
+                    $query->whereRaw("{$field} LIKE ? ESCAPE '\\\\'", [$pattern]);
+                }
+            );
 
             // 3. Filtre de négation (NOT)
             $allowedFilters[] = AllowedFilter::callback(
