@@ -26,12 +26,16 @@ filter[<champ>_<operateur>]=<valeur>        # Filtre avec opérateur
 
 #### Filtres exacts et textuels
 
-| Opérateur | Syntaxe               | Description                  | Exemple                |
-|-----------|-----------------------|------------------------------|------------------------|
-| (aucun)   | `filter[name]=Backup` | Égalité exacte               | `name = 'Backup'`      |
-| (partiel) | `filter[name]=backup` | Recherche partielle (LIKE) * | `name LIKE '%backup%'` |
+| Opérateur | Syntaxe                    | Description                | Exemple                |
+|-----------|-----------------------------|----------------------------|-------------------------|
+| (aucun)   | `filter[name]=Backup`      | Égalité exacte              | `name = 'Backup'`      |
+| `_like`   | `filter[name_like]=backup` | Recherche partielle (LIKE)  | `name LIKE '%backup%'` |
 
-_* La recherche partielle automatique s'applique aux champs contenant : `name`, `description`, `email`_
+Par défaut, `filter[<champ>]=<valeur>` effectue toujours une recherche **exacte**, quel que
+soit le champ. Pour effectuer une recherche partielle (LIKE), il faut utiliser le suffixe
+`_like` sur n'importe quel champ filtrable : `filter[<champ>_like]=<valeur>`. Les
+méta-caractères LIKE (`%`, `_`, `\`) présents dans la valeur sont automatiquement échappés,
+afin d'être recherchés littéralement plutôt qu'interprétés comme des jokers.
 
 #### Comparaisons numériques
 
@@ -114,7 +118,7 @@ Exemple : `include=processes,operations`
 
 ```http
 # Activités dont le nom contient "sauvegarde"
-GET /api/activities?filter[name]=sauvegarde
+GET /api/activities?filter[name_like]=sauvegarde
 
 # Activités avec un RTO inférieur ou égal à 4 heures
 GET /api/activities?filter[recovery_time_objective_lte]=4
@@ -136,10 +140,10 @@ GET /api/activities?filter[actors.email]=john@example.com
 
 ```http
 # Activités dont le nom contient "GDPR" avec RTO >= 8
-GET /api/activities?filter[name]=GDPR&filter[recovery_time_objective_gte]=8
+GET /api/activities?filter[name_like]=GDPR&filter[recovery_time_objective_gte]=8
 
 # Serveurs créés après le 1er janvier 2024 avec un nom contenant "prod"
-GET /api/logical-servers?filter[created_at_after]=2024-01-01&filter[name]=prod
+GET /api/logical-servers?filter[created_at_after]=2024-01-01&filter[name_like]=prod
 
 # Applications avec type différent de "opensource" triées par nom
 GET /api/applications?filter[type_not]=opensource&sort=name
@@ -529,6 +533,7 @@ try {
 | Fonctionnalité    | Syntaxe                           | Exemple                                 |
 |-------------------|-----------------------------------|-----------------------------------------|
 | Filtre exact      | `filter[champ]=valeur`            | `filter[name]=Backup`                   |
+| Filtre partiel    | `filter[champ_like]=valeur`       | `filter[name_like]=backup`              |
 | Comparaison       | `filter[champ_operateur]=valeur`  | `filter[recovery_time_objective_gte]=8` |
 | Négation          | `filter[champ_not]=valeur`        | `filter[type_not]=opensource`           |
 | Liste de valeurs  | `filter[champ_in]=v1,v2,v3`       | `filter[id_in]=1,2,3`                   |
