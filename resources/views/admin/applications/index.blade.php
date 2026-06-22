@@ -41,7 +41,7 @@
                         <th>
                             {{ trans('cruds.application.fields.application_block') }}
                         </th>
-                        <th>
+                        <th data-column="attributes">
                             {{ trans('cruds.application.fields.attributes') }}
                         </th>
                         <th data-column="vendor">

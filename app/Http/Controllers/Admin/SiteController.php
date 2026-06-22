@@ -45,8 +45,10 @@ class SiteController extends Controller
 
         // Select icons
         $icons = Site::select('icon_id')->whereNotNull('icon_id')->orderBy('icon_id')->distinct()->pluck('icon_id');
+        $type_list = Site::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
-        return view('admin.sites.create', compact('icons'));
+        return view('admin.sites.create', compact('icons', 'type_list', 'attributes_list'));
     }
 
     public function clone(Request $request, Site $site)
@@ -58,15 +60,25 @@ class SiteController extends Controller
             ->orderBy('icon_id')
             ->distinct()
             ->pluck('icon_id');
+        $type_list = Site::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
-        $request->merge($site->only($site->getFillable()));
+        $data = $site->only($site->getFillable());
+
+        if (isset($data['attributes']) && is_string($data['attributes'])) {
+            $data['attributes'] = array_filter(explode(' ', $data['attributes']));
+        }
+
+        $request->merge($data);
         $request->flash();
 
-        return view('admin.sites.create', compact('icons'));
+        return view('admin.sites.create', compact('icons', 'type_list', 'attributes_list'));
     }
 
     public function store(StoreSiteRequest $request)
     {
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
+
         $site = Site::create($request->all());
 
         // Save icon
@@ -82,13 +94,17 @@ class SiteController extends Controller
         abort_if(Gate::denies('edit-object', $site), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $icons = Site::select('icon_id')->whereNotNull('icon_id')->orderBy('icon_id')->distinct()->pluck('icon_id');
+        $type_list = Site::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
-        return view('admin.sites.edit', compact('site', 'icons'));
+        return view('admin.sites.edit', compact('site', 'icons', 'type_list', 'attributes_list'));
     }
 
     public function update(UpdateSiteRequest $request, Site $site)
     {
         abort_if(Gate::denies('edit-object', $site), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         // Save icon
         $this->iconUploadService->handle($request, $site);
@@ -129,5 +145,24 @@ class SiteController extends Controller
         Site::whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function getAttributes()
+    {
+        $attributes_list = Site::query()
+            ->select('attributes')
+            ->where('attributes', '<>', null)
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+
+        return array_unique($res);
     }
 }

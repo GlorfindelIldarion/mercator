@@ -432,6 +432,8 @@ Les informations peuvent former des hiérarchies parent-enfant via des liaisons 
 | id                 | int unsigned | auto_increment                                       |
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom de l'information                                 |
+| type               | varchar(255) | Type de l'information                                |
+| attributes         | varchar(255) | Attributs (#tag...)                                  |
 | description        | longtext     | Description de l'information                         |
 | owner              | varchar(255) | Propriétaire de l'information                        |
 | administrator      | varchar(255) | Administrateur de l'information                      |
@@ -922,6 +924,8 @@ Les réseaux sont un ensemble d’équipements reliés logiquement entre eux et 
 | id                 | int unsigned | auto_increment                |
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name               | varchar(255) | Nom du réseau                 |
+| type               | varchar(255) | Type de réseau                |
+| attributes         | varchar(255) | Attributs (#tag...)           |
 | description        | longtext     | Description du réseau         |
 | protocol_type      | varchar(255) | Protocoles utilisés           |
 | responsible        | varchar(255) | Responsable de l'exploitation |
@@ -952,6 +956,8 @@ Les sous-réseaux sont une subdivision logique d’un réseau de taille plus imp
 | id                   | int unsigned | auto_increment                      |
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                 | varchar(255) | Nom du réseau                       |
+| type                 | varchar(255) | Type de sous-réseau                 |
+| attributes           | varchar(255) | Attributs (#tag...)                 |
 | description          | longtext     | Description du réseau               |
 | network_id           | int unsigned | Lien vers le réseau associé         |
 | subnetwork_id        | int unsigned | Sous-réseaux connectés              |
@@ -1349,6 +1355,8 @@ Principe général :
 | id                                                     | int unsigned | auto_increment                                |
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name                                                   | varchar(255) | Nom du flux logique                           |
+| type                                                   | varchar(255) | Type de flux logique                          |
+| attributes                                             | varchar(255) | Attributs (#tag...)                           |
 | description                                            | text         | Description du flux logique                   |
 | chain                                                  | varchar(255) | INPUT / OUTPUT / FORWARD                      |
 | interface                                              | varchar(255) | interface réseau concernée                    |
@@ -1468,6 +1476,8 @@ Les sites sont des emplacements géographiques rassemblant un ensemble de person
 | id          | int unsigned | auto_increment                      |
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom du site                         |
+| type        | varchar(255) | Type de site                        |
+| attributes  | varchar(255) | Attributs (#tag...)                 |
 | icon_id     | int unsigned | Référence vers une image spécifique |
 | description | longtext     | Description du site                 |
 | created_at  | timestamp    | Date de création                    |
@@ -1908,6 +1918,10 @@ Principe général :
 |:----------------|:-------------|:----------------------------------------|
 | id              | int unsigned | auto_increment                          |
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
+| type            | varchar(255) | Type de lien (ex : Ethernet, fiber, etc.) |
+| color           | varchar(255) | Couleur du lien                         |
+| attributes      | varchar(255) | Attributs (#tag...)                     |
+| description     | longtext     | Description du lien                     |
 | *device*_src_id | int unsigned | Actif source                            |
 | src_id          | varchar(255) | Port physique de l'actif source         |
 | *device*_dst_id | int unsigned | Actif de destination                    |

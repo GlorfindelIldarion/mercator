@@ -9,7 +9,7 @@
             <th width="10%">
                 {{ trans('cruds.network.fields.name') }}
             </th>
-            <td>
+            <td width="20%">
             @if ($withLink)
             @canShow($network)
             <a href="{{ route('admin.networks.show', $network->id) }}">{{ $network->name }}</a>
@@ -20,12 +20,26 @@
                 {{ $network->name }}
             @endif
             </td>
+            <th width="10%">
+                {{ trans('cruds.network.fields.type') }}
+            </th>
+            <th width="20%">
+                {{ $network->type }}
+            </td>
+            <th width="10%">
+                {{ trans('cruds.network.fields.attributes') }}
+            </th>
+            <td>
+                @foreach(explode(" ", $network->attributes) as $attribute)
+                    <span class="badge badge-info">{{ $attribute }}</span>
+                @endforeach
+            </td>
         </tr>
         <tr>
             <th>
                 {{ trans('cruds.network.fields.description') }}
             </th>
-            <td>
+            <td colspan="5">
                 {!! $network->description !!}
             </td>
         </tr>
@@ -33,7 +47,7 @@
             <th>
                 {{ trans('cruds.network.fields.protocol_type') }}
             </th>
-            <td>
+            <td colspan="5">
                 {{ $network->protocol_type }}
             </td>
         </tr>
@@ -41,7 +55,7 @@
             <th>
                 {{ trans('cruds.network.fields.responsible') }}
             </th>
-            <td>
+            <td colspan="5">
                 {{ $network->responsible }}
             </td>
         </tr>
@@ -49,7 +63,7 @@
             <th>
                 {{ trans('cruds.network.fields.responsible_sec') }}
             </th>
-            <td>
+            <td colspan="5">
                 {{ $network->responsible_sec }}
             </td>
         </tr>
@@ -60,7 +74,7 @@
                 + {{ trans("global.authenticity_short") }}
                 @endif
             </th>
-            <td>
+            <td colspan="5">
                 {{ trans('global.confidentiality') }} :
                     @if ($network->security_need_c==0){{ trans('global.none') }}@endif
                     @if ($network->security_need_c==1)<span class="veryLowRisk">{{ trans('global.low') }}</span>@endif
@@ -99,16 +113,12 @@
                 @endif
                 </td>
             </tr>
-
-
-            </td>
-        </tr>
         @canAccess(App\Models\Subnetwork::class)
         <tr>
             <th>
                 {{ trans('cruds.network.fields.subnetworks') }}
             </th>
-            <td>
+            <td colspan="5">
                 @foreach($network->subnetworks as $subnetwork)
                     @canShow($subnetwork)
                         <a href="{{ route('admin.subnetworks.show', $subnetwork->id) }}">

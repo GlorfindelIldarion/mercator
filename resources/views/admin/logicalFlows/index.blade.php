@@ -30,6 +30,12 @@
                         <th>
                             {{ trans('cruds.logicalFlow.fields.name') }}
                         </th>
+                        <th>
+                            {{ trans('cruds.logicalFlow.fields.type') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.logicalFlow.fields.attributes') }}
+                        </th>
                         <th data-column="description">
                             {{ trans('cruds.logicalFlow.fields.description') }}
                         </th>
@@ -76,6 +82,18 @@
                             </td>
                             <td>
                                 <x-show-link :model="$logicalFlow" />
+                            </td>
+                            <td>
+                                {{ $logicalFlow->type }}
+                            </td>
+                            <td>
+                                <?php
+                                foreach (explode(" ", $logicalFlow->attributes) as $attribute) {
+                                    echo "<span class='badge badge-info'>";
+                                    echo $attribute;
+                                    echo "</span> ";
+                                }
+                                ?>
                             </td>
                             <td data-column="description">
                                 {!! $logicalFlow->description !!}

@@ -11,6 +11,26 @@
                 <div style="width: 40px; height: 40px; background-color: {{ $link->color }}; border: 1px solid #ccc; border-radius: 4px;"></div>
             </td>
         </tr>
+        <tr>
+            <th width="10%">
+                {{ trans('cruds.physicalLink.fields.attributes') }}
+            </th>
+            <td colspan="2">
+                @foreach(explode(' ', $link->attributes ?? '') as $attribute)
+                    @if(strlen(trim($attribute)) > 0)
+                        <span class="badge badge-info">{{ $attribute }}</span>
+                    @endif
+                @endforeach
+            </td>
+        </tr>
+        <tr>
+            <th>
+                {{ trans('cruds.physicalLink.fields.description') }}
+            </th>
+            <td colspan="2">
+                {!! $link->description !!}
+            </td>
+        </tr>
         @canAccessAny(App\Models\Peripheral::class, App\Models\Phone::class, App\Models\PhysicalRouter::class, App\Models\PhysicalSecurityDevice::class, App\Models\PhysicalServer::class, App\Models\PhysicalSwitch::class, App\Models\StorageDevice::class, App\Models\WifiTerminal::class, App\Models\Workstation::class, App\Models\Router::class, App\Models\NetworkSwitch::class)
         <tr>
             <th width="10%">

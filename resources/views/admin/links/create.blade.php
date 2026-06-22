@@ -33,6 +33,39 @@
                             <span class="help-block">{{ trans('cruds.physicalLink.fields.color_helper') }}</span>
                         </div>
                     </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="attributes">{{ trans('cruds.physicalLink.fields.attributes') }}</label>
+                            <select class="form-control select2-free-tags {{ $errors->has('attributes') ? 'is-invalid' : '' }}"
+                                    name="attributes[]" id="attributes" multiple>
+                                @foreach($attributes_list as $a)
+                                    <option {{ in_array($a, old('attributes', [])) ? 'selected' : '' }}>{{$a}}</option>
+                                @endforeach
+                            </select>
+                            @if($errors->has('attributes'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('attributes') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.physicalLink.fields.attributes_helper') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="description">{{ trans('cruds.physicalLink.fields.description') }}</label>
+                            <textarea class="form-control ckeditor {{ $errors->has('description') ? 'is-invalid' : '' }}"
+                                      name="description" id="description">{!! old('description') !!}</textarea>
+                            @if($errors->has('description'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('description') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.physicalLink.fields.description_helper') }}</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="row">

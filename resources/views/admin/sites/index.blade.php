@@ -29,6 +29,12 @@
                         <th>
                             {{ trans('cruds.site.fields.name') }}
                         </th>
+                        <th data-column="type">
+                            {{ trans('cruds.site.fields.type') }}
+                        </th>
+                        <th data-column="attributes">
+                            {{ trans('cruds.site.fields.attributes') }}
+                        </th>
                         <th>
                             {{ trans('cruds.site.fields.description') }}
                         </th>
@@ -54,6 +60,18 @@
                             </td>
                             <td>
                                 <x-show-link :model="$site" />
+                            </td>
+                            <td>
+                                {{ $site->type }}
+                            </td>
+                            <td>
+                                <?php
+                                foreach (explode(" ", $site->attributes) as $attribute) {
+                                    echo "<span class='badge badge-info'>";
+                                    echo $attribute;
+                                    echo "</span> ";
+                                }
+                                ?>
                             </td>
                             <td>
                                 {!! $site->description ?? '' !!}
@@ -103,12 +121,13 @@
 
 @section('scripts')
 <script>
-    @include('partials.datatable', array(
-        'id' => '#dataTable',
-        'title' => trans("cruds.site.title_singular"),
-        'URL' => route('admin.sites.massDestroy'),
-        'canDelete' => auth()->user()->can('site_delete') ? true : false,
-        'serverSidePagination' => true
+@include('partials.datatable', array(
+    'id' => '#dataTable',
+    'title' => trans("cruds.site.title_singular"),
+    'URL' => route('admin.sites.massDestroy'),
+    'canDelete' => auth()->user()->can('site_delete') ? true : false,
+    'serverSidePagination' => true,
+    'hiddenColumns' => ['type', 'attributes'],
 ));
 </script>
 @endsection

@@ -34,6 +34,8 @@ class Subnetwork extends Model implements HasIconContract, HasPrefix
     protected $fillable = [
         'ext_refs',
         'name',
+        'type',
+        'attributes',
         'description',
         'address',
         'default_gateway',

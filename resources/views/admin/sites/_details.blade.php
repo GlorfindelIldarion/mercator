@@ -8,7 +8,7 @@
             <th width="10%">
                 {{ trans('cruds.site.fields.name') }}
             </th>
-            <td colspan="2">
+            <td width="20%">
             @if($withLink)
             @canShow($site)
             <a href="{{ route('admin.sites.show', $site->id) }}">{{ $site->name }}</a>
@@ -19,12 +19,26 @@
             {{ $site->name }}
             @endif
             </td>
+            <th width="10%">
+                {{ trans('cruds.site.fields.type') }}
+            </th>
+            <td width="20%">
+                {{ $site->type }}
+            </td>
+            <th width="10%">
+                {{ trans('cruds.site.fields.attributes') }}
+            </th>
+            <td colspan="2">
+                @foreach(explode(" ", $site->attributes) as $attribute)
+                    <span class="badge badge-info">{{ $attribute }}</span>
+                @endforeach
+            </td>
         </tr>
         <tr>
             <th>
                 {{ trans('cruds.site.fields.description') }}
             </th>
-            <td>
+            <td colspan="5">
                 {!! $site->description !!}
             </td>
             <td width="10%" align="center">
@@ -40,7 +54,7 @@
             <th>
                 {{ trans('cruds.site.fields.buildings') }}
             </th>
-            <td colspan="2">
+            <td colspan="6">
                 @foreach($site->buildings as $building)
                     @canShow($building)
                         <a href="{{ route('admin.buildings.show', $building->id) }}">
