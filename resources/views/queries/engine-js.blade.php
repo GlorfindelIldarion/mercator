@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnFormat    = document.getElementById('btn-format');
     const btnSave      = document.getElementById('btn-save');
     const btnToggle    = document.getElementById('btn-toggle-editor');
+    const btnCopyUrl   = document.getElementById('btn-copy-url');
     const btnExportSvg = document.getElementById('downloadSvg');
     const statusMsg    = document.getElementById('status-msg');
     const statusCount  = document.getElementById('status-count');
@@ -85,6 +86,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Toggle éditeur ───────────────────────────────────────────
     btnToggle?.addEventListener('click', () => {
         document.getElementById('editor-panel').classList.toggle('d-none');
+    });
+
+    // ── Copier l'URL d'export signée ─────────────────────────────
+    btnCopyUrl?.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(btnCopyUrl.dataset.url);
+            setStatus('URL copiée.');
+        } catch (e) {
+            setStatus('Erreur : impossible de copier l\'URL.');
+        }
     });
 
     // ── Formater ────────────────────────────────────────────────

@@ -546,6 +546,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['web.prote
 
 });
 
+// Queries — signed CSV export (signature = autorisation, hors groupe admin)
+Route::middleware('signed')->group(function (): void {
+    Route::get('/queries/{query}/export.csv', [App\Http\Controllers\API\QueryController::class, 'exportSigned'])
+        ->name('queries.export.signed');
+});
+
 // Profile
 Route::group(['prefix' => 'profile', 'as' => 'profile.', 'middleware' => ['auth']], function (): void {
     Route::get('password', [Controllers\Auth\ChangePasswordController::class, 'edit'])->name('password.edit');

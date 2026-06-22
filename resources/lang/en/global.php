@@ -61,6 +61,7 @@ return [
     'clone' => 'Clone',
     'code' => 'Code',
     'color' => 'Color',
+    'copyUrl' => 'Copy URL',
     'companies' => 'Companies',
     'company' => 'Society',
     'company_name' => 'Company name',

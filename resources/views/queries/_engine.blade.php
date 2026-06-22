@@ -34,6 +34,12 @@
         <i class="fas fa-code"></i> @lang('Éditeur')
     </button>
 
+    @isset($exportUrl)
+        <button class="btn btn-sm btn-outline-secondary" id="btn-copy-url" data-url="{{ $exportUrl }}">
+            <i class="fas fa-link"></i> {{ trans('global.copyUrl') }}
+        </button>
+    @endisset
+
     <button class="btn btn-sm btn-outline-secondary" id="btn-format"
             title="@lang('Formater la requête')">
         <i class="fas fa-indent"></i> @lang('Format')

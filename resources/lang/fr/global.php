@@ -12,6 +12,7 @@ return [
     'check' => 'Vérifier',
     'clone' => 'Copier',
     'color' => 'Couleur',
+    'copyUrl' => 'Copier l\'URL',
     'create' => 'Créer',
     'created_at' => 'Créé le',
     'dashboard' => 'Tableau de bord',
