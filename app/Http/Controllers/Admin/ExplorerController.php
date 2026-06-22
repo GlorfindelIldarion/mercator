@@ -286,7 +286,7 @@ class ExplorerController extends Controller
     private function buildBays(): void
     {
         $bays = Cartographer::scopedQuery(Bay::query())
-            ->select('id', 'name', 'room_id')
+            ->select('id', 'name', 'building_id', 'site_id')
             ->get();
 
         foreach ($bays as $bay) {
@@ -297,10 +297,15 @@ class ExplorerController extends Controller
                 'bays',
                 610);
 
-            if ($bay->room_id !== null) {
+            if ($bay->building_id !== null) {
                 $this->addLinkEdge(
                     $this->formatId(Bay::$prefix, $bay->id),
-                    $this->formatId(Building::$prefix, $bay->room_id)
+                    $this->formatId(Building::$prefix, $bay->building_id)
+                );
+            } elseif ($bay->site_id !== null) {
+                $this->addLinkEdge(
+                    $this->formatId(Bay::$prefix, $bay->id),
+                    $this->formatId(Site::$prefix, $bay->site_id)
                 );
             }
         }

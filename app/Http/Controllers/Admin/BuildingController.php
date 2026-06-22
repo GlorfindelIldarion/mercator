@@ -200,7 +200,7 @@ class BuildingController extends Controller
     {
         abort_if(Gate::denies('show-object', $building), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $building->load('site', 'roomBays', 'physicalServers', 'workstations', 'storageDevices', 'peripherals', 'phones', 'physicalSwitches');
+        $building->load('site', 'bays', 'physicalServers', 'workstations', 'storageDevices', 'peripherals', 'phones', 'physicalSwitches');
 
         return view('admin.buildings.show', compact('building'));
     }

@@ -1516,12 +1516,13 @@ Les baies sont des armoires techniques rassemblant des équipements de réseau i
 | ext_refs | varchar(255) | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
 | name        | varchar(255) | Nom de la baie                     |
 | description | longtext     | Description de la baie             |
-| room_id     | int unsigned | Référence vers le building / salle |
+| building_id | int unsigned | Référence vers le bâtiment / salle |
+| site_id     | int unsigned | Référence vers le site             |
 | created_at  | timestamp    | Date de création                   |
 | updated_at  | timestamp    | Date de mise à jour                |
 | deleted_at  | timestamp    | Date de suppression                |
 
-Dans l'application, une baie peut être rattachée à un bâtiment / baie depuis un objet baie.
+Dans l'application, une baie peut être rattachée à un bâtiment / salle et à un site depuis un objet baie.
 
 ### Zones de sécurité
 

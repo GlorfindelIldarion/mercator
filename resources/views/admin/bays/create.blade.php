@@ -36,19 +36,36 @@
                     <span class="help-block">{{ trans('cruds.bay.fields.description_helper') }}</span>
                 </div>
                 <div class="form-group">
-                    <label for="room_id">{{ trans('cruds.bay.fields.room') }}</label>
-                    <select class="form-control select2 {{ $errors->has('room') ? 'is-invalid' : '' }}" name="room_id"
-                            id="room_id">
-                        @foreach($rooms as $id => $room)
-                            <option value="{{ $id }}" {{ old('room_id') == $id ? 'selected' : '' }}>{{ $room }}</option>
+                    <label class="label-maturity-1" for="site_id">{{ trans('cruds.bay.fields.site') }}</label>
+                    <select class="form-control select2 {{ $errors->has('site') ? 'is-invalid' : '' }}" name="site_id"
+                            id="site_id">
+                        <option></option>
+                        @foreach($sites as $id => $site)
+                            <option value="{{ $id }}" {{ old('site_id') == $id ? 'selected' : '' }}>{{ $site }}</option>
                         @endforeach
                     </select>
-                    @if($errors->has('room'))
+                    @if($errors->has('site'))
                         <div class="invalid-feedback">
-                            {{ $errors->first('room') }}
+                            {{ $errors->first('site') }}
                         </div>
                     @endif
-                    <span class="help-block">{{ trans('cruds.bay.fields.room_helper') }}</span>
+                    <span class="help-block">{{ trans('cruds.bay.fields.site_helper') }}</span>
+                </div>
+                <div class="form-group">
+                    <label class="label-maturity-1" for="building_id">{{ trans('cruds.bay.fields.building') }}</label>
+                    <select class="form-control select2 {{ $errors->has('building') ? 'is-invalid' : '' }}" name="building_id"
+                            id="building_id">
+                        <option></option>
+                        @foreach($buildings as $id => $building)
+                            <option value="{{ $id }}" {{ old('building_id') == $id ? 'selected' : '' }}>{{ $building }}</option>
+                        @endforeach
+                    </select>
+                    @if($errors->has('building'))
+                        <div class="invalid-feedback">
+                            {{ $errors->first('building') }}
+                        </div>
+                    @endif
+                    <span class="help-block">{{ trans('cruds.bay.fields.building_helper') }}</span>
                 </div>
             </div>
         </div>

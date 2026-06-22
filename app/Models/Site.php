@@ -63,6 +63,12 @@ class Site extends Model implements HasIconContract, HasPrefix
         return $this->hasMany(Building::class, 'site_id', 'id')->orderBy('name');
     }
 
+    /** @return HasMany<Bay, $this> */
+    public function bays(): HasMany
+    {
+        return $this->hasMany(Bay::class, 'site_id', 'id')->orderBy('name');
+    }
+
     /** @return HasMany<PhysicalServer, $this> */
     public function physicalServers(): HasMany
     {

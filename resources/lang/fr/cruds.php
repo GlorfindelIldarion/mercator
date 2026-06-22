@@ -263,6 +263,8 @@ return [
     'bay' => [
         'description' => 'Armoire technique rassemblant des équipements de réseau informatique ou de téléphonie.',
         'fields' => [
+            'building' => 'Bâtiment / Salle',
+            'building_helper' => 'Bâtiment / Salle dans lequel se trouve cette baie',
             'description' => 'Description',
             'description_helper' => '',
             'name' => 'Nom',
@@ -272,8 +274,8 @@ return [
             'physical_security_devices' => 'Dispositifs de sécurité physique',
             'physical_servers' => 'Serveurs physiques',
             'physical_switches' => 'Commutateurs physiques',
-            'room' => 'Bâtiment / Salle',
-            'room_helper' => '',
+            'site' => 'Site',
+            'site_helper' => 'Site sur lequel se trouve cette baie',
             'storage_devices' => 'Dispositifs de stockages',
         ],
         'title' => 'Racks',

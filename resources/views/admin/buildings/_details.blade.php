@@ -103,7 +103,7 @@
             {{ trans('cruds.building.fields.bays') }}
         </th>
         <td colspan="6">
-            @foreach($building->roomBays as $bay)
+            @foreach($building->bays as $bay)
                 @canShow($bay)
                     <a href="{{ route('admin.bays.show', $bay->id) }}">
                         {{ $bay->name ?? '' }}
@@ -111,7 +111,7 @@
                 @elsecanShow
                     {{ $bay->name ?? '' }}
                 @endcanShow
-                @if ($building->roomBays->last()!=$bay)
+                @if ($building->bays->last()!=$bay)
                     ,
                 @endif
             @endforeach

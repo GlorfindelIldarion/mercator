@@ -19,7 +19,7 @@ class BayFactory extends Factory
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 
-            'room_id' => Building::factory(),
+            'building_id' => Building::factory(),
         ];
     }
 }

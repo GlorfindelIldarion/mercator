@@ -46,7 +46,8 @@ class Bay extends Model implements HasPrefix, HasIconContract
         'ext_refs',
         'name',
         'description',
-        'room_id',
+        'building_id',
+        'site_id',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -94,9 +95,15 @@ class Bay extends Model implements HasPrefix, HasIconContract
     }
 
     /** @return BelongsTo<Building, $this> */
-    public function room(): BelongsTo
+    public function building(): BelongsTo
     {
-        return $this->belongsTo(Building::class, 'room_id');
+        return $this->belongsTo(Building::class, 'building_id');
+    }
+
+    /** @return BelongsTo<Site, $this> */
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class, 'site_id');
     }
 
     /** @param Builder<static> $query */

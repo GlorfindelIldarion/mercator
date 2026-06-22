@@ -172,7 +172,12 @@ class NetworkInfrastructureView extends Controller
             $buildingIds = $buildings->pluck('id');
 
             $bays = Bay::query()
-                ->whereIn('room_id', $buildingIds)
+                ->where(function ($q) use ($buildingIds, $siteId) {
+                    $q->whereIn('building_id', $buildingIds)
+                        ->orWhere(function ($q) use ($siteId) {
+                            $q->whereNull('building_id')->where('site_id', $siteId);
+                        });
+                })
                 ->orderBy('name')
                 ->get();
             $bayIds = $bays->pluck('id');
@@ -181,7 +186,7 @@ class NetworkInfrastructureView extends Controller
             $bays = Bay::All()->sortBy('name')
             ->filter(function ($item) use ($buildings) {
                 foreach ($buildings as $building) {
-                    if ($item->room_id === $building->id) {
+                    if ($item->building_id === $building->id) {
                         return true;
                     }
                 }

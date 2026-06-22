@@ -28,19 +28,37 @@
             {!! $bay->description !!}
         </td>
     </tr>
+    @canAccess(App\Models\Site::class)
+    <tr>
+        <th>
+            {{ trans('cruds.bay.fields.site') }}
+        </th>
+        <td>
+            @if ($bay->site!=null)
+                @canShow($bay->site)
+                    <a href="{{ route('admin.sites.show', $bay->site->id) }}">
+                        {{ $bay->site->name ?? '' }}
+                    </a>
+                @elsecanShow
+                    {{ $bay->site->name ?? '' }}
+                @endcanShow
+            @endif
+        </td>
+    </tr>
+    @endcanAccess
     @canAccess(App\Models\Building::class)
     <tr>
         <th>
-            {{ trans('cruds.bay.fields.room') }}
+            {{ trans('cruds.bay.fields.building') }}
         </th>
         <td>
-            @if ($bay->room!=null)
-                @canShow($bay->room)
-                    <a href="{{ route('admin.buildings.show', $bay->room->id) }}">
-                        {{ $bay->room->name ?? '' }}
+            @if ($bay->building!=null)
+                @canShow($bay->building)
+                    <a href="{{ route('admin.buildings.show', $bay->building->id) }}">
+                        {{ $bay->building->name ?? '' }}
                     </a>
                 @elsecanShow
-                    {{ $bay->room->name ?? '' }}
+                    {{ $bay->building->name ?? '' }}
                 @endcanShow
             @endif
         </td>

@@ -90,9 +90,12 @@ class PhysicalInfrastructureView extends Controller
 
             // Get all bays
             $bays = Cartographer::scopedQuery(Bay::query())->orderBy('name')->get()
-                ->filter(function ($item) use ($buildings) {
+                ->filter(function ($item) use ($site, $buildings) {
+                    if (($item->building_id === null) && ($item->site_id === $site)) {
+                        return true;
+                    }
                     foreach ($buildings as $building) {
-                        if ($item->room_id === $building->id) {
+                        if ($item->building_id === $building->id) {
                             return true;
                         }
                     }
