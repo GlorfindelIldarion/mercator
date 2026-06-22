@@ -259,6 +259,8 @@ return [
     'bay' => [
         'description' => 'Technical cabinet bringing together computer network or telephone equipment.',
         'fields' => [
+            'building' => 'Building / Room',
+            'building_helper' => 'Building / Room where this bay is located',
             'description' => 'Description',
             'description_helper' => '',
             'name' => 'Name',
@@ -268,8 +270,8 @@ return [
             'physical_security_devices' => 'Physical security devices',
             'physical_servers' => 'Physical servers',
             'physical_switches' => 'Physical switches',
-            'room' => 'Building / Room',
-            'room_helper' => '',
+            'site' => 'Site',
+            'site_helper' => 'Site where this bay is located',
             'storage_devices' => 'Storage devices',
         ],
         'title' => 'Bays',

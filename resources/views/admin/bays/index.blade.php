@@ -34,7 +34,10 @@
                             {{ trans('cruds.bay.fields.description') }}
                         </th>
                         <th>
-                            {{ trans('cruds.bay.fields.room') }}
+                            {{ trans('cruds.bay.fields.site') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.bay.fields.building') }}
                         </th>
                         <th>
                             &nbsp;
@@ -60,8 +63,13 @@
                                 {!! $bay->description ?? '' !!}
                             </td>
                             <td>
-                                @if ($bay->room!=null)
-                                    <x-show-link :model="$bay->room" />
+                                @if ($bay->site!=null)
+                                    <x-show-link :model="$bay->site" />
+                                @endif
+                            </td>
+                            <td>
+                                @if ($bay->building!=null)
+                                    <x-show-link :model="$bay->building" />
                                 @endif
                             </td>
                             <td nowrap>

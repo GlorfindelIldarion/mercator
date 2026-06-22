@@ -46,7 +46,7 @@ class PhysicalInventory extends Controller
 
                 // for all bays
                 $bays = Bay::query()
-                    ->where('room_id', '=', $building->id)
+                    ->where('building_id', '=', $building->id)
                     ->orderBy('name')->get();
                 foreach ($bays as $bay) {
                     $this->addToInventory($inventory, $site, $building, $bay);

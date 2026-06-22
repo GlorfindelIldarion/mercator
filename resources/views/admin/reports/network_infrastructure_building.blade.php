@@ -48,7 +48,7 @@ bgcolor="{{ $tableau20[$idColor++ % 20] }}"
 @endforeach
 
 {{-- Draw Bays --}}
-@foreach($building->roomBays as $bay)
+@foreach($building->bays as $bay)
     subgraph BAY_{{ $bay->id }} {
     cluster=true;
     label="{{ $bay->name }}"

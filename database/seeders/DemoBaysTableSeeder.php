@@ -24,7 +24,8 @@ class DemoBaysTableSeeder extends Seeder
                 'created_at' => '2020-06-21 06:56:01',
                 'updated_at' => '2021-10-19 18:45:21',
                 'deleted_at' => null,
-                'room_id' => 7,
+                'building_id' => 7,
+                'site_id' => 1,
             ],
             1 => [
                 'id' => 2,
@@ -33,7 +34,8 @@ class DemoBaysTableSeeder extends Seeder
                 'created_at' => '2020-06-21 06:56:20',
                 'updated_at' => '2020-06-21 06:56:20',
                 'deleted_at' => null,
-                'room_id' => 1,
+                'building_id' => 1,
+                'site_id' => 1,
             ],
             2 => [
                 'id' => 3,
@@ -42,7 +44,8 @@ class DemoBaysTableSeeder extends Seeder
                 'created_at' => '2020-06-21 06:56:38',
                 'updated_at' => '2020-06-21 06:56:38',
                 'deleted_at' => null,
-                'room_id' => 1,
+                'building_id' => 1,
+                'site_id' => 1,
             ],
             3 => [
                 'id' => 4,
@@ -51,7 +54,8 @@ class DemoBaysTableSeeder extends Seeder
                 'created_at' => '2020-06-21 06:56:55',
                 'updated_at' => '2020-06-21 06:56:55',
                 'deleted_at' => null,
-                'room_id' => 2,
+                'building_id' => 2,
+                'site_id' => 1,
             ],
             4 => [
                 'id' => 5,
@@ -60,7 +64,8 @@ class DemoBaysTableSeeder extends Seeder
                 'created_at' => '2020-07-15 20:03:07',
                 'updated_at' => '2020-07-15 20:03:07',
                 'deleted_at' => null,
-                'room_id' => 3,
+                'building_id' => 3,
+                'site_id' => 2,
             ],
             5 => [
                 'id' => 6,
@@ -69,7 +74,8 @@ class DemoBaysTableSeeder extends Seeder
                 'created_at' => '2020-07-15 20:10:23',
                 'updated_at' => '2020-07-15 20:10:23',
                 'deleted_at' => null,
-                'room_id' => 5,
+                'building_id' => 5,
+                'site_id' => 3,
             ],
         ]);
 

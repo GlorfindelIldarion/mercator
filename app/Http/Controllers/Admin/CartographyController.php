@@ -1862,7 +1862,7 @@ class CartographyController extends Controller
                 foreach ($buildings as $building) {
                     $graph .= ' B'.$building->id.$this->dotImage('/images/building.png', $building->name);
                     $graph .= ' S'.$building->site_id.'->B'.$building->id;
-                    foreach ($building->roomBays as $bay) {
+                    foreach ($building->bays as $bay) {
                         $graph .= ' B'.$building->id.'->BAY'.$bay->id;
                     }
                 }
@@ -1988,11 +1988,11 @@ class CartographyController extends Controller
                     $this->addHTMLRow($table, trans('cruds.building.fields.attributes'), $building->attributes);
 
                     // Baies
-                    if ($building->roomBays->count() > 0) {
+                    if ($building->bays->count() > 0) {
                         $textRun = $this->addTextRunRow($table, trans('cruds.building.fields.bays'));
-                        foreach ($building->roomBays as $bay) {
+                        foreach ($building->bays as $bay) {
                             $textRun->addLink('BAY'.$bay->id, $bay->name, CartographyController::FANCY_LINK_STYLE, null, true);
-                            if ($building->roomBays->last() !== $bay) {
+                            if ($building->bays->last() !== $bay) {
                                 $textRun->addText(', ');
                             }
                         }

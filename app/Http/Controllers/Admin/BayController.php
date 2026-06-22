@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBayRequest;
 use App\Http\Requests\UpdateBayRequest;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Site;
 use Gate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class BayController extends Controller
     /**
      * Display the admin listing of bays.
      *
-     * @return View The 'admin.bays.index' view populated with bays (including their related room) ordered by name.
+     * @return View The 'admin.bays.index' view populated with bays (including their related site and building) ordered by name.
      */
     public function index(): View
     {
@@ -29,7 +30,7 @@ class BayController extends Controller
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
-        $bays = Bay::query()->with('room')
+        $bays = Bay::query()->with('site', 'building')
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Bay::$searchable as $field) {
@@ -38,7 +39,7 @@ class BayController extends Controller
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.bays.index', compact('bays'));
@@ -47,7 +48,7 @@ class BayController extends Controller
     /**
      * Display the bay creation form.
      *
-     * Builds a list of buildings keyed by id with a leading "please select" option and returns the admin bays create view.
+     * Builds the lists of sites and buildings used to populate the form's selects and returns the admin bays create view.
      *
      * Access is aborted with HTTP 403 if the current user lacks the "bay_create" permission.
      *
@@ -57,30 +58,32 @@ class BayController extends Controller
     {
         abort_if(Gate::denies('bay_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $rooms = Building::all()->sortBy('name')->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+        $sites = Site::all()->sortBy('name')->pluck('name', 'id');
+        $buildings = Building::all()->sortBy('name')->pluck('name', 'id');
 
-        return view('admin.bays.create', compact('rooms'));
+        return view('admin.bays.create', compact('sites', 'buildings'));
     }
 
     /**
      * Display the bay creation form pre-filled with the given bay's attributes.
      *
-     * The view includes a sorted list of buildings (rooms) and flashes the provided bay's fillable attributes
+     * The view includes sorted lists of sites and buildings and flashes the provided bay's fillable attributes
      * into the request so the creation form is pre-populated.
      *
      * @param  Bay  $bay  The bay whose attributes will be used to pre-fill the creation form.
-     * @return View The bay creation view with a `rooms` list and flashed input from `$bay`.
+     * @return View The bay creation view with `sites`/`buildings` lists and flashed input from `$bay`.
      */
     public function clone(Request $request, Bay $bay): View
     {
         abort_if(Gate::denies('bay_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $rooms = Building::all()->sortBy('name')->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+        $sites = Site::all()->sortBy('name')->pluck('name', 'id');
+        $buildings = Building::all()->sortBy('name')->pluck('name', 'id');
 
         $request->merge($bay->only($bay->getFillable()));
         $request->flash();
 
-        return view('admin.bays.create', compact('rooms'));
+        return view('admin.bays.create', compact('sites', 'buildings'));
     }
 
     /**
@@ -100,17 +103,18 @@ class BayController extends Controller
      * Show the form for editing the specified bay.
      *
      * @param  \App\Models\Bay  $bay  The bay instance to edit.
-     * @return \Illuminate\View\View The edit view populated with the bay and selectable rooms.
+     * @return \Illuminate\View\View The edit view populated with the bay and selectable sites/buildings.
      */
     public function edit(Bay $bay): View
     {
         abort_if(Gate::denies('edit-object', $bay), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $rooms = Building::all()->sortBy('name')->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+        $sites = Site::all()->sortBy('name')->pluck('name', 'id');
+        $buildings = Building::all()->sortBy('name')->pluck('name', 'id');
 
-        $bay->load('room');
+        $bay->load('site', 'building');
 
-        return view('admin.bays.edit', compact('rooms', 'bay'));
+        return view('admin.bays.edit', compact('sites', 'buildings', 'bay'));
     }
 
     /**
@@ -130,7 +134,7 @@ class BayController extends Controller
     }
 
     /**
-     * Display the specified bay with its associated room and hardware collections.
+     * Display the specified bay with its associated site, building and hardware collections.
      *
      * @param  \App\Models\Bay  $bay  The Bay instance to display.
      * @return \Illuminate\View\View The view presenting the Bay and its loaded relationships.
@@ -139,7 +143,7 @@ class BayController extends Controller
     {
         abort_if(Gate::denies('show-object', $bay), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $bay->load('room', 'physicalServers', 'storageDevices', 'peripherals', 'physicalSwitches', 'physicalRouters', 'physicalSecurityDevices');
+        $bay->load('site', 'building', 'physicalServers', 'storageDevices', 'peripherals', 'physicalSwitches', 'physicalRouters', 'physicalSecurityDevices');
 
         return view('admin.bays.show', compact('bay'));
     }

@@ -1511,12 +1511,13 @@ Racks are technical cabinets housing computer network or telephony equipment.
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
 | name        | varchar(255) | Name of the rack             |
 | description | longtext     | Description of the rack      |
-| room_id     | int unsigned | Reference to building / room |
+| building_id | int unsigned | Reference to building / room |
+| site_id     | int unsigned | Reference to the site        |
 | created_at  | timestamp    | Date of creation             |
 | updated_at  | timestamp    | Date of update               |
 | deleted_at  | timestamp    | Date of deletion             |
 
-In the app, a rack can be linked to a building / room from a rack object.
+In the app, a rack can be linked to a building / room and to a site from a rack object.
 
 ### Security zones
 

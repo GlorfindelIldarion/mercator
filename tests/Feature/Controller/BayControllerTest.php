@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Bay;
+use App\Models\Building;
+use App\Models\Site;
 use App\Models\User;
 use Database\Seeders\PermissionRoleTableSeeder;
 use Database\Seeders\PermissionsTableSeeder;
@@ -54,7 +56,7 @@ describe('create', function () {
 
         $response->assertOk();
         $response->assertViewIs('admin.bays.create');
-        $response->assertViewHas(['rooms']);
+        $response->assertViewHas(['sites', 'buildings']);
     });
 
     test('denies access without permission', function () {
@@ -134,6 +136,28 @@ describe('update', function () {
 
         $response->assertRedirect(route('admin.bays.index'));
         $this->assertDatabaseHas('bays', ['name' => 'Updated Name']);
+    });
+
+    test('can update building and site', function () {
+        $bay = Bay::factory()->create();
+        $building = Building::factory()->create();
+        $site = Site::factory()->create();
+
+        $data = [
+            'name' => $bay->name,
+            'description' => $bay->description,
+            'building_id' => $building->id,
+            'site_id' => $site->id,
+        ];
+
+        $response = $this->put(route('admin.bays.update', $bay), $data);
+
+        $response->assertRedirect(route('admin.bays.index'));
+        $this->assertDatabaseHas('bays', [
+            'id' => $bay->id,
+            'building_id' => $building->id,
+            'site_id' => $site->id,
+        ]);
     });
 });
 
