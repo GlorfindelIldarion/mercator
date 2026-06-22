@@ -30,6 +30,12 @@
                         <th>
                             {{ trans('cruds.information.fields.name') }}
                         </th>
+                        <th data-column="type">
+                            {{ trans('cruds.information.fields.type') }}
+                        </th>
+                        <th data-column="attributes">
+                            {{ trans('cruds.information.fields.attributes') }}
+                        </th>
                         <th>
                             {{ trans('cruds.information.fields.description') }}
                         </th>
@@ -84,6 +90,18 @@
                             </td>
                             <td>
                                 <x-show-link :model="$info" />
+                            </td>
+                            <td>
+                                {{ $info->type }}
+                            </td>
+                            <td>
+                                <?php
+                                foreach (explode(" ", $info->attributes) as $attribute) {
+                                    echo "<span class='badge badge-info'>";
+                                    echo $attribute;
+                                    echo "</span> ";
+                                }
+                                ?>
                             </td>
                             <td>
                                 {!! $info->description ?? '' !!}
@@ -221,7 +239,7 @@
     'URL' => route('admin.information.massDestroy'),
     'canDelete' => auth()->user()->can('information_delete') ? true : false,
     'serverSidePagination' => true,
-    'hiddenColumns' => ['constraints'],
+    'hiddenColumns' => ['type','attributes','constraints'],
 ));
 </script>
 @endsection

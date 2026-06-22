@@ -434,6 +434,8 @@ Information can be linked to multiple information.
 | id                 | int unsigned | auto_increment                                 |
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
 | name               | varchar(255) | Name of information                            |
+| type               | varchar(255) | Type of information                            |
+| attributes         | varchar(255) | Attributes (#tag...)                           |
 | description        | longtext     | Description of information                     |
 | owner              | varchar(255) | Owner of information                           |
 | administrator      | varchar(255) | Information administrator                      |
@@ -915,6 +917,8 @@ Networks are a set of logically interconnected devices that exchange information
 | id                 | int unsigned | auto_increment             |
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
 | name               | varchar(255) | Name of network            |
+| type               | varchar(255) | Type of network            |
+| attributes         | varchar(255) | Attributes (#tag...)       |
 | description        | longtext     | Description of the network |
 | protocol_type      | varchar(255) | Used protocols             |
 | responsible        | varchar(255) | Operation manager          |
@@ -945,6 +949,8 @@ Subnetworks are a logical subdivision of a larger network.
 | id                   | int unsigned | auto_increment                       |
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
 | name                 | varchar(255) | Name of the subnet                   |
+| type                 | varchar(255) | Type of the subnet                   |
+| attributes           | varchar(255) | Attributes (#tag...)                 |
 | description          | longtext     | Description of the subnet            |
 | network_id           | int unsigned | ID related to parent network         |
 | subnetwork_id        | int unsigned | ID related to child network          |
@@ -1345,6 +1351,8 @@ General principle :
 | id                 | int unsigned | auto_increment                           |
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
 | name               | varchar(255) | Name of logical flow                     |
+| type               | varchar(255) | Type of logical flow                     |
+| attributes         | varchar(255) | Attributes (#tag...)                     |
 | description        | text         | Description of logical flow              |
 | chain              | varchar(255) | INPUT / OUTPUT / FORWARD                 |
 | interface          | varchar(255) | Network interface used                   |
@@ -1463,6 +1471,8 @@ Sites are geographical locations that bring together a group of people and/or re
 | id          | int unsigned | auto_increment               |
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
 | name        | varchar(255) | Name of the site             |
+| type        | varchar(255) | Type of the site             |
+| attributes  | varchar(255) | Attributes (#tag...)         |
 | icon_id     | int unsigned | Reference to a specific icon |
 | description | longtext     | Description of the site      |
 | created_at  | timestamp    | Date of creation             |
@@ -1898,6 +1908,10 @@ A logic flow describes a relationship at layers 3 and 4 of the OSI model.
 |:----------------|:-------------|:----------------------------------------|
 | id              | int unsigned | auto_increment                          |
 | ext_refs | varchar(255) | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
+| type            | varchar(255) | Link type (e.g., Ethernet, fiber, etc.) |
+| color           | varchar(255) | Link color                              |
+| attributes      | varchar(255) | Attributes (#tag...)                    |
+| description     | longtext     | Description of the link                 |
 | *device*_src_id | int unsigned | Source                                  |
 | src_id          | varchar(255) | Physical port of the source device      |
 | *device*_dst_id | int unsigned | Destination                             |

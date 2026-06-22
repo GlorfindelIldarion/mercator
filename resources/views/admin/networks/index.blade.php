@@ -31,6 +31,12 @@
                             {{ trans('cruds.network.fields.name') }}
                         </th>
                         <th>
+                            {{ trans('cruds.network.fields.type') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.network.fields.attributes') }}
+                        </th>
+                        <th>
                             {{ trans('cruds.network.fields.description') }}
                         </th>
                         <th>
@@ -66,6 +72,18 @@
                             </td>
                             <td>
                                 <x-show-link :model="$network" />
+                            </td>
+                            <td>
+                                {{ $network->type }}
+                            </td>
+                            <td>
+                                <?php
+                                foreach (explode(" ", $network->attributes) as $attribute) {
+                                    echo "<span class='badge badge-info'>";
+                                    echo $attribute;
+                                    echo "</span> ";
+                                }
+                                ?>
                             </td>
                             <td>
                                 {!! $network->description ?? '' !!}

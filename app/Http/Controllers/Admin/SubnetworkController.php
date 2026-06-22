@@ -42,6 +42,8 @@ class SubnetworkController extends Controller
 
     public function store(StoreSubnetworkRequest $request)
     {
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
+
         Subnetwork::create($request->all());
 
         return redirect()->route('admin.subnetworks.index');
@@ -75,6 +77,8 @@ class SubnetworkController extends Controller
         $dmz_list = Subnetwork::select('dmz')->where('dmz', '<>', null)->distinct()->orderBy('dmz')->pluck('dmz');
         $wifi_list = Subnetwork::select('wifi')->where('wifi', '<>', null)->distinct()->orderBy('wifi')->pluck('wifi');
         $zone_list = Subnetwork::select('zone')->where('zone', '<>', null)->distinct()->orderBy('zone')->pluck('zone');
+        $type_list = Subnetwork::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         return view(
             'admin.subnetworks.create',
@@ -87,7 +91,9 @@ class SubnetworkController extends Controller
                 'responsible_exp_list',
                 'dmz_list',
                 'wifi_list',
-                'zone_list'
+                'zone_list',
+                'type_list',
+                'attributes_list'
             )
         );
     }
@@ -117,6 +123,8 @@ class SubnetworkController extends Controller
         $dmz_list = Subnetwork::select('dmz')->where('dmz', '<>', null)->distinct()->orderBy('dmz')->pluck('dmz');
         $wifi_list = Subnetwork::select('wifi')->where('wifi', '<>', null)->distinct()->orderBy('wifi')->pluck('wifi');
         $zone_list = Subnetwork::select('zone')->where('zone', '<>', null)->distinct()->orderBy('zone')->pluck('zone');
+        $type_list = Subnetwork::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         $subnetwork->load('connectedSubnets', 'gateway');
 
@@ -132,7 +140,9 @@ class SubnetworkController extends Controller
                 'responsible_exp_list',
                 'dmz_list',
                 'wifi_list',
-                'zone_list'
+                'zone_list',
+                'type_list',
+                'attributes_list'
             )
         );
     }
@@ -140,6 +150,8 @@ class SubnetworkController extends Controller
     public function update(UpdateSubnetworkRequest $request, Subnetwork $subnetwork)
     {
         abort_if(Gate::denies('edit-object', $subnetwork), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         $subnetwork->update($request->all());
 
@@ -169,5 +181,24 @@ class SubnetworkController extends Controller
         Subnetwork::whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function getAttributes()
+    {
+        $attributes_list = Subnetwork::query()
+            ->select('attributes')
+            ->where('attributes', '<>', null)
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+
+        return array_unique($res);
     }
 }

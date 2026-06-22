@@ -41,12 +41,16 @@ class NetworkController extends Controller
         abort_if(Gate::denies('network_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $subnetworks = Subnetwork::all()->sortBy('name')->pluck('name', 'id');
+        $type_list = Network::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
-        return view('admin.networks.create', compact('subnetworks'));
+        return view('admin.networks.create', compact('subnetworks', 'type_list', 'attributes_list'));
     }
 
     public function store(StoreNetworkRequest $request)
     {
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
+
         Network::create($request->all());
         // $network->subnetworks()->sync($request->input('subnetworks', []));
 
@@ -60,13 +64,17 @@ class NetworkController extends Controller
         $subnetworks = Subnetwork::all()->sortBy('name')->pluck('name', 'id');
 
         $network->load('subnetworks');
+        $type_list = Network::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
-        return view('admin.networks.edit', compact('subnetworks', 'network'));
+        return view('admin.networks.edit', compact('subnetworks', 'network', 'type_list', 'attributes_list'));
     }
 
     public function update(UpdateNetworkRequest $request, Network $network)
     {
         abort_if(Gate::denies('edit-object', $network), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         $network->update($request->all());
 
@@ -99,5 +107,24 @@ class NetworkController extends Controller
         Network::whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function getAttributes()
+    {
+        $attributes_list = Network::query()
+            ->select('attributes')
+            ->where('attributes', '<>', null)
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+
+        return array_unique($res);
     }
 }

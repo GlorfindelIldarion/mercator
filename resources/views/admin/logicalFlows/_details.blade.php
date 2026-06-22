@@ -4,8 +4,22 @@
         <th width='10%'>
             {{ trans('cruds.logicalFlow.fields.name') }}
         </th>
-        <td colspan='6'>
+        <td>
             {{ $logicalFlow->name ?? "NONAME" }}
+        </td>
+        <th width='10%'>
+            {{ trans('cruds.logicalFlow.fields.type') }}
+        </th>
+        <td>
+            {{ $logicalFlow->type }}
+        </td>
+        <th width='10%'>
+            {{ trans('cruds.logicalFlow.fields.attributes') }}
+        </th>
+        <td colspan="2">
+            @foreach(explode(" ", $logicalFlow->attributes) as $attribute)
+                <span class="badge badge-info">{{ $attribute }}</span>
+            @endforeach
         </td>
     </tr>
 

@@ -125,11 +125,13 @@ class LogicalFlowController extends Controller
             ->distinct()
             ->orderBy('protocol')
             ->pluck('protocol');
+        $type_list = LogicalFlow::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         return view(
             'admin.logicalFlows.create',
             compact('routers', 'devices',
-                'interface_list', 'protocol_list')
+                'interface_list', 'protocol_list', 'type_list', 'attributes_list')
         );
     }
 
@@ -160,6 +162,8 @@ class LogicalFlowController extends Controller
                 ]
             ]
         );
+
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         $link = LogicalFlow::create($request->all());
 
@@ -260,11 +264,13 @@ class LogicalFlowController extends Controller
         // Lists
         $interface_list = LogicalFlow::select('interface')->whereNotNull('interface')->distinct()->orderBy('interface')->pluck('interface');
         $protocol_list = LogicalFlow::select('protocol')->whereNotNull('protocol')->distinct()->orderBy('protocol')->pluck('protocol');
+        $type_list = LogicalFlow::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         return view(
             'admin.logicalFlows.edit',
             compact('logicalFlow', 'devices', 'routers',
-                'interface_list', 'protocol_list')
+                'interface_list', 'protocol_list', 'type_list', 'attributes_list')
         );
     }
 
@@ -297,6 +303,8 @@ class LogicalFlowController extends Controller
                 ]
             ]
         );
+
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         // Source device
         if (str_starts_with($request->src_id, LogicalServer::$prefix)) {
@@ -366,5 +374,24 @@ class LogicalFlowController extends Controller
         LogicalFlow::query()->whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function getAttributes()
+    {
+        $attributes_list = LogicalFlow::query()
+            ->select('attributes')
+            ->where('attributes', '<>', null)
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+
+        return array_unique($res);
     }
 }

@@ -34,6 +34,12 @@
                             {{ trans('cruds.physicalLink.fields.color') }}
                         </th>
                         <th>
+                            {{ trans('cruds.physicalLink.fields.attributes') }}
+                        </th>
+                        <th>
+                            {{ trans('cruds.physicalLink.fields.description') }}
+                        </th>
+                        <th>
                             {{ trans('cruds.physicalLink.fields.src') }}
                         </th>
                         <th width='100'>
@@ -63,6 +69,16 @@
                                 <a href="{{ route('admin.links.show', $physicalLink->id) }}">
                                 <div style="width: 40px; height: 40px; background-color: {{ $physicalLink->color }}; border: 1px solid #ccc; border-radius: 4px;"></div>
                                 </a>
+                            </td>
+                            <td>
+                                @foreach(explode(' ', $physicalLink->attributes ?? '') as $attribute)
+                                    @if(strlen(trim($attribute)) > 0)
+                                        <span class="badge badge-info">{{ $attribute }}</span>
+                                    @endif
+                                @endforeach
+                            </td>
+                            <td>
+                                {!! $physicalLink->description ?? '' !!}
                             </td>
                             <td>
                                 @if ($physicalLink->peripheralSrc!=null)

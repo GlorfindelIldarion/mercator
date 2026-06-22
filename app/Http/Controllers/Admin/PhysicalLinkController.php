@@ -6,10 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyPhysicalLinkRequest;
 use App\Http\Requests\StorePhysicalLinkRequest;
 use App\Http\Requests\UpdatePhysicalLinkRequest;
-use Gate;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Cartographer;
 use App\Models\LogicalServer;
 use App\Models\NetworkSwitch;
 use App\Models\Peripheral;
@@ -23,6 +20,12 @@ use App\Models\Router;
 use App\Models\StorageDevice;
 use App\Models\WifiTerminal;
 use App\Models\Workstation;
+use Gate;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class PhysicalLinkController extends Controller
@@ -30,7 +33,7 @@ class PhysicalLinkController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('physical_link_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\PhysicalLink::class);
+        $allowedIds = Gate::allows('physical_link_access') ? null : Cartographer::allowedIdsFor($user, PhysicalLink::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -38,26 +41,25 @@ class PhysicalLinkController extends Controller
         // TODO: optimise loading of related objects
         $physicalLinks = PhysicalLink::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (PhysicalLink::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-                $nameRelations = [
-                    'peripheralSrc', 'phoneSrc', 'physicalRouterSrc', 'physicalSecurityDeviceSrc',
-                    'physicalServerSrc', 'physicalSwitchSrc', 'storageDeviceSrc', 'wifiTerminalSrc',
-                    'workstationSrc', 'routerSrc', 'networkSwitchSrc', 'logicalServerSrc',
-                    'peripheralDest', 'phoneDest', 'physicalRouterDest', 'physicalSecurityDeviceDest',
-                    'physicalServerDest', 'physicalSwitchDest', 'storageDeviceDest', 'wifiTerminalDest',
-                    'workstationDest', 'routerDest', 'networkSwitchDest', 'logicalServerDest',
-                ];
-                foreach ($nameRelations as $relation) {
-                    $q->orWhereHas($relation, fn ($r) => $r->where('name', 'like', "%{$search}%"));
-                }
-            });
-        })
-        ->orderBy('id')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (PhysicalLink::$searchable as $field) {
+                        $q->orWhere($field, 'like', "%{$search}%");
+                    }
+                    $nameRelations = [
+                        'peripheralSrc', 'phoneSrc', 'physicalRouterSrc', 'physicalSecurityDeviceSrc',
+                        'physicalServerSrc', 'physicalSwitchSrc', 'storageDeviceSrc', 'wifiTerminalSrc',
+                        'workstationSrc', 'routerSrc', 'networkSwitchSrc', 'logicalServerSrc',
+                        'peripheralDest', 'phoneDest', 'physicalRouterDest', 'physicalSecurityDeviceDest',
+                        'physicalServerDest', 'physicalSwitchDest', 'storageDeviceDest', 'wifiTerminalDest',
+                        'workstationDest', 'routerDest', 'networkSwitchDest', 'logicalServerDest',
+                    ];
+                    foreach ($nameRelations as $relation) {
+                        $q->orWhereHas($relation, fn ($r) => $r->where('name', 'like', "%{$search}%"));
+                    }
+                });
+            })
+            ->orderBy('id')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.links.index',
             compact('physicalLinks'));
@@ -69,6 +71,7 @@ class PhysicalLinkController extends Controller
 
         // Types
         $types = PhysicalLink::query()->distinct('type')->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         // physical devices
         $peripherals = Peripheral::All()->sortBy('name')->pluck('name', 'id');
@@ -88,44 +91,44 @@ class PhysicalLinkController extends Controller
 
         $devices = Collection::make();
         foreach ($peripherals as $key => $value) {
-            $devices->put(Peripheral::$prefix . $key, $value);
+            $devices->put(Peripheral::$prefix.$key, $value);
         }
         foreach ($phones as $key => $value) {
-            $devices->put(Phone::$prefix . $key, $value);
+            $devices->put(Phone::$prefix.$key, $value);
         }
         foreach ($physicalRouters as $key => $value) {
-            $devices->put(PhysicalRouter::$prefix . $key, $value);
+            $devices->put(PhysicalRouter::$prefix.$key, $value);
         }
         foreach ($physicalSecurityDevices as $key => $value) {
-            $devices->put(PhysicalSecurityDevice::$prefix . $key, $value);
+            $devices->put(PhysicalSecurityDevice::$prefix.$key, $value);
         }
         foreach ($physicalServers as $key => $value) {
-            $devices->put(PhysicalServer::$prefix . $key, $value);
+            $devices->put(PhysicalServer::$prefix.$key, $value);
         }
         foreach ($physicalSwitches as $key => $value) {
-            $devices->put(PhysicalSwitch::$prefix . $key, $value);
+            $devices->put(PhysicalSwitch::$prefix.$key, $value);
         }
         foreach ($storageDevices as $key => $value) {
-            $devices->put(StorageDevice::$prefix . $key, $value);
+            $devices->put(StorageDevice::$prefix.$key, $value);
         }
         foreach ($wifiTerminals as $key => $value) {
-            $devices->put(WifiTerminal::$prefix . $key, $value);
+            $devices->put(WifiTerminal::$prefix.$key, $value);
         }
         foreach ($workstations as $key => $value) {
-            $devices->put(Workstation::$prefix . $key, $value);
+            $devices->put(Workstation::$prefix.$key, $value);
         }
 
         foreach ($routers as $key => $value) {
-            $devices->put(Router::$prefix . $key, $value);
+            $devices->put(Router::$prefix.$key, $value);
         }
         foreach ($networkSwitches as $key => $value) {
-            $devices->put(NetworkSwitch::$prefix . $key, $value);
+            $devices->put(NetworkSwitch::$prefix.$key, $value);
         }
         foreach ($logicalServers as $key => $value) {
-            $devices->put(LogicalServer::$prefix . $key, $value);
+            $devices->put(LogicalServer::$prefix.$key, $value);
         }
 
-        return view('admin.links.create', compact('devices', 'types'));
+        return view('admin.links.create', compact('devices', 'types', 'attributes_list'));
     }
 
     public function store(StorePhysicalLinkRequest $request)
@@ -135,6 +138,8 @@ class PhysicalLinkController extends Controller
         // Save type and color
         $link->color = $request->color;
         $link->type = $request->type;
+        $link->attributes = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
+        $link->description = $request->description;
 
         // Source device
         if (str_starts_with($request->src_id, Peripheral::$prefix)) {
@@ -293,7 +298,7 @@ class PhysicalLinkController extends Controller
      * Show the form to edit the specified PhysicalLink.
      *
      * @param  PhysicalLink  $link  The PhysicalLink to edit; its current data populates the form.
-     * @return \Illuminate\View\View The edit view populated with the consolidated devices list and the provided link.
+     * @return View The edit view populated with the consolidated devices list and the provided link.
      */
     public function edit(PhysicalLink $link)
     {
@@ -301,6 +306,7 @@ class PhysicalLinkController extends Controller
 
         // Types
         $types = PhysicalLink::query()->distinct('type')->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         // Physical devices
         $peripherals = Peripheral::All()->sortBy('name')->pluck('name', 'id');
@@ -320,44 +326,44 @@ class PhysicalLinkController extends Controller
 
         $devices = Collection::make();
         foreach ($peripherals as $key => $value) {
-            $devices->put(Peripheral::$prefix . $key, $value);
+            $devices->put(Peripheral::$prefix.$key, $value);
         }
         foreach ($phones as $key => $value) {
-            $devices->put(Phone::$prefix . $key, $value);
+            $devices->put(Phone::$prefix.$key, $value);
         }
         foreach ($physicalRouters as $key => $value) {
-            $devices->put(PhysicalRouter::$prefix . $key, $value);
+            $devices->put(PhysicalRouter::$prefix.$key, $value);
         }
         foreach ($physicalSecurityDevices as $key => $value) {
-            $devices->put(PhysicalSecurityDevice::$prefix . $key, $value);
+            $devices->put(PhysicalSecurityDevice::$prefix.$key, $value);
         }
         foreach ($physicalServers as $key => $value) {
-            $devices->put(PhysicalServer::$prefix . $key, $value);
+            $devices->put(PhysicalServer::$prefix.$key, $value);
         }
         foreach ($physicalSwitches as $key => $value) {
-            $devices->put(PhysicalSwitch::$prefix . $key, $value);
+            $devices->put(PhysicalSwitch::$prefix.$key, $value);
         }
         foreach ($storageDevices as $key => $value) {
-            $devices->put(StorageDevice::$prefix . $key, $value);
+            $devices->put(StorageDevice::$prefix.$key, $value);
         }
         foreach ($wifiTerminals as $key => $value) {
-            $devices->put(WifiTerminal::$prefix . $key, $value);
+            $devices->put(WifiTerminal::$prefix.$key, $value);
         }
         foreach ($workstations as $key => $value) {
-            $devices->put(Workstation::$prefix . $key, $value);
+            $devices->put(Workstation::$prefix.$key, $value);
         }
         foreach ($routers as $key => $value) {
-            $devices->put(Router::$prefix . $key, $value);
+            $devices->put(Router::$prefix.$key, $value);
         }
         foreach ($networkSwitches as $key => $value) {
-            $devices->put(NetworkSwitch::$prefix . $key, $value);
+            $devices->put(NetworkSwitch::$prefix.$key, $value);
         }
         foreach ($logicalServers as $key => $value) {
-            $devices->put(LogicalServer::$prefix . $key, $value);
+            $devices->put(LogicalServer::$prefix.$key, $value);
         }
 
         return view('admin.links.edit',
-            compact('devices', 'link', 'types'));
+            compact('devices', 'link', 'types', 'attributes_list'));
     }
 
     /**
@@ -366,9 +372,9 @@ class PhysicalLinkController extends Controller
      * The method derives specific device foreign keys from prefixed `src_id` and `dest_id` values, sets `src_port` and `dest_port`,
      * performs cross-record port conflict checks, and saves the updated link if validation passes.
      *
-     * @param  \App\Http\Requests\UpdatePhysicalLinkRequest  $request  Validated input containing prefixed `src_id`, `dest_id`, `src_port`, and `dest_port`.
-     * @param  \App\Models\PhysicalLink  $link  The physical link instance to update.
-     * @return \Illuminate\Http\RedirectResponse Redirects to the physical links index on success; redirects back with validation errors and input on failure.
+     * @param  UpdatePhysicalLinkRequest  $request  Validated input containing prefixed `src_id`, `dest_id`, `src_port`, and `dest_port`.
+     * @param  PhysicalLink  $link  The physical link instance to update.
+     * @return RedirectResponse Redirects to the physical links index on success; redirects back with validation errors and input on failure.
      */
     public function update(UpdatePhysicalLinkRequest $request, PhysicalLink $link)
     {
@@ -377,6 +383,8 @@ class PhysicalLinkController extends Controller
         // Update type and color
         $link->color = $request->color;
         $link->type = $request->type;
+        $link->attributes = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
+        $link->description = $request->description;
 
         // Source device
         if (str_starts_with($request->src_id, Peripheral::$prefix)) {
@@ -646,5 +654,24 @@ class PhysicalLinkController extends Controller
         PhysicalLink::whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function getAttributes()
+    {
+        $attributes_list = PhysicalLink::query()
+            ->select('attributes')
+            ->where('attributes', '<>', null)
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+
+        return array_unique($res);
     }
 }

@@ -50,6 +50,8 @@ class InformationController extends Controller
         $storage_list = Information::select('storage')->where('storage', '<>', null)->distinct()->orderBy('storage')->pluck('storage');
         $sensitivity_list = Information::select('sensitivity')->where('sensitivity', '<>', null)->distinct()->orderBy('sensitivity')->pluck('sensitivity');
         $administrator_list = Information::select('administrator')->where('administrator', '<>', null)->distinct()->orderBy('administrator')->pluck('administrator');
+        $type_list = Information::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         return view('admin.information.create', compact(
             'processes',
@@ -57,12 +59,16 @@ class InformationController extends Controller
             'storage_list',
             'sensitivity_list',
             'administrator_list',
-            'information_list'
+            'information_list',
+            'type_list',
+            'attributes_list'
         ));
     }
 
     public function store(StoreInformationRequest $request)
     {
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
+
         $information = Information::create($request->all());
 
         $information->processes()->sync($request->input('processes', []));
@@ -87,6 +93,8 @@ class InformationController extends Controller
         $storage_list = Information::select('storage')->where('storage', '<>', null)->distinct()->orderBy('storage')->pluck('storage');
         $sensitivity_list = Information::select('sensitivity')->where('sensitivity', '<>', null)->distinct()->orderBy('sensitivity')->pluck('sensitivity');
         $administrator_list = Information::select('administrator')->where('administrator', '<>', null)->distinct()->orderBy('administrator')->pluck('administrator');
+        $type_list = Information::query()->select('type')->where('type', '<>', null)->distinct()->orderBy('type')->pluck('type');
+        $attributes_list = $this->getAttributes();
 
         return view('admin.information.edit', compact(
             'processes',
@@ -95,13 +103,17 @@ class InformationController extends Controller
             'storage_list',
             'sensitivity_list',
             'administrator_list',
-            'information_list'
+            'information_list',
+            'type_list',
+            'attributes_list'
         ));
     }
 
     public function update(UpdateInformationRequest $request, Information $information)
     {
         abort_if(Gate::denies('edit-object', $information), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         $information->update($request->all());
 
@@ -135,5 +147,24 @@ class InformationController extends Controller
         Information::query()->whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function getAttributes()
+    {
+        $attributes_list = Information::query()
+            ->select('attributes')
+            ->where('attributes', '<>', null)
+            ->pluck('attributes');
+        $res = [];
+        foreach ($attributes_list as $i) {
+            foreach (explode(' ', $i) as $j) {
+                if (strlen(trim($j)) > 0) {
+                    $res[] = trim($j);
+                }
+            }
+        }
+        sort($res);
+
+        return array_unique($res);
     }
 }

@@ -47,6 +47,8 @@ class Network extends Model implements HasPrefix, HasIconContract
     protected $fillable = [
         'ext_refs',
         'name',
+        'type',
+        'attributes',
         'description',
         'protocol_type',
         'responsible',

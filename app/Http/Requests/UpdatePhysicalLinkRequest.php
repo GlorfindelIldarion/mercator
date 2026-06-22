@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\BaseFormRequest;
-
 class UpdatePhysicalLinkRequest extends BaseFormRequest
 {
     public function authorize(): bool
@@ -16,6 +14,8 @@ class UpdatePhysicalLinkRequest extends BaseFormRequest
         return [
             'type' => 'nullable|string|max:255',
             'color' => 'nullable|regex:/^#[0-9a-fA-F]{6}$/',
+            'attributes' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
             // Sources
             'peripheral_src_id' => [
                 'nullable',
