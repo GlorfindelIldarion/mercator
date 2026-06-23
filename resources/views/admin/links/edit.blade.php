@@ -56,21 +56,6 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <label for="description">{{ trans('cruds.physicalLink.fields.description') }}</label>
-                            <textarea class="form-control ckeditor {{ $errors->has('description') ? 'is-invalid' : '' }}"
-                                      name="description" id="description">{!! old('description', $link->description) !!}</textarea>
-                            @if($errors->has('description'))
-                                <div class="invalid-feedback">
-                                    {{ $errors->first('description') }}
-                                </div>
-                            @endif
-                            <span class="help-block">{{ trans('cruds.physicalLink.fields.description_helper') }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
                     <div class="col-sm-3">
                         <div class="form-group">
                             <label class="label-required" for="name">{{ trans('cruds.physicalLink.fields.src') }}</label>
@@ -135,6 +120,21 @@
                                 </div>
                             @endif
                             <span class="help-block">{{ trans('cruds.physicalLink.fields.dest_port_helper') }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="description">{{ trans('cruds.physicalLink.fields.description') }}</label>
+                            <textarea class="form-control ckeditor {{ $errors->has('description') ? 'is-invalid' : '' }}"
+                                      name="description" id="description">{!! old('description', $link->description) !!}</textarea>
+                            @if($errors->has('description'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('description') }}
+                                </div>
+                            @endif
+                            <span class="help-block">{{ trans('cruds.physicalLink.fields.description_helper') }}</span>
                         </div>
                     </div>
                 </div>
