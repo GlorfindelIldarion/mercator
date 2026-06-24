@@ -7,10 +7,26 @@ use App\Http\Requests\MassDestroyGraphRequest;
 use Gate;
 use Illuminate\Http\Request;
 use App\Models\Graph;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 
 class GraphController extends Controller
 {
+    private function getBackgrounds(): array
+    {
+        $dir = public_path('images/backgrounds');
+
+        if (! File::isDirectory($dir)) {
+            return [];
+        }
+
+        return collect(File::files($dir))
+            ->filter(fn ($file) => in_array(strtolower($file->getExtension()), ['png', 'jpg', 'jpeg', 'svg', 'webp']))
+            ->map(fn ($file) => asset('images/backgrounds/'.$file->getFilename()))
+            ->values()
+            ->all();
+    }
+
     public function index()
     {
         abort_if(Gate::denies('graph_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -36,9 +52,11 @@ class GraphController extends Controller
             ->distinct()
             ->orderBy('type')->pluck('type');
 
+        $backgrounds = $this->getBackgrounds();
+
         return view(
             'admin.graphs.edit',
-            compact('type_list', 'nodes', 'edges')
+            compact('type_list', 'nodes', 'edges', 'backgrounds')
         )
             ->with('id', '-1')
             ->with('type', '')
@@ -67,9 +85,11 @@ class GraphController extends Controller
             ->orderBy('type')
             ->pluck('type');
 
+        $backgrounds = $this->getBackgrounds();
+
         return view(
             'admin.graphs.edit',
-            compact('type_list', 'nodes', 'edges')
+            compact('type_list', 'nodes', 'edges', 'backgrounds')
         )
             ->with('id', '-1')
             ->with('name', $graph->name)
@@ -101,10 +121,12 @@ class GraphController extends Controller
         // get nodes and edges from the explorer
         [$nodes, $edges] = app('App\Http\Controllers\Admin\ExplorerController')->getData();
 
+        $backgrounds = $this->getBackgrounds();
+
         // return
         return view(
             'admin.graphs.edit',
-            compact('type_list', 'nodes', 'edges')
+            compact('type_list', 'nodes', 'edges', 'backgrounds')
         )
             ->with('id', $graph->id)
             ->with('name', $graph->name)

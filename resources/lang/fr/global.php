@@ -41,6 +41,7 @@ return [
     'hide' => 'Masquer',
     'history' => 'Historique',
     'icon_select' => 'Sélectionnez une icône',
+    'import' => 'Importer',
     'list' => 'Liste',
     'login' => 'Connexion',
     'login_id' => 'Adresse mail',

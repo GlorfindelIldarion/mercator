@@ -39,7 +39,7 @@
     <div id="graph-container"
          style="
          position: relative;
-         overflow: auto;
+         overflow: hidden;
          width: 100%;
          height: 800px;
          cursor: default;

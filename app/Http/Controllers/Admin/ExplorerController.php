@@ -749,7 +749,8 @@ class ExplorerController extends Controller
                 $this->addPhysicalLinkEdge(
                     $src,
                     $dest,
-                    $link->color
+                    $link->color,
+                    $link->type
                 );
             }
         }
@@ -1842,9 +1843,9 @@ class ExplorerController extends Controller
         $this->addEdge(null, false, $from, $to, 'LINK', null);
     }
 
-    private function addPhysicalLinkEdge(string $from, string $to, ?string $color): void
+    private function addPhysicalLinkEdge(string $from, string $to, ?string $color, ?string $type): void
     {
-        $this->addEdge(null, false, $from, $to, 'CABLE', $color);
+        $this->addEdge($type, false, $from, $to, 'CABLE', $color);
     }
 
     private function addFluxEdge(?string $name, bool $bidirectional, string $from, string $to): void

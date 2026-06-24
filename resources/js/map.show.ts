@@ -46,15 +46,49 @@ graph.options.expandedImage = null;
 const edgeDefaultStyle = graph.getStylesheet().getDefaultEdgeStyle();
 edgeDefaultStyle.labelBackgroundColor = '#FFFFFF';
 edgeDefaultStyle.strokeWidth  = 2;
-edgeDefaultStyle.rounded      = true;
+edgeDefaultStyle.rounded      = false;
 edgeDefaultStyle.entryPerimeter = false;
-edgeDefaultStyle.edgeStyle    = 'manhattanEdgeStyle';
 
 //-------------------------------------------------------------------------
 // LOAD
 
+const FIT_MARGIN = 20;
+
+// Zoom pour que tous les objets soient visibles, alignés en haut à gauche du
+// conteneur. Calcul manuel (plutôt que FitPlugin.fit()) pour garder un
+// contrôle exact en pixels sur la marge, quel que soit le niveau de zoom.
+function fitTopLeft(margin: number): void {
+    const view   = graph.getView();
+    const bounds = graph.getGraphBounds();
+    if (!bounds || bounds.width <= 0 || bounds.height <= 0) return;
+
+    const originalScale = view.scale || 1;
+    const modelWidth     = bounds.width  / originalScale;
+    const modelHeight    = bounds.height / originalScale;
+
+    const availableWidth  = container!.clientWidth  - margin * 2;
+    const availableHeight = container!.clientHeight - margin * 2;
+
+    let newScale = Math.min(availableWidth / modelWidth, availableHeight / modelHeight);
+    if (!Number.isFinite(newScale) || newScale <= 0) newScale = 1;
+
+    const modelLeft = bounds.x / originalScale - view.translate.x;
+    const modelTop  = bounds.y / originalScale - view.translate.y;
+
+    const translateX = margin / newScale - modelLeft;
+    const translateY = margin / newScale - modelTop;
+
+    view.scaleAndTranslate(newScale, translateX, translateY);
+}
+
 export function loadGraph(xml: string): void {
     new ModelXmlSerializer(model).import(xml);
+
+    // Le rendu doit être validé avant de mesurer les limites du graphe,
+    // sinon getGraphBounds() est vide et le calcul de zoom ne fait rien.
+    graph.refresh();
+
+    fitTopLeft(FIT_MARGIN);
 }
 
 (window as any).loadGraph = loadGraph;
@@ -81,7 +115,7 @@ graph.addListener(InternalEvent.CLICK, (_sender, evt) => {
 graph.addMouseListener({
     mouseMove(_sender, me) {
         const cell = me.getCell();
-        const isImageVertex = cell?.isVertex() && (cell.style as any)?.image != null;
+        const isImageVertex = cell?.isVertex() && (cell.style as any)?.image != null && !(cell.style as any)?.isBackground;
         container!.style.cursor = isImageVertex ? 'pointer' : 'default';
     },
     mouseDown(_sender, _me) {},
