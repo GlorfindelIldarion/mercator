@@ -30,20 +30,24 @@ trait Auditable
      * Create an audit log entry for the given model with the provided description.
      *
      * Records an AuditLog containing the description, the model's id and class as the subject,
-     * the current authenticated user's id (if any), the model's properties serialized and
-     * truncated to 65,534 characters, and the client's IP address (if available).
+     * the current authenticated user's id (if any), the model's serialized properties, and the
+     * client's IP address (if available). The `properties` column is a TEXT column (64KB max),
+     * so if the serialized model doesn't fit, properties is stored as null instead of being
+     * truncated, which would otherwise corrupt the JSON.
      *
      * @param  string  $description  A short description of the action to record (e.g., "created", "updated", "deleted").
      * @param  Model  $model  The Eloquent model instance being audited.
      */
     protected static function audit(string $description, Model $model): void
     {
+        $properties = (string) $model;
+
         AuditLog::query()->create([
             'description' => $description,
             'subject_id' => $model->id ?? null,
             'subject_type' => $model::class,
             'user_id' => Auth::id(),
-            'properties' => substr($model, 0, 65534),
+            'properties' => strlen($properties) <= 65534 ? $properties : null,
             'host' => request()->ip() ?? null,
         ]);
     }
