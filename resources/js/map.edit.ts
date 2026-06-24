@@ -596,11 +596,14 @@ const OBJECT_EDGE_STROKE_WIDTH = (2 / 3);
 function buildEdgeStyle(edge: Edge): object {
     const isFlux = edge.edgeType === 'FLUX';
     const isCable = edge.edgeType === 'CABLE';
+    const isLink = edge.edgeType === 'LINK';
     return {
         editable: false,
         // Un lien physique (CABLE) garde la couleur définie dans le JSON.
         strokeColor: isCable ? (edge.color ?? '#000000') : '#000000',
         strokeWidth: isCable ? 2 : OBJECT_EDGE_STROKE_WIDTH,
+        // Comme dans l'explorateur : appartenance (LINK) en pointillé, flux en trait plein.
+        dashed: isLink,
         startArrow: isFlux && (edge.bidirectional || edge.edgeDirection === 'FROM') ? 'classic' : 'none',
         endArrow: isFlux && (edge.bidirectional || edge.edgeDirection === 'TO') ? 'classic' : 'none',
     };
@@ -632,7 +635,7 @@ container.addEventListener('drop', (event: DragEvent) => {
 
     if (type === 'text-node') {
         graph.batchUpdate(() => {
-            graph.insertVertex({
+            const vertex = graph.insertVertex({
                 parent,
                 value: 'Text',
                 position: [pt.x, pt.y],
@@ -646,6 +649,7 @@ container.addEventListener('drop', (event: DragEvent) => {
                     verticalAlign: 'middle',
                 },
             });
+            graph.setSelectionCell(vertex);
         });
         return;
     }
@@ -666,6 +670,7 @@ container.addEventListener('drop', (event: DragEvent) => {
                 } as any,
             });
             graph.orderCells(true, [vertex]);
+            graph.setSelectionCell(vertex);
         });
         return;
     }
@@ -716,6 +721,8 @@ container.addEventListener('drop', (event: DragEvent) => {
                     });
                 }
             });
+
+            graph.setSelectionCell(newVertex);
         });
         refreshParallelEdges();
     }
@@ -1142,7 +1149,7 @@ document.getElementById('add-node-btn')?.addEventListener('click', () => {
             y: container.clientHeight / 2 / view.scale - view.translate.y,
         };
 
-        graph.insertVertex({
+        const newVertex = graph.insertVertex({
             parent,
             id: node.id,
             value: buildLabel(node),
@@ -1159,6 +1166,7 @@ document.getElementById('add-node-btn')?.addEventListener('click', () => {
         });
 
         completeMissingEdgesAmongPlacedNodes(parent);
+        graph.setSelectionCell(newVertex);
     });
     refreshParallelEdges();
 });
