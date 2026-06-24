@@ -12,13 +12,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuditLogsController extends Controller
 {
-
     public function index(Request $request)
     {
         abort_if(Gate::denies('audit_log_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $search   = $request->input('search');
-        $perPage  = (int) $request->input('per_page', 100);
+        $search = $request->input('search');
+        $perPage = (int) $request->input('per_page', 100);
 
         // On borne les valeurs possibles pour éviter les conneries
         $allowedPerPage = [10, 25, 50, 100, 1000];
@@ -39,19 +38,20 @@ class AuditLogsController extends Controller
             )
             ->join('users', 'users.id', '=', 'user_id');
 
-        if (!empty($search)) {
+        if (! empty($search)) {
 
             // Découpe la recherche en mots séparés
             $terms = preg_split('/\s+/', trim($search));
 
             // Pour chaque mot, on impose une condition (AND)
             foreach ($terms as $term) {
-                $query->where(function ($q) use ($term) {
-                    $q->where('description', 'like', "%{$term}%")
-                        ->orWhere('properties', 'like', "%{$term}%")
-                        ->orWhere('subject_type', 'like', "%{$term}%")
-                        ->orWhere('users.name', 'like', "%{$term}%")
-                        ->orWhere('host', 'like', "%{$term}%");
+                $like = '%'.mb_strtolower($term).'%';
+                $query->where(function ($q) use ($like) {
+                    $q->whereRaw('LOWER(description) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(properties) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(subject_type) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(users.name) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(host) LIKE ?', [$like]);
                 });
             }
         }
@@ -60,31 +60,29 @@ class AuditLogsController extends Controller
             ->orderBy('audit_logs.id', 'desc')
             ->paginate($perPage)
             ->appends([
-                'search'   => $search,
+                'search' => $search,
                 'per_page' => $perPage,
             ]);
 
         return view('admin.auditLogs.index', [
-            'logs'      => $logs,
-            'search'    => $search,
-            'perPage'   => $perPage,
+            'logs' => $logs,
+            'search' => $search,
+            'perPage' => $perPage,
             'perPageOptions' => $allowedPerPage,
         ]);
     }
 
-
-
     public function show(AuditLog $auditLog)
     {
         if (Gate::denies('audit_log_show')) {
-            $user    = auth()->user();
+            $user = auth()->user();
             $roleIds = $user->roles()->pluck('roles.id');
 
             $isCartographer = Cartographer::where('cartographiable_type', $auditLog->subject_type)
                 ->where('cartographiable_id', $auditLog->subject_id)
                 ->where(function ($q) use ($user, $roleIds) {
                     $q->where('user_id', $user->id)
-                      ->orWhereIn('role_id', $roleIds);
+                        ->orWhereIn('role_id', $roleIds);
                 })
                 ->exists();
 
@@ -99,14 +97,14 @@ class AuditLogsController extends Controller
         abort_if(($request->id === null) || ($request->type === null), 500, '500 missing parameters');
 
         if (Gate::denies('audit_log_show')) {
-            $user    = auth()->user();
+            $user = auth()->user();
             $roleIds = $user->roles()->pluck('roles.id');
 
             $isCartographer = Cartographer::where('cartographiable_type', $request->type)
                 ->where('cartographiable_id', $request->id)
                 ->where(function ($q) use ($user, $roleIds) {
                     $q->where('user_id', $user->id)
-                      ->orWhereIn('role_id', $roleIds);
+                        ->orWhereIn('role_id', $roleIds);
                 })
                 ->exists();
 

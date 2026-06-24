@@ -8,6 +8,7 @@ use App\Http\Requests\StoreZoneRequest;
 use App\Http\Requests\UpdateZoneRequest;
 use App\Models\AdminUser;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\Zone;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,7 @@ class ZoneController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('zone_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Zone::class);
+        $allowedIds = Gate::allows('zone_access') ? null : Cartographer::allowedIdsFor($user, Zone::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -26,12 +27,12 @@ class ZoneController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Zone::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.zones.index', compact('zones'));
@@ -41,10 +42,10 @@ class ZoneController extends Controller
     {
         abort_if(Gate::denies('zone_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $zones           = Zone::orderBy('name')->pluck('name', 'id');
-        $buildings       = Building::orderBy('name')->pluck('name', 'id');
-        $adminUsers      = AdminUser::orderBy('user_id')->pluck('user_id', 'id');
-        $type_list       = Zone::query()->select('type')->whereNotNull('type')->where('type', '<>', '')->distinct()->orderBy('type')->pluck('type');
+        $zones = Zone::orderBy('name')->pluck('name', 'id');
+        $buildings = Building::orderBy('name')->pluck('name', 'id');
+        $adminUsers = AdminUser::orderBy('user_id')->pluck('user_id', 'id');
+        $type_list = Zone::query()->select('type')->whereNotNull('type')->where('type', '<>', '')->distinct()->orderBy('type')->pluck('type');
         $attributes_list = $this->getAttributes();
 
         return view('admin.zones.create', compact('zones', 'buildings', 'adminUsers', 'type_list', 'attributes_list'));
@@ -66,10 +67,10 @@ class ZoneController extends Controller
     {
         abort_if(Gate::denies('edit-object', $zone), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $zones           = Zone::orderBy('name')->pluck('name', 'id');
-        $buildings       = Building::orderBy('name')->pluck('name', 'id');
-        $adminUsers      = AdminUser::orderBy('user_id')->pluck('user_id', 'id');
-        $type_list       = Zone::query()->select('type')->whereNotNull('type')->where('type', '<>', '')->distinct()->orderBy('type')->pluck('type');
+        $zones = Zone::orderBy('name')->pluck('name', 'id');
+        $buildings = Building::orderBy('name')->pluck('name', 'id');
+        $adminUsers = AdminUser::orderBy('user_id')->pluck('user_id', 'id');
+        $type_list = Zone::query()->select('type')->whereNotNull('type')->where('type', '<>', '')->distinct()->orderBy('type')->pluck('type');
         $attributes_list = $this->getAttributes();
         $zone->load('parentZones', 'childZones', 'buildings', 'adminUsers');
 

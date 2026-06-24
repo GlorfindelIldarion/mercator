@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyPeripheralRequest;
 use App\Http\Requests\StorePeripheralRequest;
 use App\Http\Requests\UpdatePeripheralRequest;
+use App\Models\Application;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\Entity;
-use App\Models\Application;
 use App\Models\Peripheral;
 use App\Models\Site;
 use App\Services\IconUploadService;
@@ -24,7 +25,7 @@ class PeripheralController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('peripheral_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Peripheral::class);
+        $allowedIds = Gate::allows('peripheral_access') ? null : Cartographer::allowedIdsFor($user, Peripheral::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -33,12 +34,12 @@ class PeripheralController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Peripheral::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.peripherals.index', compact('peripherals'));

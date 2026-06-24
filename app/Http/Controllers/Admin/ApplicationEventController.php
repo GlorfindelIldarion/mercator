@@ -16,8 +16,8 @@ class ApplicationEventController extends Controller
     /**
      * Retourne les événements d'une application.
      *
-     * @param  \Illuminate\Http\Request  $request  Doit contenir :
-     *                                             - `id` (int): ID de l'application.
+     * @param  Request  $request  Doit contenir :
+     *                            - `id` (int): ID de l'application.
      */
     public function index(Request $request): JsonResponse
     {
@@ -37,18 +37,17 @@ class ApplicationEventController extends Controller
         return response()->json($events);
     }
 
-
     public function store(Request $request): JsonResponse
     {
         $request->validate([
             'application_id' => ['required', 'integer', 'exists:applications,id'],
-            'message'          => ['required', 'string', 'max:2000'],
+            'message' => ['required', 'string', 'max:2000'],
         ]);
 
         $application = Application::findOrFail($request->integer('application_id'));
         abort_if(Gate::denies('edit-object', $application), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $event = new ApplicationEvent();
+        $event = new ApplicationEvent;
         $event->application()->associate($application);
         $event->user()->associate($request->user());
         $event->message = $request->string('message');

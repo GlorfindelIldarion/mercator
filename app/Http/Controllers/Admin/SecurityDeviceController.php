@@ -8,6 +8,7 @@ use App\Http\Requests\MassDestroySecurityDeviceRequest;
 use App\Http\Requests\StoreSecurityDeviceRequest;
 use App\Http\Requests\UpdateSecurityDeviceRequest;
 use App\Models\Application;
+use App\Models\Cartographer;
 use App\Models\PhysicalSecurityDevice;
 use App\Models\SecurityDevice;
 use App\Services\IconUploadService;
@@ -23,22 +24,21 @@ class SecurityDeviceController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('security_device_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\SecurityDevice::class);
+        $allowedIds = Gate::allows('security_device_access') ? null : Cartographer::allowedIdsFor($user, SecurityDevice::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $securityDevices = SecurityDevice::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (SecurityDevice::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (SecurityDevice::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.securityDevices.index', compact('securityDevices'));
     }

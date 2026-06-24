@@ -8,6 +8,7 @@ use App\Http\Requests\StoreLogicalServerRequest;
 use App\Http\Requests\UpdateLogicalServerRequest;
 use App\Models\Application;
 use App\Models\Backup;
+use App\Models\Cartographer;
 use App\Models\Cluster;
 use App\Models\Database;
 use App\Models\Domain;
@@ -15,7 +16,6 @@ use App\Models\LogicalServer;
 use App\Models\PhysicalServer;
 use App\Services\IconUploadService;
 use Gate;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\DataTables;
@@ -36,22 +36,21 @@ class LogicalServerController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('logical_server_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\LogicalServer::class);
+        $allowedIds = Gate::allows('logical_server_access') ? null : Cartographer::allowedIdsFor($user, LogicalServer::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $logicalServers = LogicalServer::with('applications:id,name', 'physicalServers:id,name', 'clusters:id,name')
-        ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (LogicalServer::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+            ->when(request('search'), function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    foreach (LogicalServer::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.logicalServers.index', compact('logicalServers'));
     }
@@ -233,5 +232,4 @@ class LogicalServerController extends Controller
 
         return array_unique($res);
     }
-
 }

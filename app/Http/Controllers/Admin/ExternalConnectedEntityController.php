@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyExternalConnectedEntityRequest;
 use App\Http\Requests\StoreExternalConnectedEntityRequest;
 use App\Http\Requests\UpdateExternalConnectedEntityRequest;
+use App\Models\Cartographer;
 use App\Models\Entity;
 use App\Models\ExternalConnectedEntity;
 use App\Models\Network;
@@ -18,22 +19,21 @@ class ExternalConnectedEntityController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('external_connected_entity_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\ExternalConnectedEntity::class);
+        $allowedIds = Gate::allows('external_connected_entity_access') ? null : Cartographer::allowedIdsFor($user, ExternalConnectedEntity::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $externalConnectedEntities = ExternalConnectedEntity::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (ExternalConnectedEntity::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (ExternalConnectedEntity::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.externalConnectedEntities.index', compact('externalConnectedEntities'));
     }

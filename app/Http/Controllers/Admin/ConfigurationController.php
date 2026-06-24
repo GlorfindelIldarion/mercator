@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
 use App\Models\Parameter;
+use App\Support\MercatorSettings;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,39 +27,39 @@ class ConfigurationController extends Controller
 
         return view('admin.config.parameters', [
             // Général
-            'security_need_auth'       => $cfg['parameters']['security_need_auth'] ?? false,
-            'application_documents'    => $cfg['parameters']['application_documents'] ?? false,
+            'security_need_auth' => $cfg['parameters']['security_need_auth'] ?? false,
+            'application_documents' => $cfg['parameters']['application_documents'] ?? false,
             // Certificats
-            'cert_mail_from'           => $cfg['cert']['mail-from']                     ?? '',
-            'cert_mail_to'             => $cfg['cert']['mail-to']                       ?? '',
-            'cert_mail_subject'        => $cfg['cert']['mail-subject']                  ?? '',
-            'cert_check_frequency'     => $cfg['cert']['check-frequency']               ?? '0',
-            'cert_expire_delay'        => $cfg['cert']['expire-delay']                  ?? '30',
-            'cert_group'               => (string) ($cfg['cert']['group']               ?? '0'),
+            'cert_mail_from' => $cfg['cert']['mail-from'] ?? '',
+            'cert_mail_to' => $cfg['cert']['mail-to'] ?? '',
+            'cert_mail_subject' => $cfg['cert']['mail-subject'] ?? '',
+            'cert_check_frequency' => $cfg['cert']['check-frequency'] ?? '0',
+            'cert_expire_delay' => $cfg['cert']['expire-delay'] ?? '30',
+            'cert_group' => (string) ($cfg['cert']['group'] ?? '0'),
             'cert_repeat_notification' => (string) ($cfg['cert']['repeat-notification'] ?? '0'),
             // CVE
-            'cve_mail_from'            => $cfg['cve']['mail-from']                      ?? '',
-            'cve_mail_to'              => $cfg['cve']['mail-to']                        ?? '',
-            'cve_mail_subject'         => $cfg['cve']['mail-subject']                   ?? '',
-            'cve_check_frequency'      => $cfg['cve']['check-frequency']                ?? '0',
-            'cve_provider'             => $cfg['cve']['provider']                       ?? '',
-            'cpe_guesser'              => $cfg['cpe']['guesser']                        ?? '',
+            'cve_mail_from' => $cfg['cve']['mail-from'] ?? '',
+            'cve_mail_to' => $cfg['cve']['mail-to'] ?? '',
+            'cve_mail_subject' => $cfg['cve']['mail-subject'] ?? '',
+            'cve_check_frequency' => $cfg['cve']['check-frequency'] ?? '0',
+            'cve_provider' => $cfg['cve']['provider'] ?? '',
+            'cpe_guesser' => $cfg['cpe']['guesser'] ?? '',
             // Notifications
-            'notif_reminders_enabled'    => $cfg['cartography']['reminders_enabled']    ?? false,
-            'notif_reminder_from'        => $cfg['cartography']['reminder_from']        ?? 'mercator@localhost',
-            'notif_reminder_subject'     => $cfg['cartography']['reminder_subject']     ?? '[Mercator] Rappel de mise à jour',
-            'notif_reminder_body'        => $cfg['cartography']['reminder_body']        ?? '',
-            'notif_reminder_months'      => $cfg['cartography']['reminder_months']      ?? 6,
-            'notif_reminder_every_days'  => $cfg['cartography']['reminder_every_days']  ?? 30,
-            'notif_reminder_last_sent'   => $cfg['cartography']['reminder_last_sent']   ?? null,
-            'notif_modification_enabled'  => $cfg['cartography']['notifier_enabled'] ?? false,
-            'notif_modification_from'    => $cfg['cartography']['notifier_from']    ?? '',
-            'notif_modification_copy_to' => $cfg['cartography']['notifier_to']      ?? '',
+            'notif_reminders_enabled' => $cfg['cartography']['reminders_enabled'] ?? false,
+            'notif_reminder_from' => $cfg['cartography']['reminder_from'] ?? 'mercator@localhost',
+            'notif_reminder_subject' => $cfg['cartography']['reminder_subject'] ?? '[Mercator] Rappel de mise à jour',
+            'notif_reminder_body' => $cfg['cartography']['reminder_body'] ?? '',
+            'notif_reminder_months' => $cfg['cartography']['reminder_months'] ?? 6,
+            'notif_reminder_every_days' => $cfg['cartography']['reminder_every_days'] ?? 30,
+            'notif_reminder_last_sent' => $cfg['cartography']['reminder_last_sent'] ?? null,
+            'notif_modification_enabled' => $cfg['cartography']['notifier_enabled'] ?? false,
+            'notif_modification_from' => $cfg['cartography']['notifier_from'] ?? '',
+            'notif_modification_copy_to' => $cfg['cartography']['notifier_to'] ?? '',
             'notif_modification_subject' => $cfg['cartography']['notifier_subject'] ?? '[Mercator] Un objet a été mis à jour',
-            'notif_modification_body'    => $cfg['cartography']['notifier_body']    ?? '',
+            'notif_modification_body' => $cfg['cartography']['notifier_body'] ?? '',
             // Documents
             'count' => Document::query()->count(),
-            'sum'        => Document::query()->sum('size'),
+            'sum' => Document::query()->sum('size'),
             // Set the active tab
             'active_tab' => $request->query('tab', 'general'),
             // Last CPE Sync
@@ -76,19 +77,19 @@ class ConfigurationController extends Controller
     {
         abort_if(Gate::denies('configure'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $tab    = $request->input('active_tab', 'general');
+        $tab = $request->input('active_tab', 'general');
         $action = $request->input('action', 'save');
 
         [$msg, $ok] = match ($tab) {
-            'cert'          => $this->handleCert($action, $request),
-            'cve'           => $this->handleCve($action, $request),
-            'reminders'     => $this->handleReminders($action, $request),
+            'cert' => $this->handleCert($action, $request),
+            'cve' => $this->handleCve($action, $request),
+            'reminders' => $this->handleReminders($action, $request),
             'notifications' => $this->handleModification($action, $request),
-            default         => $this->handleGeneral($request),
+            default => $this->handleGeneral($request),
         };
 
         // Fragment #tab-xxx : repris par location.hash dans le JS de la blade.
-        return redirect(route('admin.config.parameters') . '?tab=' . $tab)
+        return redirect(route('admin.config.parameters').'?tab='.$tab)
             ->with($ok ? 'success' : 'error', $msg);
     }
 
@@ -99,7 +100,7 @@ class ConfigurationController extends Controller
     private function handleGeneral(Request $request): array
     {
         $cfg = $this->readConfigFile();
-        $cfg['parameters']['security_need_auth']    = $request->boolean('security_need_auth');
+        $cfg['parameters']['security_need_auth'] = $request->boolean('security_need_auth');
         $cfg['parameters']['application_documents'] = $request->boolean('application_documents');
         $this->writeConfigFile($cfg);
 
@@ -110,12 +111,12 @@ class ConfigurationController extends Controller
     {
         if ($action === 'save') {
             $cfg = $this->readConfigFile();
-            $cfg['cert']['mail-from']           = $request->input('mail_from');
-            $cfg['cert']['mail-to']             = $request->input('mail_to');
-            $cfg['cert']['mail-subject']        = $request->input('mail_subject');
-            $cfg['cert']['check-frequency']     = $request->input('check_frequency');
-            $cfg['cert']['expire-delay']        = $request->input('expire_delay');
-            $cfg['cert']['group']               = $request->input('group');
+            $cfg['cert']['mail-from'] = $request->input('mail_from');
+            $cfg['cert']['mail-to'] = $request->input('mail_to');
+            $cfg['cert']['mail-subject'] = $request->input('mail_subject');
+            $cfg['cert']['check-frequency'] = $request->input('check_frequency');
+            $cfg['cert']['expire-delay'] = $request->input('expire_delay');
+            $cfg['cert']['group'] = $request->input('group');
             $cfg['cert']['repeat-notification'] = $request->input('repeat-notification');
             $this->writeConfigFile($cfg);
 
@@ -136,14 +137,14 @@ class ConfigurationController extends Controller
         try {
             // Check provider URL — resolve once, validate all records, store pinned IP
             $provider = $request->input('provider');
-            if (!empty($provider)) {
-                $provider         = $this->validateProviderUrl($provider);
+            if (! empty($provider)) {
+                $provider = $this->validateProviderUrl($provider);
                 $providerPinnedIp = $this->resolveAndValidateHost($provider);
             }
 
             // Check CPE-Guesser URL (validation only; test_guesser re-résout depuis la config sauvée)
             $guesser = $request->input('cpe_guesser');
-            if (!empty($guesser)) {
+            if (! empty($guesser)) {
                 $guesser = $this->validateProviderUrl($guesser);
                 $this->resolveAndValidateHost($guesser);
             }
@@ -154,12 +155,12 @@ class ConfigurationController extends Controller
         // Handle action
         if ($action === 'save') {
             $cfg = $this->readConfigFile();
-            $cfg['cve']['mail-from']       = $request->input('mail_from');
-            $cfg['cve']['mail-to']         = $request->input('mail_to');
-            $cfg['cve']['mail-subject']    = $request->input('mail_subject');
+            $cfg['cve']['mail-from'] = $request->input('mail_from');
+            $cfg['cve']['mail-to'] = $request->input('mail_to');
+            $cfg['cve']['mail-subject'] = $request->input('mail_subject');
             $cfg['cve']['check-frequency'] = $request->input('check_frequency');
-            $cfg['cve']['provider']        = $request->input('provider');
-            $cfg['cpe']['guesser']         = $request->input('cpe_guesser');
+            $cfg['cve']['provider'] = $request->input('provider');
+            $cfg['cpe']['guesser'] = $request->input('cpe_guesser');
             $this->writeConfigFile($cfg);
 
             return [trans('cruds.configuration.saved'), true];
@@ -170,7 +171,7 @@ class ConfigurationController extends Controller
         }
 
         if ($action === 'test_guesser') {
-            $cfg        = $this->readConfigFile();
+            $cfg = $this->readConfigFile();
             $guesserUrl = $cfg['cpe']['guesser'] ?? '';
             try {
                 $this->validateProviderUrl($guesserUrl);
@@ -178,6 +179,7 @@ class ConfigurationController extends Controller
             } catch (\InvalidArgumentException $e) {
                 return [$e->getMessage(), false];
             }
+
             return $this->testGuesser($guesserUrl, $guesserPinnedIp);
         }
 
@@ -187,6 +189,7 @@ class ConfigurationController extends Controller
             $request->input('mail_subject'),
         );
     }
+
     private function handleReminders(string $action, Request $request): array
     {
         if ($action === 'test_reminder') {
@@ -203,10 +206,10 @@ class ConfigurationController extends Controller
         $cfg['cartography']['reminders_enabled'] = $remindersEnabled;
 
         if ($remindersEnabled) {
-            $cfg['cartography']['reminder_from']       = $request->input('reminder_from');
-            $cfg['cartography']['reminder_subject']    = $request->input('reminder_subject');
-            $cfg['cartography']['reminder_body']       = $request->input('reminder_body');
-            $cfg['cartography']['reminder_months']     = (int) $request->input('reminder_months', 6);
+            $cfg['cartography']['reminder_from'] = $request->input('reminder_from');
+            $cfg['cartography']['reminder_subject'] = $request->input('reminder_subject');
+            $cfg['cartography']['reminder_body'] = $request->input('reminder_body');
+            $cfg['cartography']['reminder_months'] = (int) $request->input('reminder_months', 6);
             $cfg['cartography']['reminder_every_days'] = (int) $request->input('reminder_every_days', 30);
         }
 
@@ -219,7 +222,8 @@ class ConfigurationController extends Controller
     {
         if ($action === 'test_modification') {
             $from = $request->input('modification_from');
-            $to   = $request->input('modification_copy_to') ?: $from;
+            $to = $request->input('modification_copy_to') ?: $from;
+
             return $this->sendTestMail($from, $to, $request->input('modification_subject'));
         }
 
@@ -229,10 +233,10 @@ class ConfigurationController extends Controller
         $cfg['cartography']['notifier_enabled'] = $modificationEnabled;
 
         if ($modificationEnabled) {
-            $cfg['cartography']['notifier_from']    = $request->input('modification_from');
-            $cfg['cartography']['notifier_to']      = $request->input('modification_copy_to');
+            $cfg['cartography']['notifier_from'] = $request->input('modification_from');
+            $cfg['cartography']['notifier_to'] = $request->input('modification_copy_to');
             $cfg['cartography']['notifier_subject'] = $request->input('modification_subject');
-            $cfg['cartography']['notifier_body']    = $request->input('modification_body');
+            $cfg['cartography']['notifier_body'] = $request->input('modification_body');
         }
 
         $this->writeConfigFile($cfg);
@@ -258,7 +262,7 @@ class ConfigurationController extends Controller
      */
     private function writeConfigFile(array $cfg): void
     {
-        \App\Support\MercatorSettings::save($cfg);
+        MercatorSettings::save($cfg);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -271,15 +275,15 @@ class ConfigurationController extends Controller
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
-            $mail->Host        = config('mail.mailers.smtp.host');
-            $mail->SMTPAuth    = config('mail.mailers.smtp.username') !== null;
-            $mail->Username    = config('mail.mailers.smtp.username');
-            $mail->Password    = config('mail.mailers.smtp.password');
-            $mail->SMTPSecure  = config('mail.mailers.smtp.encryption');
+            $mail->Host = config('mail.mailers.smtp.host');
+            $mail->SMTPAuth = config('mail.mailers.smtp.username') !== null;
+            $mail->Username = config('mail.mailers.smtp.username');
+            $mail->Password = config('mail.mailers.smtp.password');
+            $mail->SMTPSecure = config('mail.mailers.smtp.encryption');
             $mail->SMTPAutoTLS = config('mail.mailers.smtp.auto_tls');
-            $mail->Port        = (int) config('mail.mailers.smtp.port');
+            $mail->Port = (int) config('mail.mailers.smtp.port');
 
-            $mail->CharSet  = PHPMailer::CHARSET_UTF8;
+            $mail->CharSet = PHPMailer::CHARSET_UTF8;
             $mail->Encoding = PHPMailer::ENCODING_BASE64;
             $mail->setFrom($from);
             foreach (explode(',', $to) as $email) {
@@ -287,13 +291,13 @@ class ConfigurationController extends Controller
             }
             $mail->isHTML(true);
             $mail->Subject = $subject;
-            $mail->Body    = '<html><body><br>This is a test message !<br><br></body></html>';
+            $mail->Body = '<html><body><br>This is a test message !<br><br></body></html>';
 
-            $mail->DKIM_domain     = config('mail.dkim.domain');
-            $mail->DKIM_private    = config('mail.dkim.private');
-            $mail->DKIM_selector   = config('mail.dkim.selector');
+            $mail->DKIM_domain = config('mail.dkim.domain');
+            $mail->DKIM_private = config('mail.dkim.private');
+            $mail->DKIM_selector = config('mail.dkim.selector');
             $mail->DKIM_passphrase = config('mail.dkim.passphrase');
-            $mail->DKIM_identity   = $mail->From;
+            $mail->DKIM_identity = $mail->From;
 
             $mail->send();
 
@@ -310,7 +314,7 @@ class ConfigurationController extends Controller
         $port = parse_url($provider, PHP_URL_PORT)
             ?? (str_starts_with($provider, 'https') ? 443 : 80);
 
-        $client = curl_init($provider . '/api/dbInfo');
+        $client = curl_init($provider.'/api/dbInfo');
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($client, CURLOPT_TIMEOUT, 10);
         curl_setopt($client, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
@@ -333,8 +337,8 @@ class ConfigurationController extends Controller
         }
 
         return [
-            'Last NVD update: ' . $json->last_updates->nvd
-            . ' — Total db size = ' . $json->db_sizes->total,
+            'Last NVD update: '.$json->last_updates->nvd
+            .' — Total db size = '.$json->db_sizes->total,
             true,
         ];
     }
@@ -346,10 +350,10 @@ class ConfigurationController extends Controller
             return ['CPE guesser URL is not configured', false];
         }
 
-        $host    = parse_url($guesser, PHP_URL_HOST) ?? '';
-        $port    = parse_url($guesser, PHP_URL_PORT)
+        $host = parse_url($guesser, PHP_URL_HOST) ?? '';
+        $port = parse_url($guesser, PHP_URL_PORT)
             ?? (str_starts_with($guesser, 'https') ? 443 : 80);
-        $url     = rtrim($guesser, '/') . '/search';
+        $url = rtrim($guesser, '/').'/search';
         $payload = json_encode(['query' => ['test']]);
 
         $client = curl_init($url);
@@ -359,7 +363,7 @@ class ConfigurationController extends Controller
         curl_setopt($client, CURLOPT_POSTFIELDS, $payload);
         curl_setopt($client, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
-            'Content-Length: ' . strlen($payload),
+            'Content-Length: '.strlen($payload),
         ]);
         curl_setopt($client, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
         curl_setopt($client, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
@@ -383,7 +387,7 @@ class ConfigurationController extends Controller
         }
 
         return [
-            'CPE guesser OK (HTTP ' . $httpCode . ') — ' . count($json) . ' result(s) for "test"',
+            'CPE guesser OK (HTTP '.$httpCode.') — '.count($json).' result(s) for "test"',
             true,
         ];
     }
@@ -394,9 +398,10 @@ class ConfigurationController extends Controller
             throw new \InvalidArgumentException('Invalid provider URL.');
         }
         $parsed = parse_url($url);
-        if (!$parsed || !in_array($parsed['scheme'] ?? '', ['http', 'https'], true)) {
+        if (! $parsed || ! in_array($parsed['scheme'] ?? '', ['http', 'https'], true)) {
             throw new \InvalidArgumentException('Invalid provider URL scheme.');
         }
+
         return $url;
     }
 
@@ -418,14 +423,15 @@ class ConfigurationController extends Controller
             if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
                 throw new \InvalidArgumentException('Provider host resolves to a private or reserved address.');
             }
+
             return $host;
         }
 
         // Hostname : résoudre une seule fois tous les enregistrements A + AAAA
         $records = @dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
-        $ipv4s   = array_column($records, 'ip');
-        $ipv6s   = array_column($records, 'ipv6');
-        $allIps  = array_merge($ipv4s, $ipv6s);
+        $ipv4s = array_column($records, 'ip');
+        $ipv6s = array_column($records, 'ipv6');
+        $allIps = array_merge($ipv4s, $ipv6s);
 
         if (empty($allIps)) {
             throw new \InvalidArgumentException('Provider host could not be resolved.');

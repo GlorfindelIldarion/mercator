@@ -56,6 +56,7 @@ use App\Models\Workstation;
 use App\Models\Zone;
 use App\Models\ZoneAdmin;
 use Gate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Request;
@@ -65,6 +66,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ExplorerController extends Controller
 {
     private array $nodes = [];
+
     private array $edges = [];
 
     // When set, addNode() writes directly to output instead of buffering in $nodes
@@ -72,8 +74,11 @@ class ExplorerController extends Controller
 
     // Shared objects
     private Collection $subnetworks;
+
     private Collection $logicalServers;
+
     private Collection $workstations;
+
     private Collection $peripherals;
 
     public function explore(Request $request)
@@ -100,17 +105,17 @@ class ExplorerController extends Controller
             $this->edges = [];
             $this->subnetworks = Cartographer::scopedQuery(Subnetwork::query())->select(['id', 'name', 'address', 'subnetwork_id', 'network_id', 'vlan_id', 'gateway_id'])->get();
 
-            $first      = true;
-            $count      = 0;
+            $first = true;
+            $count = 0;
             $attributes = [];
             $this->nodeWriter = function (array $node) use (&$first, &$count, &$attributes): void {
-                if (!$first) {
+                if (! $first) {
                     echo ',';
                 }
                 $first = false;
                 echo json_encode($node, JSON_UNESCAPED_UNICODE);
                 // Collect unique, non-empty attribute tokens while streaming
-                if (!empty($node['attributes'])) {
+                if (! empty($node['attributes'])) {
                     foreach (array_filter(array_map('trim', explode(' ', $node['attributes']))) as $attr) {
                         $attributes[$attr] = true;
                     }
@@ -151,13 +156,12 @@ class ExplorerController extends Controller
             $mb = round(memory_get_peak_usage(true) / 1048576, 2);
             logger("Memory peak [getGraphData]: {$mb} MB");
         }, 200, [
-            'Content-Type'     => 'application/json',
+            'Content-Type' => 'application/json',
             'X-Accel-Buffering' => 'no',
         ]);
     }
 
-
-    public function getAttributes(): \Illuminate\Http\JsonResponse
+    public function getAttributes(): JsonResponse
     {
         abort_if(Gate::denies('explore_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
@@ -175,9 +179,10 @@ class ExplorerController extends Controller
                     ->where('attributes', '!=', '')
                     ->get();
                 $allAttributes = $allAttributes->merge(
-                    collect($rows)->flatMap(fn($r) => array_map('trim', explode(' ', $r->attributes)))->filter()
+                    collect($rows)->flatMap(fn ($r) => array_map('trim', explode(' ', $r->attributes)))->filter()
                 );
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
         $result = $allAttributes->unique()->sort()->values();
 
@@ -203,7 +208,7 @@ class ExplorerController extends Controller
         $this->buildEcosystemView();
 
         // Sort elements by name
-        usort($this->nodes, fn($a, $b) => strcmp($a['label'], $b['label']));
+        usort($this->nodes, fn ($a, $b) => strcmp($a['label'], $b['label']));
 
         return [$this->nodes, $this->edges];
     }
@@ -332,12 +337,12 @@ class ExplorerController extends Controller
 
         // Zone-Zone (parent/child)
         $links = DB::table('zone_zone as zz')
-                 ->join('zones as parent', 'parent.id', '=', 'zz.zone_id')
-                 ->join('zones as child', 'child.id', '=', 'zz.related_zone_id')
-                 ->whereNull('parent.deleted_at')
-                 ->whereNull('child.deleted_at')
-                 ->select('zz.zone_id', 'zz.related_zone_id')
-                 ->get();
+            ->join('zones as parent', 'parent.id', '=', 'zz.zone_id')
+            ->join('zones as child', 'child.id', '=', 'zz.related_zone_id')
+            ->whereNull('parent.deleted_at')
+            ->whereNull('child.deleted_at')
+            ->select('zz.zone_id', 'zz.related_zone_id')
+            ->get();
 
         foreach ($links as $link) {
             $this->addFluxEdge(null, false,
@@ -403,10 +408,11 @@ class ExplorerController extends Controller
                 $workstation->building_id
             );
 
-            foreach (explode(',', $workstation->address_ip ?? '') as $ip)
+            foreach (explode(',', $workstation->address_ip ?? '') as $ip) {
                 $this->linkDeviceToSubnetworks(
                     $ip,
                     $this->formatId(Workstation::$prefix, $workstation->id));
+            }
         }
 
         $this->linkJoinTable('application_workstation',
@@ -443,7 +449,8 @@ class ExplorerController extends Controller
         }
     }
 
-    private function buildPeripherals(): void {
+    private function buildPeripherals(): void
+    {
         $this->peripherals = Cartographer::scopedQuery(Peripheral::query())
             ->select('id', 'name', 'icon_id', 'address_ip', 'bay_id', 'site_id', 'building_id', 'provider_id')
             ->get();
@@ -497,7 +504,9 @@ class ExplorerController extends Controller
         }
 
     }
-    private function buildStorageDevices(): void {
+
+    private function buildStorageDevices(): void
+    {
         // Storage devices
         $storageDevices = Cartographer::scopedQuery(StorageDevice::query())
             ->select('id', 'name', 'bay_id', 'building_id', 'site_id', 'address_ip')
@@ -580,7 +589,8 @@ class ExplorerController extends Controller
         }
     }
 
-    private function buildWifiTerminals(): void {
+    private function buildWifiTerminals(): void
+    {
         $wifiTerminals = Cartographer::scopedQuery(WifiTerminal::query())
             ->select('id', 'name', 'address_ip', 'site_id', 'building_id')
             ->get();
@@ -607,7 +617,6 @@ class ExplorerController extends Controller
             }
         }
     }
-
 
     private function buildPhysicalSecurityDevices(): void
     {
@@ -680,11 +689,11 @@ class ExplorerController extends Controller
                 680
             );
 
-            if ($man->parent_man_id !== null)
+            if ($man->parent_man_id !== null) {
                 $this->addLinkEdge(
                     $this->formatId(Man::$prefix, $man->id),
                     $this->formatId(Man::$prefix, $man->parent_man_id));
-            else {
+            } else {
                 foreach (($wanLinksByMan->get($man->id) ?? collect()) as $wan) {
                     $this->addLinkEdge(
                         $this->formatId(Man::$prefix, $man->id),
@@ -693,7 +702,6 @@ class ExplorerController extends Controller
             }
 
         }
-
 
         $this->linkJoinTable('lan_man', Lan::$prefix, Man::$prefix, 'lan_id', 'man_id');
     }
@@ -741,7 +749,7 @@ class ExplorerController extends Controller
     private function buildPhysicalLinks(): void
     {
         $links = Cartographer::scopedQuery(PhysicalLink::query())->get();
-        
+
         foreach ($links as $link) {
             $src = $link->sourceId();
             $dest = $link->destinationId();
@@ -776,7 +784,8 @@ class ExplorerController extends Controller
         $this->buildClusters();
     }
 
-    private function buildNetworks(): void {
+    private function buildNetworks(): void
+    {
         $networks = Cartographer::scopedQuery(Network::query())
             ->select('id', 'name')
             ->get();
@@ -791,12 +800,11 @@ class ExplorerController extends Controller
         }
     }
 
-
     private function buildSubnetworks(): void
     {
         // Sort once before iterating so linkDeviceToSubnetworks() matches the most specific subnet first
         $this->subnetworks = $this->subnetworks->sortByDesc(
-            fn($subnet) => ExplorerController::getMaskLength($subnet->address)
+            fn ($subnet) => ExplorerController::getMaskLength($subnet->address)
         );
 
         foreach ($this->subnetworks as $subnetwork) {
@@ -835,7 +843,6 @@ class ExplorerController extends Controller
         }
     }
 
-
     private function buildNetworkSwitches(): void
     {
         $switches = Cartographer::scopedQuery(NetworkSwitch::query())
@@ -852,10 +859,11 @@ class ExplorerController extends Controller
                 $switch->ip
             );
 
-            if ($switch->ip!=null)
+            if ($switch->ip != null) {
                 $this->linkDeviceToSubnetworks(
                     $switch->ip,
                     $this->formatId(NetworkSwitch::$prefix, $switch->id));
+            }
 
         }
 
@@ -876,7 +884,7 @@ class ExplorerController extends Controller
                 $this->formatId(Gateway::$prefix, $gateway->id),
                 $gateway->name,
                 '/images/gateway.png',
-                'gateways',530,
+                'gateways', 530,
                 $gateway->ip
             );
         }
@@ -912,6 +920,7 @@ class ExplorerController extends Controller
             }
         }
     }
+
     private function buildContainers(): void
     {
         $containers = Cartographer::scopedQuery(Container::query())
@@ -959,7 +968,8 @@ class ExplorerController extends Controller
         }
     }
 
-    private function buildClusters(): void {
+    private function buildClusters(): void
+    {
         // Clusters
         $clusters = Cartographer::scopedQuery(Cluster::query())
             ->select('id', 'name', 'icon_id', 'address_ip', 'attributes')
@@ -1001,7 +1011,6 @@ class ExplorerController extends Controller
         }
 
     }
-
 
     private function buildLogicalServers(): void
     {
@@ -1081,7 +1090,7 @@ class ExplorerController extends Controller
     private function buildLogicalSecurityDevices(): void
     {
         $securityDevices = Cartographer::scopedQuery(SecurityDevice::query())
-            ->select('id', 'name', 'attributes', 'icon_id','address_ip')
+            ->select('id', 'name', 'attributes', 'icon_id', 'address_ip')
             ->get();
 
         foreach ($securityDevices as $securityDevice) {
@@ -1108,9 +1117,7 @@ class ExplorerController extends Controller
             Application::$prefix, SecurityDevice::$prefix,
             'application_id', 'security_device_id');
 
-
     }
-
 
     private function buildRouters(): void
     {
@@ -1127,10 +1134,11 @@ class ExplorerController extends Controller
                 'routers', 560
             );
 
-            foreach (explode(',', $router->ip_addresses ?? '') as $ip)
+            foreach (explode(',', $router->ip_addresses ?? '') as $ip) {
                 $this->linkDeviceToSubnetworks(
                     $ip,
                     $this->formatId(Router::$prefix, $router->id));
+            }
         }
 
         $this->linkJoinTable('physical_router_router',
@@ -1142,8 +1150,6 @@ class ExplorerController extends Controller
             'physical_router_id', 'vlan_id');
 
     }
-
-
 
     private function buildCertificates(): void
     {
@@ -1167,7 +1173,7 @@ class ExplorerController extends Controller
 
         $this->linkJoinTable('application_certificate',
             Certificate::$prefix, Application::$prefix,
-            'certificate_id', 'application_id');;
+            'certificate_id', 'application_id');
 
     }
 
@@ -1176,7 +1182,7 @@ class ExplorerController extends Controller
         $flows = Cartographer::scopedQuery(LogicalFlow::query())->get();
 
         foreach ($flows as $flow) {
-            if (!empty($flow->action) && $flow->action !== 'Permit') {
+            if (! empty($flow->action) && $flow->action !== 'Permit') {
                 continue;
             }
 
@@ -1234,12 +1240,13 @@ class ExplorerController extends Controller
             $edgeCount = count($sources) * count($destinations);
             if ($edgeCount > 1000) {
                 \Log::warning('ExplorerController: flow skipped — too many edges would be generated', [
-                    'flow_id'       => $flow->id,
-                    'flow_name'     => $flow->name,
-                    'sources'       => count($sources),
-                    'destinations'  => count($destinations),
-                    'edge_count'    => $edgeCount,
+                    'flow_id' => $flow->id,
+                    'flow_name' => $flow->name,
+                    'sources' => count($sources),
+                    'destinations' => count($destinations),
+                    'edge_count' => $edgeCount,
                 ]);
+
                 continue;
             }
 
@@ -1266,7 +1273,8 @@ class ExplorerController extends Controller
         $this->buildApplicationFlows();
     }
 
-    private function buildApplicationFlows() : void {
+    private function buildApplicationFlows(): void
+    {
         // Fluxes
         $flows = Cartographer::scopedQuery(ApplicationFlow::query())->get();
         foreach ($flows as $flow) {
@@ -1350,7 +1358,6 @@ class ExplorerController extends Controller
             Process::$prefix, Application::$prefix,
             'process_id', 'application_id');
     }
-
 
     private function buildApplicationServices(): void
     {
@@ -1476,7 +1483,6 @@ class ExplorerController extends Controller
         }
     }
 
-
     private function buildForests(): void
     {
         $forests = Cartographer::scopedQuery(ForestAd::query())
@@ -1543,7 +1549,6 @@ class ExplorerController extends Controller
                 );
             }
 
-
         }
 
         $this->linkJoinTable('admin_user_application',
@@ -1595,7 +1600,6 @@ class ExplorerController extends Controller
                 $this->formatId(Information::$prefix, $link->child_information_id),
                 'FLUX', null);
         }
-
 
     }
 
@@ -1679,7 +1683,7 @@ class ExplorerController extends Controller
                 $this->formatId(Operation::$prefix, $operation->id),
                 $operation->name,
                 '/images/operation.png',
-                    'operations', 230
+                'operations', 230
             );
         }
 
@@ -1807,13 +1811,13 @@ class ExplorerController extends Controller
     private function addNode(int $vue, string $id, string $label, string $image, string $type, int $order, ?string $title = null, ?string $attributes = null): void
     {
         $node = [
-            'vue'        => $vue,
-            'id'         => $id,
-            'label'      => $label,
-            'image'      => $image,
-            'type'       => $type,
-            'order'      => $order,
-            'title'      => $title,
+            'vue' => $vue,
+            'id' => $id,
+            'label' => $label,
+            'image' => $image,
+            'type' => $type,
+            'order' => $order,
+            'title' => $title,
             'attributes' => $attributes,
         ];
 
@@ -1825,8 +1829,8 @@ class ExplorerController extends Controller
     }
 
     private function addEdge(?string $name, bool $bidirectional,
-                             string $from, string $to,
-                             string $type, ?string $color): void
+        string $from, string $to,
+        string $type, ?string $color): void
     {
         $this->edges[] = [
             'name' => $name,
@@ -1855,7 +1859,7 @@ class ExplorerController extends Controller
 
     private function formatId(string $prefix, $id): ?string
     {
-        return $id !== null ? $prefix . $id : null;
+        return $id !== null ? $prefix.$id : null;
     }
 
     private function getIcon(?int $iconId, string $defaultIcon): string
@@ -1874,17 +1878,18 @@ class ExplorerController extends Controller
         }
     }
 
-
     private function linkDeviceToSubnetworks(?string $addressIp, string $id)
     {
-        if ($addressIp === null)
+        if ($addressIp === null) {
             return;
+        }
 
         foreach ($this->subnetworks as $subnetwork) {
             if ($subnetwork->contains($addressIp)) {
                 $this->addLinkEdge(
                     $id,
                     $this->formatId(Subnetwork::$prefix, $subnetwork->id));
+
                 // Only one link per subnet
                 return;
             }
@@ -1921,6 +1926,4 @@ class ExplorerController extends Controller
         // Return the mask length as integer
         return (int) $parts[1];
     }
-
-
 }

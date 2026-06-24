@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroySubnetworkRequest;
 use App\Http\Requests\StoreSubnetworkRequest;
 use App\Http\Requests\UpdateSubnetworkRequest;
+use App\Models\Cartographer;
 use App\Models\Gateway;
 use App\Models\Network;
 use App\Models\Subnetwork;
 use App\Models\Vlan;
 use Gate;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class SubnetworkController extends Controller
@@ -18,24 +20,22 @@ class SubnetworkController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('subnetwork_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Subnetwork::class);
+        $allowedIds = Gate::allows('subnetwork_access') ? null : Cartographer::allowedIdsFor($user, Subnetwork::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $subnetworks = Subnetwork::query()
-            ->with('network','vlan')
-            
-        ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Subnetwork::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+            ->with('network', 'vlan')
+            ->when(request('search'), function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    foreach (Subnetwork::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.subnetworks.index', compact('subnetworks'));
     }
@@ -56,10 +56,10 @@ class SubnetworkController extends Controller
      * values for ip_allocation_type, responsible_exp, dmz, wifi, and zone. Aborts with HTTP 403
      * if the current user is not authorized to create subnetworks.
      *
-     * @return \Illuminate\View\View The create view populated with the prepared lists:
-     *                               `gateways`, `vlans`, `networks`, `subnetworks`,
-     *                               `ip_allocation_type_list`, `responsible_exp_list`,
-     *                               `dmz_list`, `wifi_list`, and `zone_list`.
+     * @return View The create view populated with the prepared lists:
+     *              `gateways`, `vlans`, `networks`, `subnetworks`,
+     *              `ip_allocation_type_list`, `responsible_exp_list`,
+     *              `dmz_list`, `wifi_list`, and `zone_list`.
      */
     public function create()
     {
@@ -104,8 +104,8 @@ class SubnetworkController extends Controller
      * Loads the `connected_subnets` and `gateway` relationships on the provided model
      * and prepares lists used to populate select inputs in the edit view.
      *
-     * @param  \App\Models\Subnetwork  $subnetwork  The Subnetwork model to edit.
-     * @return \Illuminate\View\View The edit view populated with the subnetwork and selection lists.
+     * @param  Subnetwork  $subnetwork  The Subnetwork model to edit.
+     * @return View The edit view populated with the subnetwork and selection lists.
      */
     public function edit(Subnetwork $subnetwork)
     {

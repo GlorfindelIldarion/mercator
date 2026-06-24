@@ -8,6 +8,7 @@ use App\Http\Requests\StorePhysicalRouterRequest;
 use App\Http\Requests\UpdatePhysicalRouterRequest;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\PhysicalRouter;
 use App\Models\Router;
 use App\Models\Site;
@@ -21,22 +22,21 @@ class PhysicalRouterController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('physical_router_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\PhysicalRouter::class);
+        $allowedIds = Gate::allows('physical_router_access') ? null : Cartographer::allowedIdsFor($user, PhysicalRouter::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $physicalRouters = PhysicalRouter::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (PhysicalRouter::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (PhysicalRouter::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.physicalRouters.index', compact('physicalRouters'));
     }

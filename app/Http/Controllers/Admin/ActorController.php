@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyActorRequest;
 use App\Http\Requests\StoreActorRequest;
 use App\Http\Requests\UpdateActorRequest;
-use Gate;
 use App\Models\Actor;
+use App\Models\Cartographer;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class ActorController extends Controller
@@ -15,22 +16,21 @@ class ActorController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('actor_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Actor::class);
+        $allowedIds = Gate::allows('actor_access') ? null : Cartographer::allowedIdsFor($user, Actor::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $actors = Actor::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Actor::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (Actor::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.actors.index', compact('actors'));
     }
@@ -68,7 +68,6 @@ class ActorController extends Controller
     public function show(Actor $actor)
     {
         abort_if(Gate::denies('show-object', $actor), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
 
         return view('admin.actors.show', compact('actor'));
     }

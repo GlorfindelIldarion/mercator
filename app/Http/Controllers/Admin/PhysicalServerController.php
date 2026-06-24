@@ -6,16 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyPhysicalServerRequest;
 use App\Http\Requests\StorePhysicalServerRequest;
 use App\Http\Requests\UpdatePhysicalServerRequest;
+use App\Models\Application;
+use App\Models\Bay;
+use App\Models\Building;
+use App\Models\Cartographer;
+use App\Models\Cluster;
+use App\Models\LogicalServer;
+use App\Models\PhysicalServer;
+use App\Models\Site;
 use App\Services\IconUploadService;
 use Gate;
 use Illuminate\Http\Request;
-use App\Models\Bay;
-use App\Models\Building;
-use App\Models\Cluster;
-use App\Models\LogicalServer;
-use App\Models\Application;
-use App\Models\PhysicalServer;
-use App\Models\Site;
 use Symfony\Component\HttpFoundation\Response;
 
 // Laravel
@@ -27,7 +28,7 @@ class PhysicalServerController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('physical_server_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\PhysicalServer::class);
+        $allowedIds = Gate::allows('physical_server_access') ? null : Cartographer::allowedIdsFor($user, PhysicalServer::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -36,12 +37,12 @@ class PhysicalServerController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (PhysicalServer::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.physicalServers.index', compact('physicalServers'));

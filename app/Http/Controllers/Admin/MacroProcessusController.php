@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyMacroProcessusRequest;
 use App\Http\Requests\StoreMacroProcessusRequest;
 use App\Http\Requests\UpdateMacroProcessusRequest;
+use App\Models\Cartographer;
 use App\Models\MacroProcessus;
 use App\Models\Process;
 use Gate;
@@ -16,7 +17,7 @@ class MacroProcessusController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('macro_processus_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\MacroProcessus::class);
+        $allowedIds = Gate::allows('macro_processus_access') ? null : Cartographer::allowedIdsFor($user, MacroProcessus::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -26,12 +27,12 @@ class MacroProcessusController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (MacroProcessus::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.macroProcessuses.index', compact('macroProcessuses'));

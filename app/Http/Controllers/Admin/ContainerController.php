@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyContainerRequest;
 use App\Http\Requests\StoreContainerRequest;
 use App\Http\Requests\UpdateContainerRequest;
+use App\Models\Application;
+use App\Models\Cartographer;
 use App\Models\Container;
 use App\Models\Database;
 use App\Models\LogicalServer;
-use App\Models\Application;
 use App\Services\IconUploadService;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +22,7 @@ class ContainerController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('container_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Container::class);
+        $allowedIds = Gate::allows('container_access') ? null : Cartographer::allowedIdsFor($user, Container::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -30,12 +31,12 @@ class ContainerController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Container::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.containers.index', compact('containers'));

@@ -6,40 +6,39 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyPhysicalSwitchRequest;
 use App\Http\Requests\StorePhysicalSwitchRequest;
 use App\Http\Requests\UpdatePhysicalSwitchRequest;
-use App\Services\IconUploadService;
-use Gate;
-use Illuminate\Http\Request;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\NetworkSwitch;
 use App\Models\PhysicalSwitch;
 use App\Models\Site;
+use App\Services\IconUploadService;
+use Gate;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class PhysicalSwitchController extends Controller
 {
-
     public function __construct(private readonly IconUploadService $iconUploadService) {}
 
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('physical_switch_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\PhysicalSwitch::class);
+        $allowedIds = Gate::allows('physical_switch_access') ? null : Cartographer::allowedIdsFor($user, PhysicalSwitch::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $physicalSwitches = PhysicalSwitch::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (PhysicalSwitch::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (PhysicalSwitch::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.physicalSwitches.index', compact('physicalSwitches'));
     }
@@ -64,7 +63,7 @@ class PhysicalSwitchController extends Controller
 
         return view(
             'admin.physicalSwitches.create',
-            compact('icons','sites', 'buildings', 'bays', 'networkSwitches', 'type_list')
+            compact('icons', 'sites', 'buildings', 'bays', 'networkSwitches', 'type_list')
         );
     }
 

@@ -79,8 +79,9 @@ class GlobalSearchController extends Controller
 
             $fields = property_exists($modelClass, 'searchable') ? $modelClass::$searchable : [];
 
-            if (empty($fields))
+            if (empty($fields)) {
                 continue;
+            }
 
             $escaped = $this->escapeLike($term);
             $results = Cartographer::scopedQueryByClass($modelClass)
@@ -99,13 +100,13 @@ class GlobalSearchController extends Controller
 
             foreach ($results as $result) {
                 $searchableData[] = [
-                    'instance'       => $result,
-                    'data'           => $result->only($fields),
-                    'model'          => $model,
-                    'name'           => trans($translation),
-                    'fields'         => $fields,
+                    'instance' => $result,
+                    'data' => $result->only($fields),
+                    'model' => $model,
+                    'name' => trans($translation),
+                    'fields' => $fields,
                     'fields_formated' => $formattedFields,
-                    'url'            => '/admin/'.Str::plural(Str::snake($model, '-')).'/'.$result->getKey(),
+                    'url' => '/admin/'.Str::plural(Str::snake($model, '-')).'/'.$result->getKey(),
                 ];
             }
         }
@@ -117,5 +118,4 @@ class GlobalSearchController extends Controller
     {
         return addcslashes($value, '%_\\');
     }
-
 }

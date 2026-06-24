@@ -7,9 +7,10 @@ use Gate;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class DependencyController extends Controller {
-
-    public function index(Request $request) {
+class DependencyController extends Controller
+{
+    public function index(Request $request)
+    {
 
         abort_if(Gate::denies('explore_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 

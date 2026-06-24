@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyGraphRequest;
+use App\Models\Graph;
 use Gate;
 use Illuminate\Http\Request;
-use App\Models\Graph;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -48,7 +48,7 @@ class GraphController extends Controller
         // Get types
         $type_list = Graph::query()->select('type')
             ->whereNotNull('type')
-            ->where('class','=', 1)
+            ->where('class', '=', 1)
             ->distinct()
             ->orderBy('type')->pluck('type');
 
@@ -80,7 +80,7 @@ class GraphController extends Controller
         // Get types
         $type_list = Graph::select('type')
             ->whereNotNull('type')
-            ->where('class','=', 1)
+            ->where('class', '=', 1)
             ->distinct()
             ->orderBy('type')
             ->pluck('type');
@@ -113,7 +113,7 @@ class GraphController extends Controller
         // Get types
         $type_list = Graph::query()->select('type')
             ->whereNotNull('type')
-            ->where('class','=', 1)
+            ->where('class', '=', 1)
             ->distinct()
             ->orderBy('type')
             ->pluck('type');

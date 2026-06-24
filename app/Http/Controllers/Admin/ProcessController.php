@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyProcessRequest;
 use App\Http\Requests\StoreProcessRequest;
 use App\Http\Requests\UpdateProcessRequest;
-use App\Services\IconUploadService;
-use Gate;
 use App\Models\Activity;
+use App\Models\Application;
+use App\Models\Cartographer;
 use App\Models\Entity;
 use App\Models\Information;
 use App\Models\MacroProcessus;
-use App\Models\Application;
 use App\Models\Process;
+use App\Services\IconUploadService;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProcessController extends Controller
@@ -23,7 +24,7 @@ class ProcessController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('process_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Process::class);
+        $allowedIds = Gate::allows('process_access') ? null : Cartographer::allowedIdsFor($user, Process::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -32,12 +33,12 @@ class ProcessController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Process::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.processes.index', compact('processes'));

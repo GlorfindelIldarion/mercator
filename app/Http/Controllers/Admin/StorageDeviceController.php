@@ -6,14 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyStorageDeviceRequest;
 use App\Http\Requests\StoreStorageDeviceRequest;
 use App\Http\Requests\UpdateStorageDeviceRequest;
-use Gate;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Backup;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\LogicalServer;
 use App\Models\Site;
 use App\Models\StorageDevice;
+use Gate;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class StorageDeviceController extends Controller
@@ -21,22 +23,21 @@ class StorageDeviceController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('storage_device_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\StorageDevice::class);
+        $allowedIds = Gate::allows('storage_device_access') ? null : Cartographer::allowedIdsFor($user, StorageDevice::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $storageDevices = StorageDevice::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (StorageDevice::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (StorageDevice::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.storageDevices.index', compact('storageDevices'));
     }
@@ -135,12 +136,12 @@ class StorageDeviceController extends Controller
         return response(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function syncInlineBackupsForDevice(StorageDevice $storageDevice, \Illuminate\Http\Request $request): void
+    private function syncInlineBackupsForDevice(StorageDevice $storageDevice, Request $request): void
     {
         $logicalServerIds = $request->input('logical_server_id', []);
-        $frequencies      = $request->input('backup_frequency', []);
-        $cycles           = $request->input('backup_cycle', []);
-        $retentions       = $request->input('backup_retention', []);
+        $frequencies = $request->input('backup_frequency', []);
+        $cycles = $request->input('backup_cycle', []);
+        $retentions = $request->input('backup_retention', []);
 
         if (empty($logicalServerIds)) {
             return;
@@ -152,20 +153,20 @@ class StorageDeviceController extends Controller
 
         foreach ($logicalServerIds as $i => $logicalServerId) {
             $serverName = $servers[$logicalServerId] ?? $logicalServerId;
-            $name       = $storageDevice->name . ' → ' . $serverName;
+            $name = $storageDevice->name.' → '.$serverName;
 
-            $base      = mb_substr($name, 0, 240);
+            $base = mb_substr($name, 0, 240);
             $candidate = $base;
-            $suffix    = 1;
+            $suffix = 1;
             while (Backup::query()->where('name', $candidate)->exists()) {
-                $candidate = $base . ' (' . $suffix++ . ')';
+                $candidate = $base.' ('.$suffix++.')';
             }
 
             $backup = Backup::query()->create([
-                'name'             => $candidate,
+                'name' => $candidate,
                 'backup_frequency' => isset($frequencies[$i]) ? (int) $frequencies[$i] : null,
-                'backup_cycle'     => isset($cycles[$i])      ? (int) $cycles[$i]      : null,
-                'backup_retention' => isset($retentions[$i])  ? (int) $retentions[$i]  : null,
+                'backup_cycle' => isset($cycles[$i]) ? (int) $cycles[$i] : null,
+                'backup_retention' => isset($retentions[$i]) ? (int) $retentions[$i] : null,
             ]);
 
             $backup->storageDevices()->attach($storageDevice->id);

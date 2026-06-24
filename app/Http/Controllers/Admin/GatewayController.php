@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyGatewayRequest;
 use App\Http\Requests\StoreGatewayRequest;
 use App\Http\Requests\UpdateGatewayRequest;
+use App\Models\Cartographer;
 use App\Models\Gateway;
 use App\Models\Subnetwork;
 use Gate;
@@ -16,22 +17,21 @@ class GatewayController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('gateway_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Gateway::class);
+        $allowedIds = Gate::allows('gateway_access') ? null : Cartographer::allowedIdsFor($user, Gateway::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $gateways = Gateway::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Gateway::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (Gateway::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.gateways.index', compact('gateways'));
     }
