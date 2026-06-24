@@ -8,6 +8,7 @@ import {
     GraphDataModel,
     type GraphPluginConstructor,
     InternalEvent,
+    type InternalMouseEvent,
     ModelXmlSerializer,
     PanningHandler,
     Point,
@@ -16,6 +17,7 @@ import {
     SelectionHandler,
     styleUtils,
     UndoManager,
+    VertexHandler,
     VertexHandlerConfig,
 } from '@maxgraph/core';
 
@@ -99,6 +101,28 @@ graph.isCellResizable = (cell) => (cell?.children?.length ?? 0) === 0 && _isResi
 // Sélection des sommets
 VertexHandlerConfig.selectionColor = '#00a8ff';
 VertexHandlerConfig.selectionStrokeWidth = 2;
+
+// Resize uniquement par les coins (largeur et hauteur modifiées ensemble) :
+// on masque les points d'accroche N/S/E/W, ne gardant que NW/NE/SW/SE
+// (indices 0, 2, 5 et 7 dans l'ordre de création des sizers). isSizerVisible
+// est appelée depuis le constructeur de VertexHandler : la surcharger sur
+// l'instance après coup est trop tard, il faut sous-classer.
+const RESIZE_CORNER_INDICES = new Set([0, 2, 5, 7]);
+class CornerOnlyVertexHandler extends VertexHandler {
+    isSizerVisible(index: number): boolean {
+        return RESIZE_CORNER_INDICES.has(index);
+    }
+    // Le resize doit toujours conserver le ratio largeur/hauteur, pas
+    // seulement quand Shift est maintenu — sauf pour les rectangles, qui
+    // doivent pouvoir être étirés librement dans chaque direction.
+    isConstrainedEvent(me: InternalMouseEvent): boolean {
+        if ((this.state.cell.style as any)?.isRectangle) {
+            return super.isConstrainedEvent(me);
+        }
+        return true;
+    }
+}
+graph.createVertexHandler = (state) => new CornerOnlyVertexHandler(state);
 
 //-----------------------------------------------------------------------
 // Undo / Redo
@@ -477,7 +501,7 @@ setToggleActive(document.getElementById('toggleIP'), false);
 setToggleActive(document.getElementById('toggleAttr'), false);
 
 document.getElementById('toggleIP')?.addEventListener('click', (e) => {
-    const btn      = e.currentTarget as HTMLElement;
+    const btn = e.currentTarget as HTMLElement;
     const isActive = !btn.classList.contains('active');
     setToggleActive(btn, isActive);
     if (isActive) setToggleActive(document.getElementById('toggleAttr'), false);
@@ -485,7 +509,7 @@ document.getElementById('toggleIP')?.addEventListener('click', (e) => {
 });
 
 document.getElementById('toggleAttr')?.addEventListener('click', (e) => {
-    const btn      = e.currentTarget as HTMLElement;
+    const btn = e.currentTarget as HTMLElement;
     const isActive = !btn.classList.contains('active');
     setToggleActive(btn, isActive);
     if (isActive) setToggleActive(document.getElementById('toggleIP'), false);
@@ -590,9 +614,6 @@ function refreshParallelEdges(): void {
     graph.refresh();
 }
 
-// Épaisseur des liens reliant deux objets (icônes), réduite d'un tiers
-const OBJECT_EDGE_STROKE_WIDTH = (2 / 3);
-
 function buildEdgeStyle(edge: Edge): object {
     const isFlux = edge.edgeType === 'FLUX';
     const isCable = edge.edgeType === 'CABLE';
@@ -601,7 +622,7 @@ function buildEdgeStyle(edge: Edge): object {
         editable: false,
         // Un lien physique (CABLE) garde la couleur définie dans le JSON.
         strokeColor: isCable ? (edge.color ?? '#000000') : '#000000',
-        strokeWidth: isCable ? 2 : OBJECT_EDGE_STROKE_WIDTH,
+        strokeWidth: isCable ? 3 : 2,
         // Comme dans l'explorateur : appartenance (LINK) en pointillé, flux en trait plein.
         dashed: isLink,
         startArrow: isFlux && (edge.bidirectional || edge.edgeDirection === 'FROM') ? 'classic' : 'none',
@@ -714,7 +735,7 @@ container.addEventListener('drop', (event: DragEvent) => {
                         style: {
                             editable: false,
                             strokeColor: '#ff0000',
-                            strokeWidth: OBJECT_EDGE_STROKE_WIDTH,
+                            strokeWidth: 2,
                             startArrow: 'none',
                             endArrow: 'none',
                         },
@@ -1143,9 +1164,9 @@ document.getElementById('add-node-btn')?.addEventListener('click', () => {
 
         // Centre de la partie VISIBLE du graphe (et non de son contenu, qui
         // peut être vide ou hors champ), converti en coordonnées modèle.
-        const view   = graph.getView();
+        const view = graph.getView();
         const center = {
-            x: container.clientWidth  / 2 / view.scale - view.translate.x,
+            x: container.clientWidth / 2 / view.scale - view.translate.x,
             y: container.clientHeight / 2 / view.scale - view.translate.y,
         };
 
@@ -1355,7 +1376,7 @@ function physicsTick(): void {
     for (const v of movable) force.set(v, new Point(0, 0));
 
     // Vitesse de réaction +50%
-    const K_REP = 13500, K_SPRING = 0.06, REST = 120, DAMPING = 0.85, MAX_STEP = 27;
+    const K_REP = 11500, K_SPRING = 0.06, REST = 80, DAMPING = 0.85, MAX_STEP = 27;
 
     for (const v of movable) {
         const pv = pos.get(v)!, f = force.get(v)!;
@@ -1618,10 +1639,10 @@ document.getElementById('background-btn')?.addEventListener('click', (e) => {
     // le menu est display:none, soit précisément au moment de l'ouvrir.
     const editorRect = document.getElementById('editor')?.getBoundingClientRect();
     const offsetLeft = editorRect?.left ?? 0;
-    const offsetTop  = editorRect?.top  ?? 0;
+    const offsetTop = editorRect?.top ?? 0;
 
     backgroundMenu.style.left = `${rect.right - offsetLeft + 8}px`;
-    backgroundMenu.style.top  = `${rect.top   - offsetTop}px`;
+    backgroundMenu.style.top = `${rect.top - offsetTop}px`;
     backgroundMenu.style.display = backgroundMenu.style.display === 'block' ? 'none' : 'block';
 });
 
