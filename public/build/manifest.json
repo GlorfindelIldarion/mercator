@@ -1,21 +1,21 @@
 {
-  "_ModelXmlSerializer-bb5ZzXHZ.js": {
-    "file": "assets/ModelXmlSerializer-bb5ZzXHZ.js",
+  "_ModelXmlSerializer-DjRosktT.js": {
+    "file": "assets/ModelXmlSerializer-DjRosktT.js",
     "name": "ModelXmlSerializer"
   },
-  "_UndoManager-BPB4z7FD.js": {
-    "file": "assets/UndoManager-BPB4z7FD.js",
+  "_UndoManager-BgT5l6RW.js": {
+    "file": "assets/UndoManager-BgT5l6RW.js",
     "name": "UndoManager",
     "imports": [
-      "_ModelXmlSerializer-bb5ZzXHZ.js"
+      "_ModelXmlSerializer-DjRosktT.js"
     ]
   },
-  "_bpmn-save-BCGuLcXP.js": {
-    "file": "assets/bpmn-save-BCGuLcXP.js",
+  "_bpmn-save-CruJBXXL.js": {
+    "file": "assets/bpmn-save-CruJBXXL.js",
     "name": "bpmn-save",
     "imports": [
-      "_ModelXmlSerializer-bb5ZzXHZ.js",
-      "_UndoManager-BPB4z7FD.js"
+      "_ModelXmlSerializer-DjRosktT.js",
+      "_UndoManager-BgT5l6RW.js"
     ]
   },
   "_chart-CNK8zqEL.js": {
@@ -62,7 +62,7 @@
     ]
   },
   "resources/css/mapping.css": {
-    "file": "assets/mapping-BXgpzxFn.css",
+    "file": "assets/mapping-BkXaFlkw.css",
     "name": "mapping",
     "names": [
       "mapping.css"
@@ -129,22 +129,22 @@
     "isEntry": true
   },
   "resources/js/map.edit.ts": {
-    "file": "assets/map.edit-CP7f7Jzk.js",
+    "file": "assets/map.edit-BP6z_zc2.js",
     "name": "map.edit",
     "src": "resources/js/map.edit.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-bb5ZzXHZ.js",
-      "_UndoManager-BPB4z7FD.js"
+      "_ModelXmlSerializer-DjRosktT.js",
+      "_UndoManager-BgT5l6RW.js"
     ]
   },
   "resources/js/map.show.ts": {
-    "file": "assets/map.show-CHwgqgoV.js",
+    "file": "assets/map.show-58-lVRuu.js",
     "name": "map.show",
     "src": "resources/js/map.show.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-bb5ZzXHZ.js"
+      "_ModelXmlSerializer-DjRosktT.js"
     ]
   },
   "resources/js/sql-parser.js": {
@@ -163,23 +163,23 @@
     ]
   },
   "resources/ts/bpmn-show.ts": {
-    "file": "assets/bpmn-show-CTyyxxNX.js",
+    "file": "assets/bpmn-show-DD_NoRFN.js",
     "name": "bpmn-show",
     "src": "resources/ts/bpmn-show.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-bb5ZzXHZ.js",
-      "_bpmn-save-BCGuLcXP.js"
+      "_ModelXmlSerializer-DjRosktT.js",
+      "_bpmn-save-CruJBXXL.js"
     ]
   },
   "resources/ts/bpmn.ts": {
-    "file": "assets/bpmn-Cq-Z1QvM.js",
+    "file": "assets/bpmn-BW6OHySY.js",
     "name": "bpmn",
     "src": "resources/ts/bpmn.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-bb5ZzXHZ.js",
-      "_bpmn-save-BCGuLcXP.js"
+      "_ModelXmlSerializer-DjRosktT.js",
+      "_bpmn-save-CruJBXXL.js"
     ]
   }
 }
