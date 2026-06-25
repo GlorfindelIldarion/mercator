@@ -57,6 +57,7 @@ declare const _nodes: NodeMap;
 interface AppCellStyle extends CellStateStyle {
     isBackground?: boolean;
     isRectangle?: boolean;
+    isText?: boolean;
 }
 
 function styleOf(cell: Cell | null | undefined): AppCellStyle | undefined {
@@ -69,6 +70,10 @@ function isBackgroundCell(cell: Cell | null | undefined): boolean {
 
 function isRectangleCell(cell: Cell | null | undefined): boolean {
     return !!styleOf(cell)?.isRectangle;
+}
+
+function isTextCell(cell: Cell | null | undefined): boolean {
+    return !!styleOf(cell)?.isText;
 }
 
 //-----------------------------------------------------------------------
@@ -134,10 +139,11 @@ class CornerOnlyVertexHandler extends VertexHandler {
     }
 
     // Le resize doit toujours conserver le ratio largeur/hauteur, pas
-    // seulement quand Shift est maintenu — sauf pour les rectangles, qui
-    // doivent pouvoir être étirés librement dans chaque direction.
+    // seulement quand Shift est maintenu — sauf pour les rectangles et les
+    // textes, qui doivent pouvoir être étirés librement dans chaque direction.
     isConstrainedEvent(me: InternalMouseEvent): boolean {
-        if (isRectangleCell(this.state.cell)) {
+        const cell = this.state.cell;
+        if (isRectangleCell(cell) || isTextCell(cell)) {
             return super.isConstrainedEvent(me);
         }
         return true;
@@ -185,6 +191,15 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         event.preventDefault();
         if (undoManager.canRedo()) undoManager.redo();
     }
+});
+
+// Echap ne doit avoir d'effet que dans l'éditeur (annuler l'édition d'une
+// cellule, fermer un menu contextuel, etc.) : on empêche sa remontée vers le
+// reste de la page (fermeture d'une modale parente, navigation, ...).
+document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
 });
 
 // --------------------------------------------------------------------------------
@@ -315,6 +330,14 @@ document.getElementById('apply-text-style')?.addEventListener('click', (e) => {
         style.fontStyle = flag;
 
         selectedCell!.style = style;
+
+        // Pour un champ texte libre, la taille de la cellule doit refléter
+        // celle du texte (police/taille pouvant changer ses dimensions) —
+        // pas pour un sommet-icône, dont la taille de l'icône est fixe.
+        if (isTextCell(selectedCell)) {
+            graph.updateCellSize(selectedCell!, true);
+        }
+
         graph.refresh(selectedCell!);
     });
 
@@ -680,7 +703,8 @@ container.addEventListener('drop', (event: DragEvent) => {
                     // Recalcule automatiquement la taille de la cellule à partir
                     // du texte rendu dès la fin de l'édition (labelChanged).
                     autoSize: true,
-                },
+                    isText: true,
+                } as AppCellStyle,
             });
             graph.setSelectionCell(vertex);
         });
@@ -929,6 +953,13 @@ function moveSelectedVertices(graph: Graph, dx: number, dy: number): void {
 }
 
 document.addEventListener('keydown', (event: KeyboardEvent) => {
+    // Laisser les flèches déplacer le curseur dans le texte en cours
+    // d'édition (cellule ou champ de saisie normal de la page) plutôt que
+    // de déplacer le sommet sélectionné.
+    if (graph.isEditing()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
+
     const step = 1;
     switch (event.key) {
         case 'ArrowUp':
