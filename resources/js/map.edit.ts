@@ -1418,7 +1418,7 @@ function physicsTick(): void {
     for (const v of movable) force.set(v, new Point(0, 0));
 
     // Vitesse de réaction +50%
-    const K_REP = 11500, K_SPRING = 0.12, REST = 60, DAMPING = 0.85, MAX_STEP = 30;
+    const K_REP = 11500, K_SPRING = 0.06, REST = 120, DAMPING = 0.85, MAX_STEP = 30;
 
     for (const v of movable) {
         const pv = pos.get(v)!, f = force.get(v)!;
