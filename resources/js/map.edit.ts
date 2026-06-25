@@ -108,10 +108,12 @@ VertexHandlerConfig.selectionStrokeWidth = 2;
 // est appelée depuis le constructeur de VertexHandler : la surcharger sur
 // l'instance après coup est trop tard, il faut sous-classer.
 const RESIZE_CORNER_INDICES = new Set([0, 2, 5, 7]);
+
 class CornerOnlyVertexHandler extends VertexHandler {
     isSizerVisible(index: number): boolean {
         return RESIZE_CORNER_INDICES.has(index);
     }
+
     // Le resize doit toujours conserver le ratio largeur/hauteur, pas
     // seulement quand Shift est maintenu — sauf pour les rectangles, qui
     // doivent pouvoir être étirés librement dans chaque direction.
@@ -122,6 +124,7 @@ class CornerOnlyVertexHandler extends VertexHandler {
         return true;
     }
 }
+
 graph.createVertexHandler = (state) => new CornerOnlyVertexHandler(state);
 
 //-----------------------------------------------------------------------
@@ -1376,7 +1379,7 @@ function physicsTick(): void {
     for (const v of movable) force.set(v, new Point(0, 0));
 
     // Vitesse de réaction +50%
-    const K_REP = 11500, K_SPRING = 0.06, REST = 80, DAMPING = 0.85, MAX_STEP = 27;
+    const K_REP = 11500, K_SPRING = 0.12, REST = 60, DAMPING = 0.85, MAX_STEP = 30;
 
     for (const v of movable) {
         const pv = pos.get(v)!, f = force.get(v)!;
