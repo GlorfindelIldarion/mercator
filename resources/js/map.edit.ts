@@ -1,7 +1,8 @@
 import {
     Cell,
     CellEditorHandler,
-    eventUtils,
+    type CellStateStyle,
+    EventObject,
     FitPlugin,
     Geometry,
     Graph,
@@ -16,6 +17,7 @@ import {
     SelectionCellsHandler,
     SelectionHandler,
     styleUtils,
+    type UndoableEdit,
     UndoManager,
     VertexHandler,
     VertexHandlerConfig,
@@ -50,7 +52,24 @@ type NodeMap = Map<string, MapNode>;
 
 // Déclaration de globals fournies par ailleurs
 declare const _nodes: NodeMap;
-declare const $: any;
+
+// Drapeaux métier ajoutés au style MaxGraph (absents de CellStateStyle).
+interface AppCellStyle extends CellStateStyle {
+    isBackground?: boolean;
+    isRectangle?: boolean;
+}
+
+function styleOf(cell: Cell | null | undefined): AppCellStyle | undefined {
+    return cell?.style as AppCellStyle | undefined;
+}
+
+function isBackgroundCell(cell: Cell | null | undefined): boolean {
+    return !!styleOf(cell)?.isBackground;
+}
+
+function isRectangleCell(cell: Cell | null | undefined): boolean {
+    return !!styleOf(cell)?.isRectangle;
+}
 
 //-----------------------------------------------------------------------
 // Plugins MaxGraph
@@ -85,13 +104,13 @@ edgeDefaultStyle.rounded = false;
 edgeDefaultStyle.entryPerimeter = false;
 
 // Désactiver le folding
-(graph as any).getFoldingImage = () => null;
+graph.getFoldingImage = () => null;
 
 // Verrouillage de la cellule d'arrière-plan
 const _isSelectable = graph.isCellSelectable.bind(graph);
-graph.isCellSelectable = (cell) => !(cell?.style as any)?.isBackground && _isSelectable(cell);
+graph.isCellSelectable = (cell) => !isBackgroundCell(cell) && _isSelectable(cell);
 const _isMovable = graph.isCellMovable.bind(graph);
-graph.isCellMovable = (cell) => !(cell?.style as any)?.isBackground && _isMovable(cell);
+graph.isCellMovable = (cell) => !isBackgroundCell(cell) && _isMovable(cell);
 
 // La taille d'un groupe ne doit jamais être modifiée manuellement (elle est
 // calculée à la création et doit rester cohérente avec son contenu).
@@ -118,7 +137,7 @@ class CornerOnlyVertexHandler extends VertexHandler {
     // seulement quand Shift est maintenu — sauf pour les rectangles, qui
     // doivent pouvoir être étirés librement dans chaque direction.
     isConstrainedEvent(me: InternalMouseEvent): boolean {
-        if ((this.state.cell.style as any)?.isRectangle) {
+        if (isRectangleCell(this.state.cell)) {
             return super.isConstrainedEvent(me);
         }
         return true;
@@ -132,9 +151,9 @@ graph.createVertexHandler = (state) => new CornerOnlyVertexHandler(state);
 
 const undoManager = new UndoManager();
 let physicsSuppressUndo = false;
-const undoListener = (_sender: unknown, evt: any) => {
+const undoListener = (_sender: unknown, evt: EventObject) => {
     if (physicsSuppressUndo) return;
-    const edit = evt.getProperty('edit');
+    const edit = evt.getProperty('edit') as UndoableEdit | undefined;
     if (edit) {
         undoManager.undoableEditHappened(edit);
     }
@@ -193,7 +212,7 @@ function hideContextMenus(): void {
     if (edgeContextMenu) edgeContextMenu.style.display = 'none';
 }
 
-function showEdgeMenu(x: number, y: number, style: any): void {
+function showEdgeMenu(x: number, y: number, style: CellStateStyle): void {
     if (!edgeContextMenu || !textContextMenu) return;
     edgeContextMenu.style.display = 'block';
     edgeContextMenu.style.left = `${x + MENU_OFFSET_X}px`;
@@ -203,7 +222,7 @@ function showEdgeMenu(x: number, y: number, style: any): void {
     textContextMenu.style.display = 'none';
 }
 
-function showTextMenu(x: number, y: number, style: any, cellStyle: any): void {
+function showTextMenu(x: number, y: number, style: CellStateStyle, cellStyle: AppCellStyle | undefined): void {
     if (!edgeContextMenu || !textContextMenu) return;
     textContextMenu.style.display = 'block';
     textContextMenu.style.left = `${x + MENU_OFFSET_X}px`;
@@ -225,7 +244,7 @@ graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
     const cell = graph.getCellAt(event.offsetX, event.offsetY) as Cell | null;
     if (!cell) return;
 
-    if ((cell.style as any)?.isBackground) {
+    if (isBackgroundCell(cell)) {
         hideContextMenus();
         return;
     }
@@ -233,7 +252,7 @@ graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
     const rect = container.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const currentStyle = graph.getCellStyle(cell) as any;
+    const currentStyle = graph.getCellStyle(cell);
 
     if (cell.isEdge()) {
         selectedCell = cell;
@@ -241,7 +260,7 @@ graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
     } else if (cell.isVertex()) {
         const cellValue = cell.value as string | null;
         const hasText = !!cellValue && cellValue.trim() !== '';
-        const cellStyle = cell.style as any;
+        const cellStyle = styleOf(cell);
 
         if (hasText && textColorSelect && textFontSelect && textSizeSelect) {
             selectedCell = cell;
@@ -262,7 +281,7 @@ document.getElementById('apply-edge-style')?.addEventListener('click', (e) => {
     if (!selectedCell || !edgeColorSelect || !thicknessSelect) return;
 
     graph.batchUpdate(() => {
-        const style = (selectedCell!.style ?? {}) as any;
+        const style: CellStateStyle = selectedCell!.style ?? {};
         const thickness = parseInt(thicknessSelect!.value, 10) || 1;
 
         if (selectedCell!.isEdge()) {
@@ -283,7 +302,7 @@ document.getElementById('apply-text-style')?.addEventListener('click', (e) => {
     if (!selectedCell || !textFontSelect || !textColorSelect || !textSizeSelect) return;
 
     graph.batchUpdate(() => {
-        const style = (selectedCell!.style ?? {}) as any;
+        const style: CellStateStyle = selectedCell!.style ?? {};
 
         style.fontFamily = textFontSelect!.value;
         style.fontColor = textColorSelect!.value;
@@ -317,7 +336,7 @@ document.addEventListener('click', (event) => {
 });
 
 // --------------------------------------------------------------------------------
-// Grille
+// Désactive la grille
 
 graph.setGridEnabled(false);
 
@@ -325,8 +344,8 @@ graph.setGridEnabled(false);
 // Panning
 
 graph.setPanning(true);
-(graph as any).allowAutoPanning = true;
-(graph as any).useScrollbarsForPanning = true;
+graph.allowAutoPanning = true;
+graph.useScrollbarsForPanning = true;
 
 //-------------------------------------------------------------------------
 // LOAD / SAVE
@@ -409,26 +428,8 @@ document.getElementById('saveButton')?.addEventListener('click', saveGraph);
 type Pt = { x: number; y: number };
 
 function getGraphPointFromEvent(graph: Graph, evt: MouseEvent | DragEvent): Pt {
-    if (typeof (graph as any).getPointForEvent === 'function') {
-        const pt = (graph as any).getPointForEvent(evt as any);
-        return {x: pt.x, y: pt.y};
-    }
-
-    const view = (graph as any).view ?? graph.getView();
-    const pt = styleUtils.convertPoint(
-        graph.container,
-        eventUtils.getClientX(evt as any),
-        eventUtils.getClientY(evt as any),
-    );
-    const tr = view.translate ?? {x: 0, y: 0};
-    const scale = view.scale ?? 1;
-    const panDx = (graph as any).panDx ?? 0;
-    const panDy = (graph as any).panDy ?? 0;
-
-    return {
-        x: (pt.x - panDx) / scale - tr.x - 20,
-        y: (pt.y - panDy) / scale - tr.y - 20,
-    };
+    const pt = graph.getPointForEvent(evt);
+    return {x: pt.x, y: pt.y};
 }
 
 function getFilter(): string[] {
@@ -483,8 +484,8 @@ function buildLabel(node: MapNode): string {
 function refreshNodeLabels(): void {
     graph.batchUpdate(() => {
         for (const cell of collectVertices()) {
-            const style = cell.style as any;
-            if (!style?.image || style?.isBackground) continue;
+            const style = styleOf(cell);
+            if (!style?.image || style.isBackground) continue;
             const node = _nodes.get(cell.id as string);
             if (!node) continue;
             cell.value = buildLabel(node);
@@ -595,10 +596,10 @@ function refreshParallelEdges(): void {
             list.forEach((edge, i) => {
                 const geo = edge.getGeometry()?.clone();
                 if (!geo) return;
-                const style = (edge.style ?? {}) as any;
+                const style: CellStateStyle = edge.style ?? {};
                 if (n <= 1) {
                     geo.points = null;
-                    style.curved = 0;
+                    style.curved = false;
                 } else {
                     const cs = modelCenter(edge.source!), ct = modelCenter(edge.target!);
                     const mx = (cs.x + ct.x) / 2, my = (cs.y + ct.y) / 2;
@@ -607,7 +608,7 @@ function refreshParallelEdges(): void {
                     const nx = -dy / len, ny = dx / len;
                     const offset = (i - (n - 1) / 2) * 22;
                     geo.points = [new Point(mx + nx * offset, my + ny * offset)];
-                    style.curved = 1;
+                    style.curved = true;
                 }
                 edge.style = style;
                 edge.setGeometry(geo);
@@ -617,7 +618,7 @@ function refreshParallelEdges(): void {
     graph.refresh();
 }
 
-function buildEdgeStyle(edge: Edge): object {
+function buildEdgeStyle(edge: Edge): CellStateStyle {
     const isFlux = edge.edgeType === 'FLUX';
     const isCable = edge.edgeType === 'CABLE';
     const isLink = edge.edgeType === 'LINK';
@@ -670,7 +671,15 @@ container.addEventListener('drop', (event: DragEvent) => {
                     fontColor: '#000000',
                     fontSize: 14,
                     align: 'left',
-                    verticalAlign: 'middle',
+                    // 'top' (plutôt que 'middle') évite tout décalage pendant
+                    // l'édition : l'éditeur de MaxGraph applique une translation
+                    // CSS en pourcentage de sa propre hauteur pour un alignement
+                    // 'middle', hauteur qui varie légèrement tant que le texte
+                    // n'a pas encore été redimensionné côté modèle.
+                    verticalAlign: 'top',
+                    // Recalcule automatiquement la taille de la cellule à partir
+                    // du texte rendu dès la fin de l'édition (labelChanged).
+                    autoSize: true,
                 },
             });
             graph.setSelectionCell(vertex);
@@ -689,9 +698,9 @@ container.addEventListener('drop', (event: DragEvent) => {
                     fillColor: '#fffacd',
                     strokeColor: '#000000',
                     strokeWidth: 1,
-                    rounded: 2,
-                    isRectangle: 1,
-                } as any,
+                    rounded: true,
+                    isRectangle: true,
+                } as AppCellStyle,
             });
             graph.orderCells(true, [vertex]);
             graph.setSelectionCell(vertex);
@@ -765,7 +774,7 @@ if (zoomOutButton) zoomOutButton.addEventListener('click', () => graph.zoomOut()
 // Suppression avec Delete / Backspace ou le bouton "Delete"
 
 function deleteSelectedCells(): void {
-    const cells = graph.getSelectionCells().filter((c) => !(c.style as any)?.isBackground);
+    const cells = graph.getSelectionCells().filter((c) => !isBackgroundCell(c));
     if (cells.length === 0) return;
 
     graph.removeCells(cells);
@@ -780,7 +789,7 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     const target = event.target as HTMLElement | null;
     if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
 
-    if (graph.getSelectionCells().filter((c) => !(c.style as any)?.isBackground).length === 0) return;
+    if (graph.getSelectionCells().filter((c) => !isBackgroundCell(c)).length === 0) return;
 
     // Empêche Backspace de déclencher la navigation "retour" du navigateur
     // et bloque la propagation vers d'autres gestionnaires de la page.
@@ -807,7 +816,7 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
 // Connexions / déconnexions
 
 graph.setConnectable(false);
-(graph as any).isCellDisconnectable = () => false;
+graph.isCellDisconnectable = () => false;
 
 //-------------------------------------------------------------------------
 // Group / ungroup
@@ -818,12 +827,12 @@ const ungroupButton = document.getElementById('ungroup-btn') as HTMLButtonElemen
 // Un groupe contenant un rectangle doit rester en arrière-plan par rapport
 // aux flèches qui ne font pas partie du groupe.
 function groupContainsRectangle(group: Cell): boolean {
-    return (group.children ?? []).some((c) => (c.style as any)?.isRectangle);
+    return (group.children ?? []).some((c) => isRectangleCell(c));
 }
 
 if (groupButton) {
     groupButton.addEventListener('click', () => {
-        const cells = graph.getSelectionCells().filter((c) => !(c.style as any)?.isBackground);
+        const cells = graph.getSelectionCells().filter((c) => !isBackgroundCell(c));
         if (cells.length > 1) {
             const parent = graph.getDefaultParent();
 
@@ -861,7 +870,7 @@ if (groupButton) {
                 // Les rectangles du groupe doivent rester en arrière-plan par
                 // rapport à ses nœuds (au sein du groupe) et aux liens qui ne
                 // font pas partie du groupe (au niveau du canevas).
-                const rectanglesInGroup = (group.children ?? []).filter((c) => (c.style as any)?.isRectangle);
+                const rectanglesInGroup = (group.children ?? []).filter((c) => isRectangleCell(c));
                 if (rectanglesInGroup.length > 0) {
                     graph.orderCells(true, rectanglesInGroup);
                     graph.orderCells(true, [group]);
@@ -882,7 +891,7 @@ if (ungroupButton) {
 
             // Les rectangles libérés doivent rester en arrière-plan par
             // rapport aux flèches qui ne faisaient pas partie du groupe.
-            const rectangles = released.filter((c) => (c.style as any)?.isRectangle);
+            const rectangles = released.filter((c) => isRectangleCell(c));
             if (rectangles.length > 0) {
                 graph.orderCells(true, rectangles);
             }
@@ -894,7 +903,7 @@ if (ungroupButton) {
 
 // Déplacer un groupe peut le faire remonter au-dessus des flèches externes :
 // on réapplique l'arrière-plan pour les groupes contenant un rectangle.
-graph.addListener(InternalEvent.MOVE_CELLS, (_sender, evt) => {
+graph.addListener(InternalEvent.MOVE_CELLS, (_sender: unknown, evt: EventObject) => {
     const cells = evt.getProperty('cells') as Cell[] | undefined;
     if (!cells) return;
 
@@ -907,15 +916,15 @@ graph.addListener(InternalEvent.MOVE_CELLS, (_sender, evt) => {
 //---------------------------------------------------------------------------
 // Déplacement avec flèches
 
-function moveSelectedVertex(graph: Graph, dx: number, dy: number) {
-    const selected = graph.getSelectionCell() as Cell | null;
-    if (!selected?.isVertex()) return;
+function moveSelectedVertices(graph: Graph, dx: number, dy: number): void {
+    const vertices = graph.getSelectionCells().filter((c) => c.isVertex() && !isBackgroundCell(c));
+    if (vertices.length === 0) return;
+
     graph.batchUpdate(() => {
-        const geo = selected.getGeometry();
-        if (geo) {
-            geo.translate(dx, dy);
-            graph.refresh();
+        for (const vertex of vertices) {
+            vertex.getGeometry()?.translate(dx, dy);
         }
+        graph.refresh();
     });
 }
 
@@ -923,16 +932,16 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     const step = 1;
     switch (event.key) {
         case 'ArrowUp':
-            moveSelectedVertex(graph, 0, -step);
+            moveSelectedVertices(graph, 0, -step);
             break;
         case 'ArrowDown':
-            moveSelectedVertex(graph, 0, step);
+            moveSelectedVertices(graph, 0, step);
             break;
         case 'ArrowLeft':
-            moveSelectedVertex(graph, -step, 0);
+            moveSelectedVertices(graph, -step, 0);
             break;
         case 'ArrowRight':
-            moveSelectedVertex(graph, step, 0);
+            moveSelectedVertices(graph, step, 0);
             break;
     }
 });
@@ -951,11 +960,11 @@ function placeObjectsOnCircle(center: Pt, radius: number, n: number): Pt[] {
 //----------------------------------------------------------------
 // Double-clic sur icône
 
-graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender, evt) => {
+graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObject) => {
     const cell = evt.getProperty('cell') as Cell | null;
     if (!cell?.isVertex()) return;
 
-    const style = cell.style as any;
+    const style = cell.style;
     if (style?.shape !== 'image') return;
 
     const node = _nodes.get(cell.id as string);
@@ -1150,7 +1159,6 @@ document.getElementById('deploy-btn')?.addEventListener('click', (e) => {
 // Ajout direct d'un objet sélectionné dans le sélecteur (#node)
 
 document.getElementById('add-node-btn')?.addEventListener('click', () => {
-    const nodeSelector = document.getElementById('node') as HTMLSelectElement | null;
     const nodeId = nodeSelector?.value;
     if (!nodeId) return;
 
@@ -1199,7 +1207,7 @@ document.getElementById('add-node-btn')?.addEventListener('click', () => {
 // Réinitialisation du canevas
 
 document.getElementById('reload-btn')?.addEventListener('click', () => {
-    const cells = graph.getChildCells().filter((c) => !(c.style as any)?.isBackground);
+    const cells = graph.getChildCells().filter((c) => !isBackgroundCell(c));
     if (cells.length > 0) graph.removeCells(cells);
 });
 
@@ -1225,13 +1233,13 @@ document.getElementById('update-btn')?.addEventListener('click', () => {
 
                 // Un lien physique conserve sa couleur et son type lors de la mise à jour.
                 cell.value = data.name;
-                const style = (cell.style ?? {}) as any;
+                const style: CellStateStyle = cell.style ?? {};
                 style.strokeColor = data.color ?? '#000000';
                 style.strokeWidth = 2;
                 cell.style = style;
                 return;
             }
-            const style = cell.style as any;
+            const style = styleOf(cell);
             if (style?.isBackground) return;
             if (!style?.image) return;
 
@@ -1344,7 +1352,7 @@ let stableTicks = 0;
 
 function isMovableObject(cell: Cell): boolean {
     if (!cell.isVertex()) return false;
-    const s = cell.style as any;
+    const s = styleOf(cell);
     const hasImage = s?.shape === 'image' && !!s?.image;
     const hasChildren = (cell.children?.length ?? 0) > 0;
     return hasImage && !hasChildren && !s?.isBackground;
@@ -1601,7 +1609,9 @@ function setBackground(image: string, w: number, h: number): void {
         const parent = graph.getDefaultParent();
         let bg = model.getCell(BACKGROUND_ID) as Cell | null;
         if (bg) {
-            (bg.style as any).image = image;
+            const style: AppCellStyle = bg.style ?? {};
+            style.image = image;
+            bg.style = style;
             const geo = bg.getGeometry()?.clone();
             if (geo) {
                 geo.width = w;
@@ -1611,7 +1621,7 @@ function setBackground(image: string, w: number, h: number): void {
         } else {
             bg = graph.insertVertex({
                 parent, id: BACKGROUND_ID, value: '', position: [0, 0], size: [w, h],
-                style: {shape: 'image', image, isBackground: 1, editable: false} as any,
+                style: {shape: 'image', image, isBackground: true, editable: false} as AppCellStyle,
             });
         }
         graph.orderCells(true, [bg!]);

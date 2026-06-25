@@ -1,21 +1,21 @@
 {
-  "_ModelXmlSerializer-CIUWM4AU.js": {
-    "file": "assets/ModelXmlSerializer-CIUWM4AU.js",
+  "_ModelXmlSerializer-Vsuvejvr.js": {
+    "file": "assets/ModelXmlSerializer-Vsuvejvr.js",
     "name": "ModelXmlSerializer"
   },
-  "_UndoManager-CTUZXmDC.js": {
-    "file": "assets/UndoManager-CTUZXmDC.js",
+  "_UndoManager-Cv60WtBm.js": {
+    "file": "assets/UndoManager-Cv60WtBm.js",
     "name": "UndoManager",
     "imports": [
-      "_ModelXmlSerializer-CIUWM4AU.js"
+      "_ModelXmlSerializer-Vsuvejvr.js"
     ]
   },
-  "_bpmn-save-C0on-CNz.js": {
-    "file": "assets/bpmn-save-C0on-CNz.js",
+  "_bpmn-save-BNgNzEMR.js": {
+    "file": "assets/bpmn-save-BNgNzEMR.js",
     "name": "bpmn-save",
     "imports": [
-      "_ModelXmlSerializer-CIUWM4AU.js",
-      "_UndoManager-CTUZXmDC.js"
+      "_ModelXmlSerializer-Vsuvejvr.js",
+      "_UndoManager-Cv60WtBm.js"
     ]
   },
   "_chart-CNK8zqEL.js": {
@@ -129,22 +129,22 @@
     "isEntry": true
   },
   "resources/js/map.edit.ts": {
-    "file": "assets/map.edit-BjToLWle.js",
+    "file": "assets/map.edit-Chv26I-i.js",
     "name": "map.edit",
     "src": "resources/js/map.edit.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-CIUWM4AU.js",
-      "_UndoManager-CTUZXmDC.js"
+      "_ModelXmlSerializer-Vsuvejvr.js",
+      "_UndoManager-Cv60WtBm.js"
     ]
   },
   "resources/js/map.show.ts": {
-    "file": "assets/map.show-OSjc-QnD.js",
+    "file": "assets/map.show-DWdeeFMB.js",
     "name": "map.show",
     "src": "resources/js/map.show.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-CIUWM4AU.js"
+      "_ModelXmlSerializer-Vsuvejvr.js"
     ]
   },
   "resources/js/sql-parser.js": {
@@ -163,23 +163,23 @@
     ]
   },
   "resources/ts/bpmn-show.ts": {
-    "file": "assets/bpmn-show-C8JWXAmg.js",
+    "file": "assets/bpmn-show-CfwzF4up.js",
     "name": "bpmn-show",
     "src": "resources/ts/bpmn-show.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-CIUWM4AU.js",
-      "_bpmn-save-C0on-CNz.js"
+      "_ModelXmlSerializer-Vsuvejvr.js",
+      "_bpmn-save-BNgNzEMR.js"
     ]
   },
   "resources/ts/bpmn.ts": {
-    "file": "assets/bpmn-DZaxzgVu.js",
+    "file": "assets/bpmn-B7gGWHxT.js",
     "name": "bpmn",
     "src": "resources/ts/bpmn.ts",
     "isEntry": true,
     "imports": [
-      "_ModelXmlSerializer-CIUWM4AU.js",
-      "_bpmn-save-C0on-CNz.js"
+      "_ModelXmlSerializer-Vsuvejvr.js",
+      "_bpmn-save-BNgNzEMR.js"
     ]
   }
 }

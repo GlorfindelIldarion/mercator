@@ -1,4 +1,7 @@
 import {
+    Cell,
+    type CellStateStyle,
+    EventObject,
     Graph,
     GraphDataModel,
     InternalEvent,
@@ -20,6 +23,11 @@ type NodeMap = Map<string, MapNode>;
 
 declare const _nodes: NodeMap;
 
+// Drapeau métier ajouté au style MaxGraph (absent de CellStateStyle).
+interface AppCellStyle extends CellStateStyle {
+    isBackground?: boolean;
+}
+
 //-----------------------------------------------------------------------
 // Initialisation du graphe
 
@@ -37,8 +45,14 @@ InternalEvent.disableContextMenu(container);
 //-----------------------------------------------------------------------
 // Style des sommets
 
-graph.getStylesheet().getDefaultVertexStyle().cursor = 'pointer';
-graph.options.expandedImage = null;
+// Le curseur "pointer" sur les sommets-image est géré manuellement via le
+// mouseListener ci-dessous (CellStateStyle n'a pas de propriété "cursor" :
+// elle ne serait pas prise en compte par le rendu).
+
+// Pas d'icône de pliage/dépliage sur cette vue lecture seule, quel que soit
+// l'état (replié ou non) du groupe — contrairement à options.expandedImage,
+// qui ne masque que l'icône des groupes dépliés.
+graph.getFoldingImage = () => null;
 
 //-----------------------------------------------------------------------
 // Style des arêtes
@@ -96,8 +110,8 @@ export function loadGraph(xml: string): void {
 //--------------------------------------------------------------------------
 // Navigation au clic sur un sommet
 
-graph.addListener(InternalEvent.CLICK, (_sender, evt) => {
-    const cell = evt.getProperty('cell');
+graph.addListener(InternalEvent.CLICK, (_sender: unknown, evt: EventObject) => {
+    const cell = evt.getProperty('cell') as Cell | null;
     if (!cell?.isVertex()) return;
 
     const node = _nodes.get(cell.id as string);
@@ -115,7 +129,8 @@ graph.addListener(InternalEvent.CLICK, (_sender, evt) => {
 graph.addMouseListener({
     mouseMove(_sender, me) {
         const cell = me.getCell();
-        const isImageVertex = cell?.isVertex() && (cell.style as any)?.image != null && !(cell.style as any)?.isBackground;
+        const style = cell?.style as AppCellStyle | undefined;
+        const isImageVertex = !!cell?.isVertex() && style?.image != null && !style.isBackground;
         container!.style.cursor = isImageVertex ? 'pointer' : 'default';
     },
     mouseDown(_sender, _me) {},
