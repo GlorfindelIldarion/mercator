@@ -62,7 +62,7 @@
     ]
   },
   "resources/css/mapping.css": {
-    "file": "assets/mapping-BkXaFlkw.css",
+    "file": "assets/mapping-B3msL4OR.css",
     "name": "mapping",
     "names": [
       "mapping.css"
@@ -129,7 +129,7 @@
     "isEntry": true
   },
   "resources/js/map.edit.ts": {
-    "file": "assets/map.edit-BpFqheFP.js",
+    "file": "assets/map.edit-DrRa0wF6.js",
     "name": "map.edit",
     "src": "resources/js/map.edit.ts",
     "isEntry": true,

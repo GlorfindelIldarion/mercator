@@ -111,6 +111,16 @@ edgeDefaultStyle.entryPerimeter = false;
 // Désactiver le folding
 graph.getFoldingImage = () => null;
 
+// Ne pas changer la sélection sur clic droit : EdgeHandler appelle
+// selectCellForEvent sans vérifier isPopupTrigger, ce qui viderait la
+// multi-sélection. SelectionHandler vérifie déjà isPopupTrigger, donc
+// cette surcharge corrige uniquement le cas EdgeHandler.
+const _selectCellForEvent = graph.selectCellForEvent.bind(graph);
+graph.selectCellForEvent = (cell: Cell, evt: MouseEvent) => {
+    if (evt?.button === 2) return;
+    _selectCellForEvent(cell, evt);
+};
+
 // Verrouillage de la cellule d'arrière-plan
 const _isSelectable = graph.isCellSelectable.bind(graph);
 graph.isCellSelectable = (cell) => !isBackgroundCell(cell) && _isSelectable(cell);
@@ -211,6 +221,8 @@ const MENU_OFFSET_Y = 100;
 const edgeContextMenu = document.getElementById('edge-context-menu') as HTMLDivElement | null;
 const edgeColorSelect = document.getElementById('edge-color-select') as HTMLInputElement | null;
 const thicknessSelect = document.getElementById('edge-thickness-select') as HTMLSelectElement | null;
+const dashSelect = document.getElementById('edge-dash-select') as HTMLSelectElement | null;
+const routingSelect = document.getElementById('edge-routing-select') as HTMLSelectElement | null;
 
 const textContextMenu = document.getElementById('text-context-menu') as HTMLDivElement | null;
 const textFontSelect = document.getElementById('text-font-select') as HTMLSelectElement | null;
@@ -221,6 +233,7 @@ const textItalicSelect = document.getElementById('text-italic-select') as HTMLBu
 const textUnderlineSelect = document.getElementById('text-underline-select') as HTMLButtonElement | null;
 
 let selectedCell: Cell | null = null;
+let selectedEdgeCells: Cell[] = [];
 
 function hideContextMenus(): void {
     if (textContextMenu) textContextMenu.style.display = 'none';
@@ -229,17 +242,36 @@ function hideContextMenus(): void {
 
 function showEdgeMenu(x: number, y: number, style: CellStateStyle): void {
     if (!edgeContextMenu || !textContextMenu) return;
-    edgeContextMenu.style.display = 'block';
+    edgeContextMenu.style.display = 'flex';
     edgeContextMenu.style.left = `${x + MENU_OFFSET_X}px`;
     edgeContextMenu.style.top = `${y + MENU_OFFSET_Y}px`;
     if (edgeColorSelect) edgeColorSelect.value = style.strokeColor ?? '#000000';
     if (thicknessSelect) thicknessSelect.value = String(style.strokeWidth ?? '1');
+    if (dashSelect) {
+        const dashed = (style as any).dashed;
+        const dashPattern = (style as any).dashPattern as string | undefined;
+        if (!dashed) {
+            dashSelect.value = 'solid';
+        } else if (dashPattern === '2 6') {
+            dashSelect.value = 'dotted';
+        } else if (dashPattern === '8 3 2 3') {
+            dashSelect.value = 'dash-dot';
+        } else {
+            dashSelect.value = 'dashed';
+        }
+    }
+    if (routingSelect) {
+        const es = style.edgeStyle;
+        routingSelect.value = (es === 'orthogonalEdgeStyle' || es === 'elbowEdgeStyle')
+            ? 'orthogonal'
+            : 'straight';
+    }
     textContextMenu.style.display = 'none';
 }
 
 function showTextMenu(x: number, y: number, style: CellStateStyle, cellStyle: AppCellStyle | undefined): void {
     if (!edgeContextMenu || !textContextMenu) return;
-    textContextMenu.style.display = 'block';
+    textContextMenu.style.display = 'flex';
     textContextMenu.style.left = `${x + MENU_OFFSET_X}px`;
     textContextMenu.style.top = `${y + MENU_OFFSET_Y}px`;
     if (textColorSelect) textColorSelect.value = style.fontColor ?? '#000000';
@@ -251,6 +283,17 @@ function showTextMenu(x: number, y: number, style: CellStateStyle, cellStyle: Ap
     textBoldSelect?.classList.toggle('selected', !!(fontStyle & 1));
     textItalicSelect?.classList.toggle('selected', !!(fontStyle & 2));
     textUnderlineSelect?.classList.toggle('selected', !!(fontStyle & 4));
+}
+
+function isEdgeStyleTarget(cell: Cell): boolean {
+    if (cell.isEdge()) return true;
+    if (cell.isVertex()) {
+        const cs = styleOf(cell);
+        const cellValue = cell.value as string | null;
+        const hasText = !!cellValue && cellValue.trim() !== '';
+        return !hasText && !cs?.image && (!cell.children || cell.children.length === 0);
+    }
+    return false;
 }
 
 graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
@@ -271,6 +314,11 @@ graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
 
     if (cell.isEdge()) {
         selectedCell = cell;
+        const allSelected = graph.getSelectionCells() as Cell[];
+        const selectedIds = new Set(allSelected.map((c) => String(c.id)));
+        selectedEdgeCells = selectedIds.has(String(cell.id)) && allSelected.length > 1
+            ? allSelected.filter((c) => isEdgeStyleTarget(c))
+            : [cell];
         showEdgeMenu(x, y, currentStyle);
     } else if (cell.isVertex()) {
         const cellValue = cell.value as string | null;
@@ -279,9 +327,15 @@ graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
 
         if (hasText && textColorSelect && textFontSelect && textSizeSelect) {
             selectedCell = cell;
+            selectedEdgeCells = [];
             showTextMenu(x, y, currentStyle, cellStyle);
         } else if (!cellStyle?.image && (!cell.children || cell.children.length === 0)) {
             selectedCell = cell;
+            const allSelected = graph.getSelectionCells() as Cell[];
+            const selectedIds = new Set(allSelected.map((c) => String(c.id)));
+            selectedEdgeCells = selectedIds.has(String(cell.id)) && allSelected.length > 1
+                ? allSelected.filter((c) => isEdgeStyleTarget(c))
+                : [cell];
             showEdgeMenu(x, y, currentStyle);
         } else {
             hideContextMenus();
@@ -295,18 +349,48 @@ document.getElementById('apply-edge-style')?.addEventListener('click', (e) => {
     e.preventDefault();
     if (!selectedCell || !edgeColorSelect || !thicknessSelect) return;
 
-    graph.batchUpdate(() => {
-        const style: CellStateStyle = selectedCell!.style ?? {};
-        const thickness = parseInt(thicknessSelect!.value, 10) || 1;
+    const cells = selectedEdgeCells.length > 0 ? selectedEdgeCells : [selectedCell];
+    const thickness = parseInt(thicknessSelect.value, 10) || 1;
+    const dashValue = dashSelect?.value ?? 'solid';
 
-        if (selectedCell!.isEdge()) {
-            style.strokeColor = edgeColorSelect!.value;
-        } else {
-            style.fillColor = edgeColorSelect!.value;
+    graph.batchUpdate(() => {
+        for (const cell of cells) {
+            const style: CellStateStyle = cell.style ?? {};
+
+            if (cell.isEdge()) {
+                style.strokeColor = edgeColorSelect!.value;
+            } else {
+                style.fillColor = edgeColorSelect!.value;
+            }
+            style.strokeWidth = thickness;
+
+            const s = style as any;
+            if (dashValue === 'solid') {
+                s.dashed = false;
+                delete s.dashPattern;
+                delete s.fixDash;
+            } else if (dashValue === 'dotted') {
+                s.dashed = true;
+                s.dashPattern = '2 6';
+                s.fixDash = true;
+            } else if (dashValue === 'dash-dot') {
+                s.dashed = true;
+                s.dashPattern = '8 3 2 3';
+                s.fixDash = true;
+            } else {
+                // dashed
+                s.dashed = true;
+                delete s.dashPattern;
+                s.fixDash = true;
+            }
+
+            style.edgeStyle = routingSelect?.value === 'orthogonal'
+                ? 'orthogonalEdgeStyle'
+                : 'straightEdgeStyle';
+
+            cell.style = style;
+            graph.refresh(cell);
         }
-        style.strokeWidth = thickness;
-        selectedCell!.style = style;
-        graph.refresh(selectedCell!);
     });
 
     if (edgeContextMenu) edgeContextMenu.style.display = 'none';
@@ -359,9 +443,41 @@ document.addEventListener('click', (event) => {
 });
 
 // --------------------------------------------------------------------------------
-// Désactive la grille
+// Grille
 
 graph.setGridEnabled(false);
+
+function updateGridBackground(): void {
+    if (!graph.isGridEnabled()) return;
+    const s = graph.view.scale;
+    const t = graph.view.translate;
+    const cellSize = graph.getGridSize() * s;
+    const ox = ((t.x * s) % cellSize + cellSize) % cellSize;
+    const oy = ((t.y * s) % cellSize + cellSize) % cellSize;
+    container.style.backgroundSize = `${cellSize}px ${cellSize}px`;
+    container.style.backgroundPosition = `${ox}px ${oy}px`;
+}
+
+function setGridVisible(active: boolean): void {
+    graph.setGridEnabled(active);
+    if (active) {
+        container.style.backgroundImage =
+            'radial-gradient(circle, rgba(0,0,0,0.25) 1px, transparent 1px)';
+        updateGridBackground();
+    } else {
+        container.style.backgroundImage = 'none';
+    }
+    const btn = document.getElementById('grid-btn');
+    if (btn) btn.setAttribute('aria-pressed', String(active));
+}
+
+graph.view.addListener(InternalEvent.SCALE, () => updateGridBackground());
+graph.view.addListener(InternalEvent.TRANSLATE, () => updateGridBackground());
+graph.view.addListener(InternalEvent.SCALE_AND_TRANSLATE, () => updateGridBackground());
+
+document.getElementById('grid-btn')?.addEventListener('click', () => {
+    setGridVisible(!graph.isGridEnabled());
+});
 
 // -----------------------------------------------------------------------
 // Panning
@@ -1075,7 +1191,7 @@ graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObjec
         completeMissingEdgesAmongPlacedNodes(parent);
     });
     refreshParallelEdges();
-    startPhysics();
+    if (physicsEnabled) startPhysics();
 });
 
 //-------------------------------------------------------------------------
@@ -1183,7 +1299,7 @@ document.getElementById('deploy-btn')?.addEventListener('click', (e) => {
         completeMissingEdgesAmongPlacedNodes(parent);
     });
     refreshParallelEdges();
-    startPhysics();
+    if (physicsEnabled) startPhysics();
 });
 
 //-------------------------------------------------------------------------
@@ -1348,6 +1464,7 @@ document.getElementById('download-btn')?.addEventListener('click', downloadSVG);
 //---------------------------------------------------------------------------
 
 let physicsRunning = false;
+let physicsEnabled = false; // true uniquement si l'utilisateur a activé le magnet
 let physicsRafId: number | null = null;
 const physicsStartGeo = new Map<Cell, Geometry>();
 
@@ -1612,7 +1729,8 @@ function stopPhysics(): void {
 }
 
 document.getElementById('physics-btn')?.addEventListener('click', () => {
-    physicsRunning ? stopPhysics() : startPhysics();
+    physicsEnabled = !physicsEnabled;
+    physicsEnabled ? startPhysics() : stopPhysics();
 });
 
 // Toute interaction manuelle (clic, déplacement) doit arrêter le moteur

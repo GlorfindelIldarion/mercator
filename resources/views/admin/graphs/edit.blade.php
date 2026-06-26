@@ -200,6 +200,7 @@
                                 <i id="zoom-in-btn" title="Zoom in" class="mapping-icon bi bi-zoom-in"></i>
                                 <i id="zoom-out-btn" title="Zoom out" class="mapping-icon bi bi-zoom-out"></i>
                                 <i id="physics-btn" title="Physique" class="mapping-icon bi bi-magnet" aria-pressed="false"></i>
+                                <i id="grid-btn" title="Grille" class="mapping-icon bi bi-grid-3x3-gap" aria-pressed="false"></i>
                                 <i id="background-btn" title="Arrière-plan" class="mapping-icon bi bi-image"></i>
                                 <i id="update-btn" title="Update" class="mapping-icon bi bi-lightning-fill"></i>
                                 <i id="download-btn" title="Export" class="mapping-icon bi bi-download"></i>
@@ -225,63 +226,75 @@
 
                             <!-- Contextual menu for edges -->
                             <div id="edge-context-menu"
-                                 style="display: none; position: absolute; background: #fff; border: 1px solid #ccc; z-index: 1000; padding: 10px;">
-                                <label for="edge-color-select"
-                                       style="margin-right: 5px;">{{ trans('global.color') }}</label>
-                                <input type="color" id="edge-color-select" name="favorite-color" value="#ff0000">
-                                <label for="edge-thickness-select"
-                                       style="margin-left: 5px; margin-right: 5px;">Border</label>
-                                <select id="edge-thickness-select">
-                                    <option value="1">1 px</option>
-                                    <option value="2">2 px</option>
-                                    <option value="3">3 px</option>
-                                    <option value="4">4 px</option>
-                                    <option value="5">5 px</option>
-                                </select>
-                                <br>
-                                <button id="apply-edge-style">{{ trans('global.apply') }}</button>
+                                 style="display: none; position: absolute; background: #fff; border: 1px solid #ccc; z-index: 1000; padding: 10px; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label for="edge-color-select" style="margin-right: 5px;">{{ trans('global.color') }}</label>
+                                    <input type="color" id="edge-color-select" name="favorite-color" value="#ff0000">
+                                    <label for="edge-dash-select" style="margin-right: 5px;">Trait</label>
+                                    <select id="edge-dash-select">
+                                        <option value="solid">&#x2014;&#x2014;&#x2014; Continu</option>
+                                        <option value="dashed">- - - Pointillé</option>
+                                        <option value="dotted">&#xB7;&#xB7;&#xB7; Point</option>
+                                        <option value="dash-dot">-&#xB7;-&#xB7; Trait+point</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="edge-thickness-select" style="margin-right: 5px;">Largeur</label>
+                                    <select id="edge-thickness-select">
+                                        <option value="1">1 px</option>
+                                        <option value="2">2 px</option>
+                                        <option value="3">3 px</option>
+                                        <option value="4">4 px</option>
+                                        <option value="5">5 px</option>
+                                    </select>
+                                    <label for="edge-routing-select" style="margin-right: 5px;">Routage</label>
+                                    <select id="edge-routing-select">
+                                        <option value="straight">&#x2192; Ligne droite</option>
+                                        <option value="orthogonal">&#x21AA; Angles droits</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button id="apply-edge-style">{{ trans('global.apply') }}</button>
+                                </div>
                             </div>
 
                             <!-- Contextual menu for text -->
                             <div id="text-context-menu"
-                                 style="display: none; position: absolute; background: #fff; border: 1px solid #ccc; z-index: 1000; padding: 10px;">
-                                <label for="text-font-select">Font </label>
-                                <select id="text-font-select">
-                                    <option>Arial</option>
-                                    <option>Helvetica</option>
-                                    <option>Times New Roman</option>
-                                    <option>Courier New</option>
-                                    <option>Verdana</option>
-                                    <option>Georgia</option>
-                                </select>
-                                <label for="text-size-select">Size </label>
-                                <select id="text-size-select">
-                                    <option value="8">8 px</option>
-                                    <option value="10">10 px</option>
-                                    <option value="12">12 px</option>
-                                    <option value="14">14 px</option>
-                                    <option value="16">16 px</option>
-                                    <option value="18">18 px</option>
-                                    <option value="20">20 px</option>
-                                    <option value="22">22 px</option>
-                                    <option value="24">24 px</option>
-                                    <option value="26">26 px</option>
-                                </select>
-                                <br>
-                                <label for="text-color-select">{{ trans('global.color') }}</label>
-                                <input type="color" id="text-color-select" name="favorite-color" value="#ff0000">
-
-                                <button type="button" id="text-bold-select" class="button"
-                                        style="margin-left: 20px; font-weight: bold;">B
-                                </button>
-                                <button type="button" id="text-italic-select" class="button"
-                                        style="font-style: italic;">I
-                                </button>
-                                <button type="button" id="text-underline-select" class="button"
-                                        style="text-decoration: underline;">U
-                                </button>
-                                <br>
-                                <button id="apply-text-style">{{ trans('global.apply') }}</button>
+                                 style="display: none; position: absolute; background: #fff; border: 1px solid #ccc; z-index: 1000; padding: 10px; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label for="text-font-select" style="margin-right: 5px;">Font</label>
+                                    <select id="text-font-select">
+                                        <option>Arial</option>
+                                        <option>Helvetica</option>
+                                        <option>Times New Roman</option>
+                                        <option>Courier New</option>
+                                        <option>Verdana</option>
+                                        <option>Georgia</option>
+                                    </select>
+                                    <label for="text-size-select" style="margin-right: 5px;">Taille</label>
+                                    <select id="text-size-select">
+                                        <option value="8">8 px</option>
+                                        <option value="10">10 px</option>
+                                        <option value="12">12 px</option>
+                                        <option value="14">14 px</option>
+                                        <option value="16">16 px</option>
+                                        <option value="18">18 px</option>
+                                        <option value="20">20 px</option>
+                                        <option value="22">22 px</option>
+                                        <option value="24">24 px</option>
+                                        <option value="26">26 px</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="text-color-select" style="margin-right: 5px;">{{ trans('global.color') }}</label>
+                                    <input type="color" id="text-color-select" name="favorite-color" value="#ff0000">
+                                    <button type="button" id="text-bold-select" class="button" style="font-weight: bold;">B</button>
+                                    <button type="button" id="text-italic-select" class="button" style="font-style: italic;">I</button>
+                                    <button type="button" id="text-underline-select" class="button" style="text-decoration: underline;">U</button>
+                                </div>
+                                <div>
+                                    <button id="apply-text-style">{{ trans('global.apply') }}</button>
+                                </div>
                             </div>
 
                             <div id="graph-container"

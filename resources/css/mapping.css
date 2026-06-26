@@ -217,6 +217,11 @@ footer {
     cursor: pointer;
 }
 
+.mapping-icon[aria-pressed="true"] {
+    font-weight: 900;
+    -webkit-text-stroke: 0.5px currentColor;
+}
+
 /* Exemple de style pour un groupe */
 .group {
     background-color: rgba(0, 0, 0, 0); /* Fond transparent */
