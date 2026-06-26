@@ -566,8 +566,32 @@ window.addEventListener('pointermove', (e: PointerEvent) => {
     );
 }, true);
 
-window.addEventListener('pointerup', () => { bgPanning = false; }, true);
-window.addEventListener('blur',      () => { bgPanning = false; });
+window.addEventListener('pointerup', () => {
+    if (!bgPanning) return;
+    // Convertit le décalage CSS (panDx/panDy) en view.translate logique,
+    // exactement comme le fait PanningHandler sur son mouseup.
+    // Sans ça, le référentiel de coordonnées de MaxGraph diverge de l'affichage
+    // et les déplacements de cellules suivants sautent.
+    const view  = graph.getView();
+    const scale = view.scale;
+    view.setTranslate(
+        view.translate.x + graph.panDx / scale,
+        view.translate.y + graph.panDy / scale,
+    );
+    graph.panGraph(0, 0);
+    bgPanning = false;
+}, true);
+window.addEventListener('blur', () => {
+    if (!bgPanning) return;
+    const view  = graph.getView();
+    const scale = view.scale;
+    view.setTranslate(
+        view.translate.x + graph.panDx / scale,
+        view.translate.y + graph.panDy / scale,
+    );
+    graph.panGraph(0, 0);
+    bgPanning = false;
+});
 
 //-------------------------------------------------------------------------
 // LOAD / SAVE
