@@ -20,7 +20,7 @@
                         <div class="form-group">
                             <label class="label-required" for="name">{{ trans('cruds.graph.fields.name') }}</label>
                             <input class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}" type="text"
-                                   name="name" id="name" value="{{ old('name', $name) }}" required autofocus
+                                   name="name" id="name" value="{{ old('name', $name) }}" required
                                    maxlength="64"/>
                             @if($errors->has('name'))
                                 <div class="invalid-feedback">
@@ -297,8 +297,8 @@
                                 </div>
                             </div>
 
-                            <div id="graph-container"
-                                 style="position: relative; overflow: hidden; width: 100%; height: 600px; cursor: default; touch-action: none;">
+                            <div id="graph-container" tabindex="-1"
+                                 style="position: relative; overflow: hidden; width: 100%; height: 600px; cursor: default; touch-action: none; outline: none;">
                             </div>
                         </div>
                     </div>

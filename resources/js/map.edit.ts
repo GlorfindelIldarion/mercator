@@ -99,6 +99,27 @@ if (!container) {
 const graph = new Graph(container, new GraphDataModel(), plugins);
 const model = graph.getDataModel();
 
+// Rendre le container focusable (tabIndex=-1 : pas dans la séquence Tab,
+// mais le focus JS et le clic peuvent le cibler).
+container.tabIndex = -1;
+container.style.outline = 'none';
+
+// Listeners sur window (pas document) : window est au-dessus de document dans
+// la chaîne de propagation, donc ces handlers s'exécutent AVANT tout listener
+// MaxGraph ou Select2, même ceux enregistrés en phase capture sur document.
+let graphHasFocus = false;
+window.addEventListener('mousedown', (e: MouseEvent) => {
+    if (container.contains(e.target as Node)) {
+        graphHasFocus = true;
+        // Focus synchrone (avant que MaxGraph ne traite l'événement)
+        container.focus();
+        // Focus différé pour couvrir le cas où MaxGraph re-cible le focus
+        setTimeout(() => container.focus(), 0);
+    } else {
+        graphHasFocus = false;
+    }
+}, true);
+
 //-----------------------------------------------------------------------
 // Style des arêtes
 
@@ -921,23 +942,31 @@ function deleteSelectedCells(): void {
     refreshParallelEdges();
 }
 
-document.addEventListener('keydown', (event: KeyboardEvent) => {
+// Sur window en phase capture : s'exécute avant TOUT listener tiers
+// (MaxGraph, Select2, jQuery...). Si le graphe a le focus conceptuel,
+// on absorbe Delete/Backspace pour MaxGraph et on bloque le HTML.
+window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key !== 'Delete' && event.key !== 'Backspace') return;
 
-    // Laisser le navigateur gérer Delete/Backspace dans un champ de saisie
-    // normal (nom, type, etc.) : on ne s'occupe que de la sélection du graphe.
+    if (graphHasFocus) {
+        // Bloquer systématiquement l'HTML quand le graphe est actif
+        event.preventDefault();
+        event.stopPropagation();
+        if (graph.getSelectionCells().filter((c) => !isBackgroundCell(c)).length > 0) {
+            deleteSelectedCells();
+        }
+        return;
+    }
+
+    // Pas de focus graphe : laisser le navigateur gérer dans les champs de saisie.
     const target = event.target as HTMLElement | null;
     if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
 
     if (graph.getSelectionCells().filter((c) => !isBackgroundCell(c)).length === 0) return;
-
-    // Empêche Backspace de déclencher la navigation "retour" du navigateur
-    // et bloque la propagation vers d'autres gestionnaires de la page.
     event.preventDefault();
     event.stopPropagation();
-
     deleteSelectedCells();
-});
+}, true);
 
 document.getElementById('delete-btn')?.addEventListener('click', deleteSelectedCells);
 
