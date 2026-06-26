@@ -33,8 +33,9 @@
 </div>
 
 <div class="card">
-    <div class="card-header">
-        {{ trans('cruds.graph.title_singular') }} - {{ $graph->name }}
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>{{ trans('cruds.graph.title_singular') }} - {{ $graph->name }}</span>
+        <i id="download-btn" title="Télécharger en SVG" class="mapping-icon bi bi-download" style="cursor: pointer;"></i>
     </div>
     <div id="graph-container"
          style="

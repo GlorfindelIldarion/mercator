@@ -39,7 +39,8 @@
                         @foreach($graphs as $graph)
                         <tr data-entry-id="{{ $graph->id }}"
                             data-name="{{ e($graph->name) }}"
-                            data-type="{{ e($graph->type) }}">
+                            data-type="{{ e($graph->type) }}"
+                            data-url-clone="{{ route('admin.graphs.clone', $graph->id) }}">
                             <td></td>
                             <td>
                             <x-show-link :model="$graph" />
@@ -76,28 +77,15 @@
                 <span id="panel-title" class="text-muted small">
                     {{ trans('cruds.graph.title_singular') }}
                 </span>
-                <div id="panel-actions" class="d-none gap-1" style="display: none !important;">
-                    @can('graph_edit')
-                    <a id="btn-edit" href="#" class="btn btn-xs btn-info">
-                        {{ trans('global.edit') }}
-                    </a>
-                    @endcan
+                <div id="panel-actions" class="d-none gap-1 align-items-center">
                     @can('graph_create')
                     <a id="btn-clone" href="#" class="btn btn-xs btn-warning">
                         {{ trans('global.clone') }}
                     </a>
                     @endcan
-                    @can('graph_delete')
-                    <form id="form-destroy" action="#" method="POST"
-                          style="display: inline-block;"
-                          onsubmit="return confirm('{{ trans('global.areYouSure') }}');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-xs btn-danger">
-                            {{ trans('global.delete') }}
-                        </button>
-                    </form>
-                    @endcan
+                    <button id="download-btn" type="button" class="btn btn-xs btn-secondary" title="Télécharger en SVG">
+                        <i class="bi bi-download"></i>
+                    </button>
                 </div>
             </div>
 
@@ -146,9 +134,8 @@ const _graphContents = {
 
 const panelTitle   = document.getElementById('panel-title');
 const panelActions = document.getElementById('panel-actions');
-const btnEdit      = document.getElementById('btn-edit');
 const btnClone     = document.getElementById('btn-clone');
-const formDestroy  = document.getElementById('form-destroy');
+const cloneGraphId = document.getElementById('clone-graph-id');
 const placeholder  = document.getElementById('graph-placeholder');
 </script>
 
@@ -178,11 +165,9 @@ document.addEventListener('DOMContentLoaded', function () {
         row.classList.add('selected');
 
 
-        // panelTitle.textContent = row.dataset.name;
-         panelTitle.textContent = row.querySelector('td:nth-child(2)').textContent.trim();
-        if (btnEdit)     btnEdit.href       = row.dataset.urlEdit;
-        if (btnClone)    btnClone.href      = row.dataset.urlClone;
-        if (formDestroy) formDestroy.action = row.dataset.urlDestroy;
+        panelTitle.textContent = row.querySelector('td:nth-child(2)').textContent.trim();
+        if (btnClone)    btnClone.href          = row.dataset.urlClone;
+        if (cloneGraphId) cloneGraphId.textContent = `(${id})`;
 
         panelActions.classList.remove('d-none');
         panelActions.classList.add('show');

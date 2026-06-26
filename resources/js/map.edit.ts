@@ -72,6 +72,12 @@ function isRectangleCell(cell: Cell | null | undefined): boolean {
     return !!styleOf(cell)?.isRectangle;
 }
 
+// Garantit que la cellule de fond reste sous tout le reste après un orderCells.
+function ensureBackgroundAtBottom(): void {
+    const bg = model.getCell(BACKGROUND_ID) as Cell | null;
+    if (bg) graph.orderCells(true, [bg]);
+}
+
 function isTextCell(cell: Cell | null | undefined): boolean {
     return !!styleOf(cell)?.isText;
 }
@@ -188,11 +194,14 @@ graph.createVertexHandler = (state) => new CornerOnlyVertexHandler(state);
 
 const undoManager = new UndoManager();
 let physicsSuppressUndo = false;
+let isDirty = false;
+
 const undoListener = (_sender: unknown, evt: EventObject) => {
     if (physicsSuppressUndo) return;
     const edit = evt.getProperty('edit') as UndoableEdit | undefined;
     if (edit) {
         undoManager.undoableEditHappened(edit);
+        isDirty = true;
     }
 };
 
@@ -468,6 +477,14 @@ document.addEventListener('click', (event) => {
 
 graph.setGridEnabled(false);
 
+// Overlay positionné au-dessus du SVG MaxGraph (qui contient l'image de fond)
+// pour que la grille soit visible par-dessus l'image de fond.
+// pointer-events: none pour ne pas intercepter les clics/drags du graphe.
+const gridOverlay = document.createElement('div');
+gridOverlay.style.cssText =
+    'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;';
+container.appendChild(gridOverlay);
+
 function updateGridBackground(): void {
     if (!graph.isGridEnabled()) return;
     const s = graph.view.scale;
@@ -475,18 +492,18 @@ function updateGridBackground(): void {
     const cellSize = graph.getGridSize() * s;
     const ox = ((t.x * s) % cellSize + cellSize) % cellSize;
     const oy = ((t.y * s) % cellSize + cellSize) % cellSize;
-    container.style.backgroundSize = `${cellSize}px ${cellSize}px`;
-    container.style.backgroundPosition = `${ox}px ${oy}px`;
+    gridOverlay.style.backgroundSize = `${cellSize}px ${cellSize}px`;
+    gridOverlay.style.backgroundPosition = `${ox}px ${oy}px`;
 }
 
 function setGridVisible(active: boolean): void {
     graph.setGridEnabled(active);
     if (active) {
-        container.style.backgroundImage =
+        gridOverlay.style.backgroundImage =
             'radial-gradient(circle, rgba(0,0,0,0.25) 1px, transparent 1px)';
         updateGridBackground();
     } else {
-        container.style.backgroundImage = 'none';
+        gridOverlay.style.backgroundImage = 'none';
     }
     const btn = document.getElementById('grid-btn');
     if (btn) btn.setAttribute('aria-pressed', String(active));
@@ -507,6 +524,51 @@ graph.setPanning(true);
 graph.allowAutoPanning = true;
 graph.useScrollbarsForPanning = true;
 
+// PanningHandler ne s'active pas quand une cellule est sous la souris.
+// La cellule d'arrière-plan (isBackground) est une cellule MaxGraph, donc le
+// clic-droit dessus ne déclenche pas le panning natif.
+//
+// On écoute en phase CAPTURE sur window pour que MaxGraph ne puisse pas
+// bloquer les événements via stopPropagation. Les coordonnées sont corrigées
+// du décalage panDx/panDy (offset CSS du canvas SVG) avant d'appeler getCellAt.
+let bgPanning = false;
+let bgPanStartClientX = 0;
+let bgPanStartClientY = 0;
+let bgPanStartDx = 0;
+let bgPanStartDy = 0;
+
+window.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (e.button !== 2) return;
+    if (!container.contains(e.target as Node)) return;
+
+    const rect = container.getBoundingClientRect();
+    const cell = graph.getCellAt(
+        e.clientX - rect.left - graph.panDx,
+        e.clientY - rect.top  - graph.panDy,
+    ) as Cell | null;
+    if (!isBackgroundCell(cell)) return;
+
+    bgPanning = true;
+    bgPanStartClientX = e.clientX;
+    bgPanStartClientY = e.clientY;
+    bgPanStartDx = graph.panDx;
+    bgPanStartDy = graph.panDy;
+    // Empêche MaxGraph's PanningHandler de s'activer en parallèle
+    // (sinon double appel panGraph → saut parasite au début).
+    e.stopPropagation();
+}, true);
+
+window.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!bgPanning) return;
+    graph.panGraph(
+        bgPanStartDx + e.clientX - bgPanStartClientX,
+        bgPanStartDy + e.clientY - bgPanStartClientY,
+    );
+}, true);
+
+window.addEventListener('pointerup', () => { bgPanning = false; }, true);
+window.addEventListener('blur',      () => { bgPanning = false; });
+
 //-------------------------------------------------------------------------
 // LOAD / SAVE
 
@@ -515,6 +577,7 @@ export function loadGraph(xml: string) {
     refreshParallelEdges();
     // Cadre la totalité des objets dans l'écran, aligné à gauche
     graph.getPlugin<FitPlugin>('fit')?.fit({margin: 20});
+    isDirty = false; // le chargement initial n'est pas une modification utilisateur
 }
 
 (window as any).loadGraph = loadGraph;
@@ -555,6 +618,7 @@ async function saveGraphToDatabase(
             }
             throw new Error(errorMessage);
         }
+        isDirty = false;
     } catch (error) {
         console.error('Erreur lors de la sauvegarde :', error);
         alert('Erreur lors de la sauvegarde du graphe.');
@@ -581,6 +645,28 @@ function saveGraph() {
 }
 
 document.getElementById('saveButton')?.addEventListener('click', saveGraph);
+
+// Les modifications sur le nom ou le type marquent aussi le graphe comme modifié
+document.getElementById('name')?.addEventListener('input', () => { isDirty = true; });
+document.getElementById('type')?.addEventListener('change', () => { isDirty = true; });
+
+// Sauvegarde via le bouton formulaire (PUT) : vider isDirty avant la
+// navigation pour que beforeunload ne bloque pas la redirection.
+document.getElementById('btn-save')?.addEventListener('click', () => { isDirty = false; }, true);
+
+// Confirmation avant fermeture de l'onglet / navigation externe
+window.addEventListener('beforeunload', (e) => {
+    if (!isDirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+});
+
+// Confirmation avant le lien "Retour à la liste"
+document.getElementById('btn-cancel')?.addEventListener('click', (e) => {
+    if (isDirty && !confirm('Des modifications non sauvegardées seront perdues. Quitter quand même ?')) {
+        e.preventDefault();
+    }
+});
 
 //-------------------------------------------------------------------------
 // Utilitaires
@@ -864,6 +950,7 @@ container.addEventListener('drop', (event: DragEvent) => {
                 } as AppCellStyle,
             });
             graph.orderCells(true, [vertex]);
+            ensureBackgroundAtBottom();
             graph.setSelectionCell(vertex);
         });
         return;
@@ -1045,6 +1132,7 @@ if (groupButton) {
                 if (rectanglesInGroup.length > 0) {
                     graph.orderCells(true, rectanglesInGroup);
                     graph.orderCells(true, [group]);
+                    ensureBackgroundAtBottom();
                 }
 
                 graph.refresh();
@@ -1065,6 +1153,7 @@ if (ungroupButton) {
             const rectangles = released.filter((c) => isRectangleCell(c));
             if (rectangles.length > 0) {
                 graph.orderCells(true, rectangles);
+                ensureBackgroundAtBottom();
             }
 
             graph.setSelectionCells(released);
@@ -1081,6 +1170,7 @@ graph.addListener(InternalEvent.MOVE_CELLS, (_sender: unknown, evt: EventObject)
     const groups = cells.filter((c) => c.isVertex() && (c.children?.length ?? 0) > 0 && groupContainsRectangle(c));
     if (groups.length > 0) {
         graph.orderCells(true, groups);
+        ensureBackgroundAtBottom();
     }
 });
 
