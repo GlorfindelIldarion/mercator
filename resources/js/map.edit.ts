@@ -926,9 +926,11 @@ container.addEventListener('drop', (event: DragEvent) => {
 // Zoom
 
 const zoomInButton = document.getElementById('zoom-in-btn') as HTMLButtonElement | null;
+const fitButton = document.getElementById('fit-btn') as HTMLElement | null;
 const zoomOutButton = document.getElementById('zoom-out-btn') as HTMLButtonElement | null;
 
 if (zoomInButton) zoomInButton.addEventListener('click', () => graph.zoomIn());
+if (fitButton) fitButton.addEventListener('click', () => graph.getPlugin<FitPlugin>('fit')?.fit({ margin: 20 }));
 if (zoomOutButton) zoomOutButton.addEventListener('click', () => graph.zoomOut());
 
 //-------------------------------------------------------------------------

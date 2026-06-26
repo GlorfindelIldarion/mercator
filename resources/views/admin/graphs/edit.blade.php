@@ -198,6 +198,7 @@
                                 <i id="group-btn" title="Group" class="mapping-icon bi bi-plus-square-dotted"></i>
                                 <i id="ungroup-btn" title="Ungroup" class="mapping-icon bi bi-dash-square-dotted"></i>
                                 <i id="zoom-in-btn" title="Zoom in" class="mapping-icon bi bi-zoom-in"></i>
+                                <i id="fit-btn" title="Recentrer" class="mapping-icon bi bi-crosshair"></i>
                                 <i id="zoom-out-btn" title="Zoom out" class="mapping-icon bi bi-zoom-out"></i>
                                 <i id="physics-btn" title="Physique" class="mapping-icon bi bi-magnet" aria-pressed="false"></i>
                                 <i id="grid-btn" title="Grille" class="mapping-icon bi bi-grid-3x3-gap" aria-pressed="false"></i>
