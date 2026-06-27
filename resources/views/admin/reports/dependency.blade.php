@@ -496,21 +496,6 @@
     }
 
     // ─── Téléchargement SVG ───────────────────────────────────────────────────
-    document.getElementById('downloadSvg').addEventListener('click', function (e) {
-        e.preventDefault();
-        const svg = document.querySelector('#graph svg');
-        if (!svg) { alert('Aucun graphe disponible à télécharger.'); return; }
-        const blob = new Blob([svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
-        const a    = Object.assign(document.createElement('a'), {
-            href:     URL.createObjectURL(blob),
-            download: 'dependency-graph.svg',
-        });
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-    });
-
     // ─── Initialisation ───────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
 
