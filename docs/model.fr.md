@@ -1279,16 +1279,19 @@ Cette table constitue la base de référence permettant d’auditer la conformit
 
 | Champ             | Type              | Description |
 |-------------------|-------------------|-------------|
-| **id**            | int unsigned      | Identifiant unique du plan de sauvegarde (auto‑increment). |
-| **ext_refs**      | varchar(255)      | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
-| **logical_server_id** | int unsigned | Identifiant du **serveur logique** concerné par la stratégie de sauvegarde. |
-| **storage_device_id** | int unsigned | Identifiant de l’**infrastructure de stockage** utilisée pour recevoir la sauvegarde. |
-| **backup_frequency**  | tinyint unsigned  | Fréquence de sauvegarde. Valeur codée (ex. : horaire, quotidienne, hebdomadaire, mensuelle). |
-| **backup_cycle**      | tinyint unsigned  | Type de sauvegarde. Valeur codée (ex. : incrémentale, complète). |
-| **backup_retention**  | smallint unsigned | Durée de rétention des sauvegardes, exprimée en **jours**. |
-| **created_at**        | timestamp         | Date et heure de création de l’enregistrement. |
-| **updated_at**        | timestamp         | Date et heure de la dernière mise à jour. |
-| **deleted_at**        | timestamp         | Date de suppression logique (soft delete). |
+| id            | int unsigned      | Identifiant unique du plan de sauvegarde (auto‑increment). |
+| ext_refs      | varchar(255)      | Référence(s) externe(s) vers des objets d'autres systèmes. Format : {ID_SOURCE}ID_OBJET, valeurs multiples séparées par « \| » |
+| name        | varchar(255) | Nom du unique backup                             |
+| type               | varchar(255) | Type du backup                 |
+| attributes | varchar(255) | Attributs de la sauvegarde |
+| logical_server_ids | List int [,] | Liste d'id de(s) serveur(s) logique(s) utilisant(s) ce backup |
+| storage_device_ids | List int [,] | Liste d'id de(s) **infrastructure(s) de stockage** utilisée(s) pour recevoir la sauvegarde. |
+| backup_frequency  | tinyint unsigned  | Fréquence de sauvegarde. Valeur codée (ex. : horaire, quotidienne, hebdomadaire, mensuelle). |
+| backup_cycle      | tinyint unsigned  | Type de sauvegarde. Valeur codée (ex. : incrémentale, complète). |
+| backup_retention  | smallint unsigned | Durée de rétention des sauvegardes, exprimée en **jours**. |
+| created_at        | timestamp         | Date et heure de création de l’enregistrement. |
+| updated_at        | timestamp         | Date et heure de la dernière mise à jour. |
+| deleted_at        | timestamp         | Date de suppression logique (soft delete). |
 
 
 *Détail des identifiants proposés:*
