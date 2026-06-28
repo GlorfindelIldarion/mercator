@@ -829,6 +829,40 @@ function completeMissingEdgesAmongPlacedNodes(parent: Cell): void {
     }
 }
 
+// Restaure uniquement les arêtes manquantes connectées au nœud donné.
+// Seules les entrées de node.edges sont examinées — aucun autre nœud du graphe
+// n'est parcouru.
+function restoreMissingEdgesForNode(nodeId: string, parent: Cell): void {
+    const node = _nodes.get(nodeId);
+    const nodeCell = model.getCell(nodeId) as Cell | null;
+    if (!node || !nodeCell) return;
+
+    const edgesByPeer = new Map<string, Edge[]>();
+    for (const edge of node.edges) {
+        const peerId = edge.attachedNodeId;
+        // Le pair doit être un nœud domaine présent dans le graphe.
+        const peerCell = model.getCell(peerId) as Cell | null;
+        if (!peerCell?.isVertex() || !_nodes.has(peerId)) continue;
+        const list = edgesByPeer.get(peerId);
+        if (list) list.push(edge); else edgesByPeer.set(peerId, [edge]);
+    }
+
+    for (const [peerId, edges] of edgesByPeer) {
+        const peerCell = model.getCell(peerId) as Cell | null;
+        if (!peerCell) continue;
+        const alreadyDrawn = countEdgesBetween(nodeCell, peerCell);
+        for (const edge of edges.slice(alreadyDrawn)) {
+            graph.insertEdge({
+                parent,
+                value: edge.name,
+                source: nodeCell,
+                target: peerCell,
+                style: buildEdgeStyle(edge),
+            });
+        }
+    }
+}
+
 function modelCenter(cell: Cell): Point {
     const g = cell.getGeometry();
     const w = g?.width ?? 0, h = g?.height ?? 0;
@@ -985,6 +1019,7 @@ container.addEventListener('drop', (event: DragEvent) => {
         graph.batchUpdate(() => {
             const existing = model.getCell(nodeId) as Cell | null;
             if (existing) {
+                restoreMissingEdgesForNode(nodeId, parent);
                 graph.setSelectionCells([existing]);
                 return;
             }
@@ -1331,9 +1366,9 @@ graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObjec
             }
         }
 
-        // Tous les liens entre objets déjà présents dans le graphe doivent
-        // être ajoutés, pas seulement ceux touchant le nœud double-cliqué.
-        completeMissingEdgesAmongPlacedNodes(parent);
+        // Restaure les liens manquants entre le nœud double-cliqué et les
+        // nœuds déjà présents dans le graphe.
+        restoreMissingEdgesForNode(node.id, parent);
     });
     refreshParallelEdges();
     if (physicsEnabled) startPhysics();
@@ -1455,7 +1490,12 @@ document.getElementById('add-node-btn')?.addEventListener('click', () => {
     if (!nodeId) return;
 
     if (model.getCell(nodeId)) {
-        graph.setSelectionCells([model.getCell(nodeId) as Cell]);
+        const existingCell = model.getCell(nodeId) as Cell;
+        graph.batchUpdate(() => {
+            restoreMissingEdgesForNode(nodeId, graph.getDefaultParent());
+        });
+        refreshParallelEdges();
+        graph.setSelectionCells([existingCell]);
         return;
     }
 
