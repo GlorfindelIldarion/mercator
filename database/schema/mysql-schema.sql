@@ -2989,3 +2989,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (355,'2026_06_22_00
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (356,'2026_06_22_000001_add_type_and_attributes_columns',46);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (357,'2026_06_22_000002_add_description_and_attributes_to_physical_links',47);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (358,'2026_06_28_000000_drop_unique_name_from_backups_table',48);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (359,'2019_12_14_000001_create_personal_access_tokens_table',48);
