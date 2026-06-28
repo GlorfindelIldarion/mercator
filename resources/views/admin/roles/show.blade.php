@@ -140,7 +140,7 @@
     {{-- Outils --}}
     @include('admin.roles.partials._section_header', ['permission' => $permissions_sorted['tools'], 'label' => trans('panel.menu.tools')])
     <div class="card-body"><div class="row">
-        @include('admin.roles.partials._group', ['permission' => $permissions_sorted['graph'], 'label' => trans('cruds.graph.title')])
+        @include('admin.roles.partials._group', ['permission' => $permissions_sorted['graph'], 'label' => (trans('cruds.bpmn.title') . ' / ' . trans('cruds.graph.title'))])
         <div class="col-md-2">
             @php($permission = $permissions_sorted['explore'])
             @include('admin.roles.partials._checkbox', ['action' => [$permission['actions'][0][0], trans('panel.menu.explore')]])
