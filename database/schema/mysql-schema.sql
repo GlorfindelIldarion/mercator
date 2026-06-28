@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS `activities`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `recovery_time_objective` int(11) DEFAULT NULL,
@@ -104,6 +105,7 @@ DROP TABLE IF EXISTS `actors`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `actors` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `nature` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
@@ -126,11 +128,24 @@ CREATE TABLE `admin_user_application` (
   CONSTRAINT `admin_user_m_application_admin_user_id_foreign` FOREIGN KEY (`admin_user_id`) REFERENCES `admin_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `admin_user_zone`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `admin_user_zone` (
+  `admin_user_id` int(10) unsigned NOT NULL,
+  `zone_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`admin_user_id`,`zone_id`),
+  KEY `admin_user_zone_zone_id_foreign` (`zone_id`),
+  CONSTRAINT `admin_user_zone_admin_user_id_foreign` FOREIGN KEY (`admin_user_id`) REFERENCES `admin_users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `admin_user_zone_zone_id_foreign` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `admin_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `admin_users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `user_id` varchar(255) NOT NULL,
   `firstname` varchar(255) DEFAULT NULL,
   `lastname` varchar(255) DEFAULT NULL,
@@ -155,6 +170,7 @@ DROP TABLE IF EXISTS `annuaires`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `annuaires` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `solution` varchar(255) DEFAULT NULL,
@@ -163,7 +179,6 @@ CREATE TABLE `annuaires` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `annuaires_name_unique` (`name`),
   KEY `zone_admin_fk_1482666` (`zone_admin_id`),
   CONSTRAINT `zone_admin_fk_1482666` FOREIGN KEY (`zone_admin_id`) REFERENCES `zone_admins` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -185,6 +200,7 @@ DROP TABLE IF EXISTS `application_blocks`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `application_blocks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `responsible` varchar(255) DEFAULT NULL,
@@ -242,6 +258,18 @@ CREATE TABLE `application_database` (
   CONSTRAINT `database_id_fk_1482586` FOREIGN KEY (`database_id`) REFERENCES `databases` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `application_document`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `application_document` (
+  `application_id` int(10) unsigned NOT NULL,
+  `document_id` int(10) unsigned NOT NULL,
+  KEY `application_id_fk_7812341` (`application_id`),
+  KEY `document_id_fk_7812342` (`document_id`),
+  CONSTRAINT `application_id_fk_7812341` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `document_id_fk_7812342` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `application_entity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -259,6 +287,7 @@ DROP TABLE IF EXISTS `application_events`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `application_events` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `application_id` int(10) unsigned NOT NULL,
   `message` longtext NOT NULL,
@@ -292,6 +321,7 @@ DROP TABLE IF EXISTS `application_flows`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `application_flows` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `nature` varchar(255) DEFAULT NULL,
   `attributes` varchar(255) DEFAULT NULL,
@@ -369,6 +399,7 @@ DROP TABLE IF EXISTS `application_modules`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `application_modules` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `vendor` varchar(255) DEFAULT NULL,
@@ -445,6 +476,7 @@ DROP TABLE IF EXISTS `application_services`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `application_services` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
   `exposition` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
@@ -471,6 +503,7 @@ DROP TABLE IF EXISTS `applications`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `applications` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `vendor` varchar(255) DEFAULT NULL,
@@ -527,24 +560,47 @@ CREATE TABLE `audit_logs` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `backup_logical_server`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `backup_logical_server` (
+  `backup_id` int(10) unsigned NOT NULL,
+  `logical_server_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`backup_id`,`logical_server_id`),
+  KEY `backup_logical_server_logical_server_id_foreign` (`logical_server_id`),
+  CONSTRAINT `backup_logical_server_backup_id_foreign` FOREIGN KEY (`backup_id`) REFERENCES `backups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `backup_logical_server_logical_server_id_foreign` FOREIGN KEY (`logical_server_id`) REFERENCES `logical_servers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `backup_storage_device`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `backup_storage_device` (
+  `backup_id` int(10) unsigned NOT NULL,
+  `storage_device_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`backup_id`,`storage_device_id`),
+  KEY `backup_storage_device_storage_device_id_foreign` (`storage_device_id`),
+  CONSTRAINT `backup_storage_device_backup_id_foreign` FOREIGN KEY (`backup_id`) REFERENCES `backups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `backup_storage_device_storage_device_id_foreign` FOREIGN KEY (`storage_device_id`) REFERENCES `storage_devices` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `backups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `backups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `logical_server_id` int(10) unsigned NOT NULL,
-  `storage_device_id` int(10) unsigned NOT NULL,
+  `ext_refs` varchar(255) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `type` varchar(100) DEFAULT NULL,
+  `attributes` text DEFAULT NULL,
+  `description` text DEFAULT NULL,
   `backup_frequency` tinyint(3) unsigned DEFAULT NULL COMMENT '1=daily,2=weekly,3=monthly',
   `backup_cycle` tinyint(3) unsigned DEFAULT NULL COMMENT 'Ex: 1 full/day + 1 weekly/month',
   `backup_retention` smallint(5) unsigned DEFAULT NULL COMMENT 'Retention in days',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `backups_logical_server_id_foreign` (`logical_server_id`),
-  KEY `backups_storage_device_id_foreign` (`storage_device_id`),
-  CONSTRAINT `backups_logical_server_id_foreign` FOREIGN KEY (`logical_server_id`) REFERENCES `logical_servers` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `backups_storage_device_id_foreign` FOREIGN KEY (`storage_device_id`) REFERENCES `storage_devices` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `bay_wifi_terminal`;
@@ -564,15 +620,31 @@ DROP TABLE IF EXISTS `bays`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bays` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
-  `room_id` int(10) unsigned DEFAULT NULL,
+  `building_id` int(10) unsigned DEFAULT NULL,
+  `site_id` int(10) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `room_fk_1483441` (`room_id`),
-  CONSTRAINT `room_fk_1483441` FOREIGN KEY (`room_id`) REFERENCES `buildings` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `room_fk_1483441` (`building_id`),
+  KEY `site_id_fk_1483442` (`site_id`),
+  CONSTRAINT `building_fk_1483441` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `site_id_fk_1483442` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `building_zone`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `building_zone` (
+  `building_id` int(10) unsigned NOT NULL,
+  `zone_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`building_id`,`zone_id`),
+  KEY `building_zone_zone_id_foreign` (`zone_id`),
+  CONSTRAINT `building_zone_building_id_foreign` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `building_zone_zone_id_foreign` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `buildings`;
@@ -580,6 +652,7 @@ DROP TABLE IF EXISTS `buildings`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `buildings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `attributes` varchar(255) DEFAULT NULL,
@@ -599,6 +672,26 @@ CREATE TABLE `buildings` (
   CONSTRAINT `site_fk_1483431` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `cartographers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cartographers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `cartographiable_type` varchar(255) NOT NULL,
+  `cartographiable_id` bigint(20) unsigned NOT NULL,
+  `user_id` int(10) unsigned DEFAULT NULL,
+  `role_id` int(10) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cartographers_cartographiable_type_cartographiable_id_index` (`cartographiable_type`,`cartographiable_id`),
+  KEY `cartographers_user_id_index` (`user_id`),
+  KEY `cartographers_role_id_index` (`role_id`),
+  CONSTRAINT `cartographers_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cartographers_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `certificate_logical_server`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -616,6 +709,7 @@ DROP TABLE IF EXISTS `certificates`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `certificates` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -670,6 +764,7 @@ DROP TABLE IF EXISTS `clusters`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `clusters` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `attributes` varchar(255) DEFAULT NULL,
@@ -713,6 +808,7 @@ DROP TABLE IF EXISTS `containers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `containers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -768,6 +864,7 @@ DROP TABLE IF EXISTS `data_processing`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `data_processing` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `legal_basis` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -871,6 +968,7 @@ DROP TABLE IF EXISTS `databases`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `databases` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
@@ -898,6 +996,7 @@ DROP TABLE IF EXISTS `dhcp_servers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dhcp_servers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `address_ip` varchar(255) DEFAULT NULL,
@@ -912,6 +1011,7 @@ DROP TABLE IF EXISTS `dnsservers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dnsservers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `address_ip` varchar(255) DEFAULT NULL,
@@ -962,6 +1062,7 @@ DROP TABLE IF EXISTS `documents`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `documents` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `filename` varchar(255) NOT NULL,
   `mimetype` varchar(255) NOT NULL,
   `size` int(11) NOT NULL,
@@ -989,6 +1090,7 @@ DROP TABLE IF EXISTS `domains`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `domains` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `domain_ctrl_cnt` int(11) DEFAULT NULL,
@@ -1006,6 +1108,7 @@ DROP TABLE IF EXISTS `entities`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `entities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
   `security_level` longtext DEFAULT NULL,
@@ -1058,6 +1161,7 @@ DROP TABLE IF EXISTS `external_connected_entities`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `external_connected_entities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `security` text DEFAULT NULL,
@@ -1096,6 +1200,7 @@ DROP TABLE IF EXISTS `forest_ads`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `forest_ads` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `zone_admin_id` int(10) unsigned DEFAULT NULL,
@@ -1112,6 +1217,7 @@ DROP TABLE IF EXISTS `gateways`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `gateways` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `ip` varchar(255) DEFAULT NULL,
@@ -1142,7 +1248,10 @@ DROP TABLE IF EXISTS `information`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `information` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
   `owner` varchar(255) DEFAULT NULL,
   `administrator` varchar(255) DEFAULT NULL,
@@ -1185,6 +1294,21 @@ CREATE TABLE `information_process` (
   CONSTRAINT `process_id_fk_1473025` FOREIGN KEY (`process_id`) REFERENCES `processes` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `jobs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `attempts` tinyint(3) unsigned NOT NULL,
+  `reserved_at` int(10) unsigned DEFAULT NULL,
+  `available_at` int(10) unsigned NOT NULL,
+  `created_at` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `jobs_queue_index` (`queue`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `lan_man`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -1214,6 +1338,7 @@ DROP TABLE IF EXISTS `lans`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lans` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1227,7 +1352,10 @@ DROP TABLE IF EXISTS `logical_flows`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `logical_flows` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `chain` varchar(255) DEFAULT NULL,
   `interface` varchar(255) DEFAULT NULL,
@@ -1320,6 +1448,7 @@ DROP TABLE IF EXISTS `logical_servers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `logical_servers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
@@ -1356,6 +1485,7 @@ DROP TABLE IF EXISTS `macro_processuses`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `macro_processuses` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `io_elements` longtext DEFAULT NULL,
@@ -1388,6 +1518,7 @@ DROP TABLE IF EXISTS `mans`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mans` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `parent_man_id` int(10) unsigned DEFAULT NULL,
@@ -1475,6 +1606,7 @@ DROP TABLE IF EXISTS `network_switches`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `network_switches` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `ip` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -1489,7 +1621,10 @@ DROP TABLE IF EXISTS `networks`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `networks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
   `protocol_type` varchar(255) DEFAULT NULL,
   `responsible` varchar(255) DEFAULT NULL,
@@ -1574,6 +1709,17 @@ CREATE TABLE `oauth_device_codes` (
   KEY `oauth_device_codes_client_id_index` (`client_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `oauth_personal_access_clients`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `oauth_personal_access_clients` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `client_id` bigint(20) unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `oauth_refresh_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -1603,6 +1749,7 @@ DROP TABLE IF EXISTS `operations`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `operations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `process_id` int(10) unsigned DEFAULT NULL,
@@ -1612,6 +1759,19 @@ CREATE TABLE `operations` (
   PRIMARY KEY (`id`),
   KEY `process_id_fk_7945129` (`process_id`),
   CONSTRAINT `process_id_fk_7945129` FOREIGN KEY (`process_id`) REFERENCES `processes` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `parameters`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `parameters` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `value` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `parameters_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `password_resets`;
@@ -1629,6 +1789,7 @@ DROP TABLE IF EXISTS `peripherals`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `peripherals` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
@@ -1676,6 +1837,7 @@ DROP TABLE IF EXISTS `permissions`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `permissions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `module` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1683,11 +1845,31 @@ CREATE TABLE `permissions` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `personal_access_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `phones`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phones` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -1715,8 +1897,11 @@ DROP TABLE IF EXISTS `physical_links`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `physical_links` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   `color` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
+  `description` longtext DEFAULT NULL,
   `src_port` varchar(255) DEFAULT NULL,
   `dest_port` varchar(255) DEFAULT NULL,
   `peripheral_src_id` int(10) unsigned DEFAULT NULL,
@@ -1826,6 +2011,7 @@ DROP TABLE IF EXISTS `physical_routers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `physical_routers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `vendor` varchar(255) DEFAULT NULL,
@@ -1864,6 +2050,7 @@ DROP TABLE IF EXISTS `physical_security_devices`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `physical_security_devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `attributes` varchar(255) DEFAULT NULL,
@@ -1892,6 +2079,7 @@ DROP TABLE IF EXISTS `physical_servers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `physical_servers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
@@ -1937,6 +2125,7 @@ DROP TABLE IF EXISTS `physical_switches`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `physical_switches` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
@@ -1966,6 +2155,7 @@ DROP TABLE IF EXISTS `processes`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `processes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -2005,6 +2195,7 @@ DROP TABLE IF EXISTS `relations`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `relations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `importance` int(11) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
@@ -2063,6 +2254,7 @@ DROP TABLE IF EXISTS `routers`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `routers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -2108,6 +2300,7 @@ DROP TABLE IF EXISTS `security_controls`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `security_controls` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2121,6 +2314,7 @@ DROP TABLE IF EXISTS `security_devices`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `security_devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `attributes` varchar(255) DEFAULT NULL,
@@ -2143,7 +2337,10 @@ DROP TABLE IF EXISTS `sites`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sites` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
   `icon_id` int(10) unsigned DEFAULT NULL,
   `description` longtext DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2159,6 +2356,7 @@ DROP TABLE IF EXISTS `storage_devices`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `storage_devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -2186,7 +2384,10 @@ DROP TABLE IF EXISTS `subnetworks`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `subnetworks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
   `ip_allocation_type` varchar(255) DEFAULT NULL,
@@ -2221,6 +2422,7 @@ DROP TABLE IF EXISTS `tasks`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2254,6 +2456,7 @@ DROP TABLE IF EXISTS `vlans`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vlans` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `vlan_id` int(11) DEFAULT NULL,
@@ -2268,6 +2471,7 @@ DROP TABLE IF EXISTS `wans`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wans` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -2280,6 +2484,7 @@ DROP TABLE IF EXISTS `wifi_terminals`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wifi_terminals` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) DEFAULT NULL,
   `description` longtext DEFAULT NULL,
@@ -2304,6 +2509,7 @@ DROP TABLE IF EXISTS `workstations`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `workstations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `entity_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
@@ -2366,6 +2572,7 @@ DROP TABLE IF EXISTS `zone_admins`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `zone_admins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` longtext DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2374,6 +2581,127 @@ CREATE TABLE `zone_admins` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `zone_zone`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `zone_zone` (
+  `zone_id` int(10) unsigned NOT NULL,
+  `related_zone_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`zone_id`,`related_zone_id`),
+  KEY `zone_zone_related_zone_id_foreign` (`related_zone_id`),
+  CONSTRAINT `zone_zone_related_zone_id_foreign` FOREIGN KEY (`related_zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `zone_zone_zone_id_foreign` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `zones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `zones` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_refs` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `attributes` varchar(255) DEFAULT NULL,
+  `description` longtext DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `zones_name_unique` (`name`,`deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `rand_person` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`mercator_user`@`localhost` FUNCTION `rand_person`() RETURNS varchar(100) CHARSET utf8mb3 COLLATE utf8mb3_general_ci
+    DETERMINISTIC
+BEGIN
+    DECLARE prenom VARCHAR(20);
+    DECLARE nom    VARCHAR(20);
+    SET prenom = ELT(1 + FLOOR(RAND() * 10),
+        'Alice','Bruno','Claire','Denis','Emma',
+        'Fabien','Gaëlle','Hugo','Inès','Jules');
+    SET nom = ELT(1 + FLOOR(RAND() * 10),
+        'Martin','Bernard','Dupont','Moreau','Simon',
+        'Laurent','Lefebvre','Michel','Garcia','Roux');
+    RETURN CONCAT(prenom, ' ', nom);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `rand_short` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`mercator_user`@`localhost` FUNCTION `rand_short`() RETURNS varchar(64) CHARSET utf8mb3 COLLATE utf8mb3_general_ci
+    DETERMINISTIC
+BEGIN
+    RETURN CONCAT(SUBSTRING(MD5(RAND()),1,8), '-', SUBSTRING(MD5(RAND()),1,8));
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `rand_text` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`mercator_user`@`localhost` FUNCTION `rand_text`() RETURNS text CHARSET utf8mb3 COLLATE utf8mb3_general_ci
+    DETERMINISTIC
+BEGIN
+    RETURN CONCAT(
+        'Lorem ', SUBSTRING(MD5(RAND()),1,8), ' ipsum ',   SUBSTRING(MD5(RAND()),1,12), ' dolor sit amet. ',
+        'Sed ',   SUBSTRING(MD5(RAND()),1,6), ' ut ',      SUBSTRING(MD5(RAND()),1,10), ' consequat arcu. ',
+        'Nulla ', SUBSTRING(MD5(RAND()),1,8), ' finibus ', SUBSTRING(MD5(RAND()),1,8),  ' purus eu felis.'
+    );
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `rand_word` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`mercator_user`@`localhost` FUNCTION `rand_word`(n INT) RETURNS varchar(255) CHARSET utf8mb3 COLLATE utf8mb3_general_ci
+    DETERMINISTIC
+BEGIN
+    RETURN SUBSTRING(MD5(RAND()), 1, n);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -2642,4 +2970,22 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (330,'2026_05_03_23
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (331,'2026_05_03_234356_drop_application_cartographer_table',30);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (332,'2026_05_07_215942_rename_fluxes_to_application_flows',31);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (333,'2026_05_08_120804_rename_flux_information_to_application_flow_information',32);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (334,'2026_05_08_212557_rename_domaines_to_domains',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (336,'2026_05_08_182110_rename_domaine_ads_to_domaines',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (337,'2026_05_08_200000_rename_domaines_to_domains',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (340,'2026_05_08_212557_rename_domaines_to_domains',34);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (341,'2026_05_11_000001_create_parameters_table',35);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (342,'2026_05_12_113635_drop_unique_name_from_annuaires',36);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (343,'2026_05_12_150000_create_zones_table',37);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (344,'2026_05_12_150001_add_zone_permissions',38);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (345,'2026_05_20_000000_restructure_backups_table',39);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (348,'2026_05_31_000000_create_cartographers_table',40);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (349,'2026_05_31_000001_rename_irregular_permissions',40);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (350,'2026_06_04_090735_create_jobs_table',41);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (351,'2026_06_07_094101_add_soft_deletes_to_cartographers_table',42);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (352,'2026_06_11_000000_create_application_document_table',43);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (353,'2026_06_18_000000_add_ext_refs_to_mapped_objects',44);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (354,'2026_06_21_000000_move_mercator_config_to_parameters',45);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (355,'2026_06_22_000000_rename_room_id_to_building_id_in_bays',45);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (356,'2026_06_22_000001_add_type_and_attributes_columns',46);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (357,'2026_06_22_000002_add_description_and_attributes_to_physical_links',47);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (358,'2026_06_28_000000_drop_unique_name_from_backups_table',48);
