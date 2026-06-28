@@ -39,7 +39,7 @@ class CVEController extends Controller
     /**
      * @throws Exception
      */
-    public function list(Request $request) : Response
+    public function list(Request $request): Response
     {
         abort_if(Gate::denies('reports_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
@@ -181,9 +181,8 @@ class CVEController extends Controller
 
         if ($request->get('format') === 'csv') {
             $writer = new Csv($spreadsheet);
-            $path = storage_path('app/cve-' . Carbon::today()->format('Ymd') . '.csv');
-        }
-        else {
+            $path = storage_path('app/cve-'.Carbon::today()->format('Ymd').'.csv');
+        } else {
             $writer = new Xlsx($spreadsheet);
             $path = storage_path('app/cve-'.Carbon::today()->format('Ymd').'.xlsx');
         }
@@ -216,7 +215,7 @@ class CVEController extends Controller
             ->withHeaders([
                 'User-Agent' => "Mercator/{$appVersion}",
                 'Accept' => 'application/json',
-                ])
+            ])
             ->get($url);
 
         if ($resp->failed()) {

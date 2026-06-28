@@ -6,11 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyNetworkSwitchRequest;
 use App\Http\Requests\StoreNetworkSwitchRequest;
 use App\Http\Requests\UpdateNetworkSwitchRequest;
+use App\Models\Cartographer;
 use App\Models\NetworkSwitch;
 use App\Models\PhysicalSwitch;
 use App\Models\Vlan;
 use Gate;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class NetworkSwitchController extends Controller
 {
@@ -19,27 +23,26 @@ class NetworkSwitchController extends Controller
      *
      * Aborts with HTTP 403 if the current user is not authorized to access network switches.
      *
-     * @return \Illuminate\View\View View 'admin.networkSwitches.index' with `networkSwitches` ordered by `name`.
+     * @return View View 'admin.networkSwitches.index' with `networkSwitches` ordered by `name`.
      */
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('network_switch_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\NetworkSwitch::class);
+        $allowedIds = Gate::allows('network_switch_access') ? null : Cartographer::allowedIdsFor($user, NetworkSwitch::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $networkSwitches = NetworkSwitch::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (NetworkSwitch::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (NetworkSwitch::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.networkSwitches.index', compact('networkSwitches'));
     }
@@ -49,7 +52,7 @@ class NetworkSwitchController extends Controller
      *
      * Provides name=>id lists of available physical switches and VLANs for form selectors.
      *
-     * @return \Illuminate\View\View The network switch creation view populated with `physicalSwitches` and `vlans`.
+     * @return View The network switch creation view populated with `physicalSwitches` and `vlans`.
      */
     public function create()
     {
@@ -65,8 +68,8 @@ class NetworkSwitchController extends Controller
     /**
      * Create a new NetworkSwitch and persist its physical switch and VLAN associations.
      *
-     * @param  \App\Http\Requests\StoreNetworkSwitchRequest  $request  Validated input including network switch attributes and optional `physicalSwitches` and `vlans` arrays to associate.
-     * @return \Illuminate\Http\RedirectResponse Redirects to the network switches index route.
+     * @param  StoreNetworkSwitchRequest  $request  Validated input including network switch attributes and optional `physicalSwitches` and `vlans` arrays to associate.
+     * @return RedirectResponse Redirects to the network switches index route.
      */
     public function store(StoreNetworkSwitchRequest $request)
     {
@@ -81,9 +84,9 @@ class NetworkSwitchController extends Controller
      * Show the form for editing the given network switch.
      *
      * @param  NetworkSwitch  $networkSwitch  The network switch to edit.
-     * @return \Illuminate\View\View The view displaying the network switch edit form populated with physical switch and VLAN options.
+     * @return View The view displaying the network switch edit form populated with physical switch and VLAN options.
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\HttpException If the current user is denied the 'network_switch_edit' ability (HTTP 403).
+     * @throws HttpException If the current user is denied the 'network_switch_edit' ability (HTTP 403).
      */
     public function edit(NetworkSwitch $networkSwitch)
     {
@@ -105,9 +108,9 @@ class NetworkSwitchController extends Controller
      * physicalSwitches and vlans relationships from the request (using an empty array if absent),
      * and redirects back to the network switches index.
      *
-     * @param  \App\Http\Requests\UpdateNetworkSwitchRequest  $request  Validated input for updating the network switch.
-     * @param  \App\Models\NetworkSwitch  $networkSwitch  The network switch instance to update.
-     * @return \Illuminate\Http\RedirectResponse Redirect response to the network switches index route.
+     * @param  UpdateNetworkSwitchRequest  $request  Validated input for updating the network switch.
+     * @param  NetworkSwitch  $networkSwitch  The network switch instance to update.
+     * @return RedirectResponse Redirect response to the network switches index route.
      */
     public function update(UpdateNetworkSwitchRequest $request, NetworkSwitch $networkSwitch)
     {
@@ -139,7 +142,7 @@ class NetworkSwitchController extends Controller
     /**
      * Delete multiple NetworkSwitch records identified by the request's `ids`.
      *
-     * @param  \App\Http\Requests\MassDestroyNetworkSwitchRequest  $request  Request containing an `ids` array of NetworkSwitch IDs to delete.
+     * @param  MassDestroyNetworkSwitchRequest  $request  Request containing an `ids` array of NetworkSwitch IDs to delete.
      * @return \Illuminate\Http\Response HTTP 204 No Content response.
      */
     public function massDestroy(MassDestroyNetworkSwitchRequest $request)

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyClusterRequest;
 use App\Http\Requests\StoreClusterRequest;
 use App\Http\Requests\UpdateClusterRequest;
+use App\Models\Cartographer;
 use App\Models\Cluster;
 use App\Models\LogicalServer;
 use App\Models\PhysicalServer;
@@ -21,7 +22,7 @@ class ClusterController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('cluster_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Cluster::class);
+        $allowedIds = Gate::allows('cluster_access') ? null : Cartographer::allowedIdsFor($user, Cluster::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -30,12 +31,12 @@ class ClusterController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Cluster::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.clusters.index', compact('clusters'));

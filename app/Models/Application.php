@@ -6,17 +6,17 @@ use App\Contracts\HasIconContract;
 use App\Contracts\HasPrefix;
 use App\Factories\ApplicationFactory;
 use App\Traits\Auditable;
+use App\Traits\HasCartographers;
 use App\Traits\HasIcon;
 use App\Traits\HasUniqueIdentifier;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasCartographers;
 
 class Application extends Model implements HasIconContract, HasPrefix
 {
@@ -31,12 +31,13 @@ class Application extends Model implements HasIconContract, HasPrefix
 
     public static array $searchable = [
         'name',
+        'type',
+        'attributes',
         'description',
         'vendor',
         'responsible',
         'editor',
         'functional_referent',
-        'attributes',
     ];
 
     protected array $dates = [

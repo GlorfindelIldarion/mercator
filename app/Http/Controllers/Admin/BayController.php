@@ -8,6 +8,7 @@ use App\Http\Requests\StoreBayRequest;
 use App\Http\Requests\UpdateBayRequest;
 use App\Models\Bay;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\Site;
 use Gate;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +26,7 @@ class BayController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('bay_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Bay::class);
+        $allowedIds = Gate::allows('bay_access') ? null : Cartographer::allowedIdsFor($user, Bay::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -34,7 +35,7 @@ class BayController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Bay::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
@@ -52,7 +53,7 @@ class BayController extends Controller
      *
      * Access is aborted with HTTP 403 if the current user lacks the "bay_create" permission.
      *
-     * @return \Illuminate\View\View The view for creating a bay.
+     * @return View The view for creating a bay.
      */
     public function create(): View
     {
@@ -102,8 +103,8 @@ class BayController extends Controller
     /**
      * Show the form for editing the specified bay.
      *
-     * @param  \App\Models\Bay  $bay  The bay instance to edit.
-     * @return \Illuminate\View\View The edit view populated with the bay and selectable sites/buildings.
+     * @param  Bay  $bay  The bay instance to edit.
+     * @return View The edit view populated with the bay and selectable sites/buildings.
      */
     public function edit(Bay $bay): View
     {
@@ -136,8 +137,8 @@ class BayController extends Controller
     /**
      * Display the specified bay with its associated site, building and hardware collections.
      *
-     * @param  \App\Models\Bay  $bay  The Bay instance to display.
-     * @return \Illuminate\View\View The view presenting the Bay and its loaded relationships.
+     * @param  Bay  $bay  The Bay instance to display.
+     * @return View The view presenting the Bay and its loaded relationships.
      */
     public function show(Bay $bay): View
     {
@@ -151,8 +152,8 @@ class BayController extends Controller
     /**
      * Delete the given Bay and redirect to the bays index.
      *
-     * @param  \App\Models\Bay  $bay  The Bay model to delete.
-     * @return \Illuminate\Http\RedirectResponse Redirects to the admin.bays.index route.
+     * @param  Bay  $bay  The Bay model to delete.
+     * @return RedirectResponse Redirects to the admin.bays.index route.
      */
     public function destroy(Bay $bay): RedirectResponse
     {

@@ -1272,20 +1272,23 @@ This table serves as the reference for auditing backup compliance, identifying u
 
 | Table | Api |
 |-------|------|
-| **backups** | `/api/backups` |
+| <span style="color: blue;">*backups*</span> | `/api/backups` |
 
 | Field              | Type               | Description |
 |--------------------|--------------------|-------------|
-| **id**             | int unsigned       | Unique identifier of the backup plan (auto‑increment). |
-| **ext_refs**       | varchar(255)       | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
-| **logical_server_id** | int unsigned   | Identifier of the **logical server** covered by the backup strategy. |
-| **storage_device_id** | int unsigned   | Identifier of the **storage device** used to store the backup. |
-| **backup_frequency**  | tinyint unsigned | Backup frequency. Encoded value (e.g., hourly, daily, weekly, monthly). |
-| **backup_cycle**      | tinyint unsigned | Backup type. Encoded value (e.g., incremental, full). |
-| **backup_retention**  | smallint unsigned | Retention period of the backup, expressed in **days**. |
-| **created_at**        | timestamp        | Date and time when the record was created. |
-| **updated_at**        | timestamp        | Date and time of the last update. |
-| **deleted_at**        | timestamp        | Logical deletion date (soft delete). |
+| id             | int unsigned       | Unique identifier of the backup plan (auto‑increment). |
+| ext_refs       | varchar(255)       | External reference(s) to objects in other systems. Format: {ID_SOURCE}ID_OBJECT, multiple values separated by "\|" |
+| name               | varchar(255) | Name of backup                     |
+| type               | varchar(255) | Type of backup                     |
+| attributes         | varchar(255) | Attributes of backup (#tag...)                     |
+| logical_server_ids | List int [,]   | IDs list of related **logical servers** covered by the backup strategy. |
+| storage_device_ids | List int [,]   | IDs list of related **storage device** used to store the backup. |
+| backup_frequency  | tinyint unsigned | Backup frequency. Encoded value (e.g., hourly, daily, weekly, monthly). |
+| backup_cycle      | tinyint unsigned | Backup type. Encoded value (e.g., incremental, full). |
+| backup_retention**  | smallint unsigned | Retention period of the backup, expressed in **days**. |
+| created_at        | timestamp        | Date and time when the record was created. |
+| updated_at        | timestamp        | Date and time of the last update. |
+| deleted_at        | timestamp        | Logical deletion date (soft delete). |
 
 *Detail of proposed ids:*
 

@@ -7,6 +7,7 @@ use App\Http\Requests\MassDestroyWorkstationRequest;
 use App\Http\Requests\StoreWorkstationRequest;
 use App\Http\Requests\UpdateWorkstationRequest;
 use App\Models\Application;
+use App\Models\Cartographer;
 use App\Models\Workstation;
 use App\Services\IconUploadService;
 use Gate;
@@ -21,7 +22,7 @@ class WorkstationController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('workstation_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Workstation::class);
+        $allowedIds = Gate::allows('workstation_access') ? null : Cartographer::allowedIdsFor($user, Workstation::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -30,12 +31,12 @@ class WorkstationController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Workstation::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.workstations.index', compact('workstations'));

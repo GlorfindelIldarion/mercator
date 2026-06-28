@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyVlanRequest;
 use App\Http\Requests\StoreVlanRequest;
 use App\Http\Requests\UpdateVlanRequest;
+use App\Models\Cartographer;
 use App\Models\Subnetwork;
 use App\Models\Vlan;
 use Gate;
@@ -18,7 +19,7 @@ class VlanController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('vlan_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Vlan::class);
+        $allowedIds = Gate::allows('vlan_access') ? null : Cartographer::allowedIdsFor($user, Vlan::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -27,12 +28,12 @@ class VlanController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Vlan::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.vlans.index', compact('vlans'));

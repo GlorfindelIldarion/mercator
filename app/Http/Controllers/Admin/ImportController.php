@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -15,25 +16,29 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Exception;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use ReflectionClass;
 use ReflectionMethod;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ImportController extends Controller
 {
-
     public function show(): View
     {
         return view('admin/import');
     }
+
     /**
      * @throws \ReflectionException
      * @throws Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function export(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function export(Request $request): BinaryFileResponse
     {
         \Log::info('Export - Start');
 
@@ -109,7 +114,7 @@ class ImportController extends Controller
     /**
      * @throws \Throwable
      */
-    public function import(Request $request) : \Illuminate\Http\RedirectResponse
+    public function import(Request $request): RedirectResponse
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx',
@@ -274,15 +279,15 @@ class GenericExport implements FromArray, WithHeadings, WithStyles
     public function styles(Worksheet $sheet)
     {
         $columnCount = count($this->headers);
-        $endColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnCount);
+        $endColumn = Coordinate::stringFromColumnIndex($columnCount);
         $headerRange = 'A1:'.$endColumn.'1';
 
         return [
             $headerRange => [
                 'font' => ['bold' => true],
-                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '94e5ff'],
                 ],
             ],

@@ -1,20 +1,25 @@
 import {
     Cell,
     CellEditorHandler,
-    eventUtils,
-    FastOrganicLayout,
+    type CellStateStyle,
+    EventObject,
+    FitPlugin,
+    Geometry,
     Graph,
     GraphDataModel,
     type GraphPluginConstructor,
     InternalEvent,
+    type InternalMouseEvent,
     ModelXmlSerializer,
-    Morphing,
     PanningHandler,
+    Point,
     RubberBandHandler,
     SelectionCellsHandler,
     SelectionHandler,
     styleUtils,
+    type UndoableEdit,
     UndoManager,
+    VertexHandler,
     VertexHandlerConfig,
 } from '@maxgraph/core';
 
@@ -28,12 +33,16 @@ interface Edge {
     edgeType: string;
     edgeDirection: string;
     bidirectional: boolean;
+    color: string | null;
 }
 
 interface MapNode {
     id: string;
     vue: string;
     label: string;
+    title?: string;
+    attributes?: string | null;
+    order: number;
     image: string;
     type: string;
     edges: Edge[];
@@ -43,7 +52,35 @@ type NodeMap = Map<string, MapNode>;
 
 // Déclaration de globals fournies par ailleurs
 declare const _nodes: NodeMap;
-declare const $: any;
+
+// Drapeaux métier ajoutés au style MaxGraph (absents de CellStateStyle).
+interface AppCellStyle extends CellStateStyle {
+    isBackground?: boolean;
+    isRectangle?: boolean;
+    isText?: boolean;
+}
+
+function styleOf(cell: Cell | null | undefined): AppCellStyle | undefined {
+    return cell?.style as AppCellStyle | undefined;
+}
+
+function isBackgroundCell(cell: Cell | null | undefined): boolean {
+    return !!styleOf(cell)?.isBackground;
+}
+
+function isRectangleCell(cell: Cell | null | undefined): boolean {
+    return !!styleOf(cell)?.isRectangle;
+}
+
+// Garantit que la cellule de fond reste sous tout le reste après un orderCells.
+function ensureBackgroundAtBottom(): void {
+    const bg = model.getCell(BACKGROUND_ID) as Cell | null;
+    if (bg) graph.orderCells(true, [bg]);
+}
+
+function isTextCell(cell: Cell | null | undefined): boolean {
+    return !!styleOf(cell)?.isText;
+}
 
 //-----------------------------------------------------------------------
 // Plugins MaxGraph
@@ -55,6 +92,7 @@ const plugins: GraphPluginConstructor[] = [
     SelectionHandler,
     PanningHandler,
     RubberBandHandler,
+    FitPlugin,
 ];
 
 // Initialisation du graph
@@ -67,31 +105,103 @@ if (!container) {
 const graph = new Graph(container, new GraphDataModel(), plugins);
 const model = graph.getDataModel();
 
+// Rendre le container focusable (tabIndex=-1 : pas dans la séquence Tab,
+// mais le focus JS et le clic peuvent le cibler).
+container.tabIndex = -1;
+container.style.outline = 'none';
+
+// Listeners sur window (pas document) : window est au-dessus de document dans
+// la chaîne de propagation, donc ces handlers s'exécutent AVANT tout listener
+// MaxGraph ou Select2, même ceux enregistrés en phase capture sur document.
+let graphHasFocus = false;
+window.addEventListener('mousedown', (e: MouseEvent) => {
+    if (container.contains(e.target as Node)) {
+        graphHasFocus = true;
+        // Focus synchrone (avant que MaxGraph ne traite l'événement)
+        container.focus();
+        // Focus différé pour couvrir le cas où MaxGraph re-cible le focus
+        setTimeout(() => container.focus(), 0);
+    } else {
+        graphHasFocus = false;
+    }
+}, true);
+
 //-----------------------------------------------------------------------
 // Style des arêtes
 
 const edgeDefaultStyle = graph.getStylesheet().getDefaultEdgeStyle();
 edgeDefaultStyle.labelBackgroundColor = '#FFFFFF';
 edgeDefaultStyle.strokeWidth = 2;
-edgeDefaultStyle.rounded = true;
+edgeDefaultStyle.rounded = false;
 edgeDefaultStyle.entryPerimeter = false;
-edgeDefaultStyle.edgeStyle = 'manhattanEdgeStyle';
 
 // Désactiver le folding
-(graph as any).getFoldingImage = () => null;
+graph.getFoldingImage = () => null;
+
+// Ne pas changer la sélection sur clic droit : EdgeHandler appelle
+// selectCellForEvent sans vérifier isPopupTrigger, ce qui viderait la
+// multi-sélection. SelectionHandler vérifie déjà isPopupTrigger, donc
+// cette surcharge corrige uniquement le cas EdgeHandler.
+const _selectCellForEvent = graph.selectCellForEvent.bind(graph);
+graph.selectCellForEvent = (cell: Cell, evt: MouseEvent) => {
+    if (evt?.button === 2) return;
+    _selectCellForEvent(cell, evt);
+};
+
+// Verrouillage de la cellule d'arrière-plan
+const _isSelectable = graph.isCellSelectable.bind(graph);
+graph.isCellSelectable = (cell) => !isBackgroundCell(cell) && _isSelectable(cell);
+const _isMovable = graph.isCellMovable.bind(graph);
+graph.isCellMovable = (cell) => !isBackgroundCell(cell) && _isMovable(cell);
+
+// La taille d'un groupe ne doit jamais être modifiée manuellement (elle est
+// calculée à la création et doit rester cohérente avec son contenu).
+const _isResizable = graph.isCellResizable.bind(graph);
+graph.isCellResizable = (cell) => (cell?.children?.length ?? 0) === 0 && _isResizable(cell);
 
 // Sélection des sommets
 VertexHandlerConfig.selectionColor = '#00a8ff';
 VertexHandlerConfig.selectionStrokeWidth = 2;
 
+// Resize uniquement par les coins (largeur et hauteur modifiées ensemble) :
+// on masque les points d'accroche N/S/E/W, ne gardant que NW/NE/SW/SE
+// (indices 0, 2, 5 et 7 dans l'ordre de création des sizers). isSizerVisible
+// est appelée depuis le constructeur de VertexHandler : la surcharger sur
+// l'instance après coup est trop tard, il faut sous-classer.
+const RESIZE_CORNER_INDICES = new Set([0, 2, 5, 7]);
+
+class CornerOnlyVertexHandler extends VertexHandler {
+    isSizerVisible(index: number): boolean {
+        return RESIZE_CORNER_INDICES.has(index);
+    }
+
+    // Le resize doit toujours conserver le ratio largeur/hauteur, pas
+    // seulement quand Shift est maintenu — sauf pour les rectangles et les
+    // textes, qui doivent pouvoir être étirés librement dans chaque direction.
+    isConstrainedEvent(me: InternalMouseEvent): boolean {
+        const cell = this.state.cell;
+        if (isRectangleCell(cell) || isTextCell(cell)) {
+            return super.isConstrainedEvent(me);
+        }
+        return true;
+    }
+}
+
+graph.createVertexHandler = (state) => new CornerOnlyVertexHandler(state);
+
 //-----------------------------------------------------------------------
 // Undo / Redo
 
 const undoManager = new UndoManager();
-const undoListener = (_sender: unknown, evt: any) => {
-    const edit = evt.getProperty('edit');
+let physicsSuppressUndo = false;
+let isDirty = false;
+
+const undoListener = (_sender: unknown, evt: EventObject) => {
+    if (physicsSuppressUndo) return;
+    const edit = evt.getProperty('edit') as UndoableEdit | undefined;
     if (edit) {
         undoManager.undoableEditHappened(edit);
+        isDirty = true;
     }
 };
 
@@ -123,55 +233,97 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     }
 });
 
+// Echap ne doit avoir d'effet que dans l'éditeur (annuler l'édition d'une
+// cellule, fermer un menu contextuel, etc.) : on empêche sa remontée vers le
+// reste de la page (fermeture d'une modale parente, navigation, ...).
+document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+});
+
 // --------------------------------------------------------------------------------
 // Menus contextuels
 
 const MENU_OFFSET_X = 75;
 const MENU_OFFSET_Y = 100;
 
-const edgeContextMenu  = document.getElementById('edge-context-menu')  as HTMLDivElement  | null;
-const edgeColorSelect  = document.getElementById('edge-color-select')  as HTMLInputElement | null;
-const thicknessSelect  = document.getElementById('edge-thickness-select') as HTMLSelectElement | null;
+const edgeContextMenu = document.getElementById('edge-context-menu') as HTMLDivElement | null;
+const edgeColorSelect = document.getElementById('edge-color-select') as HTMLInputElement | null;
+const thicknessSelect = document.getElementById('edge-thickness-select') as HTMLSelectElement | null;
+const dashSelect = document.getElementById('edge-dash-select') as HTMLSelectElement | null;
+const routingSelect = document.getElementById('edge-routing-select') as HTMLSelectElement | null;
 
-const textContextMenu     = document.getElementById('text-context-menu')     as HTMLDivElement    | null;
-const textFontSelect      = document.getElementById('text-font-select')      as HTMLSelectElement | null;
-const textColorSelect     = document.getElementById('text-color-select')     as HTMLInputElement  | null;
-const textSizeSelect      = document.getElementById('text-size-select')      as HTMLSelectElement | null;
-const textBoldSelect      = document.getElementById('text-bold-select')      as HTMLButtonElement | null;
-const textItalicSelect    = document.getElementById('text-italic-select')    as HTMLButtonElement | null;
+const textContextMenu = document.getElementById('text-context-menu') as HTMLDivElement | null;
+const textFontSelect = document.getElementById('text-font-select') as HTMLSelectElement | null;
+const textColorSelect = document.getElementById('text-color-select') as HTMLInputElement | null;
+const textSizeSelect = document.getElementById('text-size-select') as HTMLSelectElement | null;
+const textBoldSelect = document.getElementById('text-bold-select') as HTMLButtonElement | null;
+const textItalicSelect = document.getElementById('text-italic-select') as HTMLButtonElement | null;
 const textUnderlineSelect = document.getElementById('text-underline-select') as HTMLButtonElement | null;
 
 let selectedCell: Cell | null = null;
+let selectedEdgeCells: Cell[] = [];
 
 function hideContextMenus(): void {
     if (textContextMenu) textContextMenu.style.display = 'none';
     if (edgeContextMenu) edgeContextMenu.style.display = 'none';
 }
 
-function showEdgeMenu(x: number, y: number, style: any): void {
+function showEdgeMenu(x: number, y: number, style: CellStateStyle): void {
     if (!edgeContextMenu || !textContextMenu) return;
-    edgeContextMenu.style.display = 'block';
-    edgeContextMenu.style.left    = `${x + MENU_OFFSET_X}px`;
-    edgeContextMenu.style.top     = `${y + MENU_OFFSET_Y}px`;
+    edgeContextMenu.style.display = 'flex';
+    edgeContextMenu.style.left = `${x + MENU_OFFSET_X}px`;
+    edgeContextMenu.style.top = `${y + MENU_OFFSET_Y}px`;
     if (edgeColorSelect) edgeColorSelect.value = style.strokeColor ?? '#000000';
     if (thicknessSelect) thicknessSelect.value = String(style.strokeWidth ?? '1');
+    if (dashSelect) {
+        const dashed = (style as any).dashed;
+        const dashPattern = (style as any).dashPattern as string | undefined;
+        if (!dashed) {
+            dashSelect.value = 'solid';
+        } else if (dashPattern === '2 6') {
+            dashSelect.value = 'dotted';
+        } else if (dashPattern === '8 3 2 3') {
+            dashSelect.value = 'dash-dot';
+        } else {
+            dashSelect.value = 'dashed';
+        }
+    }
+    if (routingSelect) {
+        const es = style.edgeStyle;
+        routingSelect.value = (es === 'orthogonalEdgeStyle' || es === 'elbowEdgeStyle')
+            ? 'orthogonal'
+            : 'straight';
+    }
     textContextMenu.style.display = 'none';
 }
 
-function showTextMenu(x: number, y: number, style: any, cellStyle: any): void {
+function showTextMenu(x: number, y: number, style: CellStateStyle, cellStyle: AppCellStyle | undefined): void {
     if (!edgeContextMenu || !textContextMenu) return;
-    textContextMenu.style.display = 'block';
-    textContextMenu.style.left    = `${x + MENU_OFFSET_X}px`;
-    textContextMenu.style.top     = `${y + MENU_OFFSET_Y}px`;
-    if (textColorSelect) textColorSelect.value = style.fontColor  ?? '#000000';
-    if (textFontSelect)  textFontSelect.value  = style.fontFamily ?? 'Arial';
-    if (textSizeSelect)  textSizeSelect.value  = String(style.fontSize ?? '12');
+    textContextMenu.style.display = 'flex';
+    textContextMenu.style.left = `${x + MENU_OFFSET_X}px`;
+    textContextMenu.style.top = `${y + MENU_OFFSET_Y}px`;
+    if (textColorSelect) textColorSelect.value = style.fontColor ?? '#000000';
+    if (textFontSelect) textFontSelect.value = style.fontFamily ?? 'Arial';
+    if (textSizeSelect) textSizeSelect.value = String(style.fontSize ?? '12');
     edgeContextMenu.style.display = 'none';
 
     const fontStyle = cellStyle?.fontStyle ?? 0;
-    textBoldSelect?.classList.toggle('selected',      !!(fontStyle & 1));
-    textItalicSelect?.classList.toggle('selected',    !!(fontStyle & 2));
+    textBoldSelect?.classList.toggle('selected', !!(fontStyle & 1));
+    textItalicSelect?.classList.toggle('selected', !!(fontStyle & 2));
     textUnderlineSelect?.classList.toggle('selected', !!(fontStyle & 4));
+}
+
+function isEdgeStyleTarget(cell: Cell): boolean {
+    if (cell.isEdge()) return true;
+    if (cell.isVertex()) {
+        const cs = styleOf(cell);
+        const cellValue = cell.value as string | null;
+        const hasText = !!cellValue && cellValue.trim() !== '';
+        return !hasText && !cs?.image && (!cell.children || cell.children.length === 0);
+    }
+    return false;
 }
 
 graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
@@ -180,24 +332,40 @@ graph.container.addEventListener('contextmenu', (event: MouseEvent) => {
     const cell = graph.getCellAt(event.offsetX, event.offsetY) as Cell | null;
     if (!cell) return;
 
-    const rect        = container.getBoundingClientRect();
-    const x           = event.clientX - rect.left;
-    const y           = event.clientY - rect.top;
-    const currentStyle = graph.getCellStyle(cell) as any;
+    if (isBackgroundCell(cell)) {
+        hideContextMenus();
+        return;
+    }
+
+    const rect = container.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const currentStyle = graph.getCellStyle(cell);
 
     if (cell.isEdge()) {
         selectedCell = cell;
+        const allSelected = graph.getSelectionCells() as Cell[];
+        const selectedIds = new Set(allSelected.map((c) => String(c.id)));
+        selectedEdgeCells = selectedIds.has(String(cell.id)) && allSelected.length > 1
+            ? allSelected.filter((c) => isEdgeStyleTarget(c))
+            : [cell];
         showEdgeMenu(x, y, currentStyle);
     } else if (cell.isVertex()) {
         const cellValue = cell.value as string | null;
-        const hasText   = !!cellValue && cellValue.trim() !== '';
-        const cellStyle = cell.style as any;
+        const hasText = !!cellValue && cellValue.trim() !== '';
+        const cellStyle = styleOf(cell);
 
         if (hasText && textColorSelect && textFontSelect && textSizeSelect) {
             selectedCell = cell;
+            selectedEdgeCells = [];
             showTextMenu(x, y, currentStyle, cellStyle);
         } else if (!cellStyle?.image && (!cell.children || cell.children.length === 0)) {
             selectedCell = cell;
+            const allSelected = graph.getSelectionCells() as Cell[];
+            const selectedIds = new Set(allSelected.map((c) => String(c.id)));
+            selectedEdgeCells = selectedIds.has(String(cell.id)) && allSelected.length > 1
+                ? allSelected.filter((c) => isEdgeStyleTarget(c))
+                : [cell];
             showEdgeMenu(x, y, currentStyle);
         } else {
             hideContextMenus();
@@ -211,18 +379,48 @@ document.getElementById('apply-edge-style')?.addEventListener('click', (e) => {
     e.preventDefault();
     if (!selectedCell || !edgeColorSelect || !thicknessSelect) return;
 
-    graph.batchUpdate(() => {
-        const style     = (selectedCell!.style ?? {}) as any;
-        const thickness = parseInt(thicknessSelect!.value, 10) || 1;
+    const cells = selectedEdgeCells.length > 0 ? selectedEdgeCells : [selectedCell];
+    const thickness = parseInt(thicknessSelect.value, 10) || 1;
+    const dashValue = dashSelect?.value ?? 'solid';
 
-        if (selectedCell!.isEdge()) {
-            style.strokeColor = edgeColorSelect!.value;
-        } else {
-            style.fillColor = edgeColorSelect!.value;
+    graph.batchUpdate(() => {
+        for (const cell of cells) {
+            const style: CellStateStyle = cell.style ?? {};
+
+            if (cell.isEdge()) {
+                style.strokeColor = edgeColorSelect!.value;
+            } else {
+                style.fillColor = edgeColorSelect!.value;
+            }
+            style.strokeWidth = thickness;
+
+            const s = style as any;
+            if (dashValue === 'solid') {
+                s.dashed = false;
+                delete s.dashPattern;
+                delete s.fixDash;
+            } else if (dashValue === 'dotted') {
+                s.dashed = true;
+                s.dashPattern = '2 6';
+                s.fixDash = true;
+            } else if (dashValue === 'dash-dot') {
+                s.dashed = true;
+                s.dashPattern = '8 3 2 3';
+                s.fixDash = true;
+            } else {
+                // dashed
+                s.dashed = true;
+                delete s.dashPattern;
+                s.fixDash = true;
+            }
+
+            style.edgeStyle = routingSelect?.value === 'orthogonal'
+                ? 'orthogonalEdgeStyle'
+                : 'straightEdgeStyle';
+
+            cell.style = style;
+            graph.refresh(cell);
         }
-        style.strokeWidth     = thickness;
-        selectedCell!.style   = style;
-        graph.refresh(selectedCell!);
     });
 
     if (edgeContextMenu) edgeContextMenu.style.display = 'none';
@@ -233,19 +431,27 @@ document.getElementById('apply-text-style')?.addEventListener('click', (e) => {
     if (!selectedCell || !textFontSelect || !textColorSelect || !textSizeSelect) return;
 
     graph.batchUpdate(() => {
-        const style = (selectedCell!.style ?? {}) as any;
+        const style: CellStateStyle = selectedCell!.style ?? {};
 
         style.fontFamily = textFontSelect!.value;
-        style.fontColor  = textColorSelect!.value;
-        style.fontSize   = parseInt(textSizeSelect!.value, 10) || 12;
+        style.fontColor = textColorSelect!.value;
+        style.fontSize = parseInt(textSizeSelect!.value, 10) || 12;
 
         let flag = 0;
-        if (textBoldSelect?.classList.contains('selected'))      flag |= 1;
-        if (textItalicSelect?.classList.contains('selected'))    flag |= 2;
+        if (textBoldSelect?.classList.contains('selected')) flag |= 1;
+        if (textItalicSelect?.classList.contains('selected')) flag |= 2;
         if (textUnderlineSelect?.classList.contains('selected')) flag |= 4;
         style.fontStyle = flag;
 
         selectedCell!.style = style;
+
+        // Pour un champ texte libre, la taille de la cellule doit refléter
+        // celle du texte (police/taille pouvant changer ses dimensions) —
+        // pas pour un sommet-icône, dont la taille de l'icône est fixe.
+        if (isTextCell(selectedCell)) {
+            graph.updateCellSize(selectedCell!, true);
+        }
+
         graph.refresh(selectedCell!);
     });
 
@@ -269,27 +475,133 @@ document.addEventListener('click', (event) => {
 // --------------------------------------------------------------------------------
 // Grille
 
-graph.setGridEnabled(true);
-graph.setGridSize(10);
+graph.setGridEnabled(false);
 
-container.style.backgroundImage = `
-  linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-  linear-gradient(to bottom, #e0e0e0 1px, transparent 1px)
-`;
-container.style.backgroundSize = '10px 10px';
+// Overlay positionné au-dessus du SVG MaxGraph (qui contient l'image de fond)
+// pour que la grille soit visible par-dessus l'image de fond.
+// pointer-events: none pour ne pas intercepter les clics/drags du graphe.
+const gridOverlay = document.createElement('div');
+gridOverlay.style.cssText =
+    'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;';
+container.appendChild(gridOverlay);
+
+function updateGridBackground(): void {
+    if (!graph.isGridEnabled()) return;
+    const s = graph.view.scale;
+    const t = graph.view.translate;
+    const cellSize = graph.getGridSize() * s;
+    const ox = ((t.x * s) % cellSize + cellSize) % cellSize;
+    const oy = ((t.y * s) % cellSize + cellSize) % cellSize;
+    gridOverlay.style.backgroundSize = `${cellSize}px ${cellSize}px`;
+    gridOverlay.style.backgroundPosition = `${ox}px ${oy}px`;
+}
+
+function setGridVisible(active: boolean): void {
+    graph.setGridEnabled(active);
+    if (active) {
+        gridOverlay.style.backgroundImage =
+            'radial-gradient(circle, rgba(0,0,0,0.25) 1px, transparent 1px)';
+        updateGridBackground();
+    } else {
+        gridOverlay.style.backgroundImage = 'none';
+    }
+    const btn = document.getElementById('grid-btn');
+    if (btn) btn.setAttribute('aria-pressed', String(active));
+}
+
+graph.view.addListener(InternalEvent.SCALE, () => updateGridBackground());
+graph.view.addListener(InternalEvent.TRANSLATE, () => updateGridBackground());
+graph.view.addListener(InternalEvent.SCALE_AND_TRANSLATE, () => updateGridBackground());
+
+document.getElementById('grid-btn')?.addEventListener('click', () => {
+    setGridVisible(!graph.isGridEnabled());
+});
 
 // -----------------------------------------------------------------------
 // Panning
 
 graph.setPanning(true);
-(graph as any).allowAutoPanning       = true;
-(graph as any).useScrollbarsForPanning = true;
+graph.allowAutoPanning = true;
+graph.useScrollbarsForPanning = true;
+
+// PanningHandler ne s'active pas quand une cellule est sous la souris.
+// La cellule d'arrière-plan (isBackground) est une cellule MaxGraph, donc le
+// clic-droit dessus ne déclenche pas le panning natif.
+//
+// On écoute en phase CAPTURE sur window pour que MaxGraph ne puisse pas
+// bloquer les événements via stopPropagation. Les coordonnées sont corrigées
+// du décalage panDx/panDy (offset CSS du canvas SVG) avant d'appeler getCellAt.
+let bgPanning = false;
+let bgPanStartClientX = 0;
+let bgPanStartClientY = 0;
+let bgPanStartDx = 0;
+let bgPanStartDy = 0;
+
+window.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (e.button !== 2) return;
+    if (!container.contains(e.target as Node)) return;
+
+    const rect = container.getBoundingClientRect();
+    const cell = graph.getCellAt(
+        e.clientX - rect.left - graph.panDx,
+        e.clientY - rect.top  - graph.panDy,
+    ) as Cell | null;
+    if (!isBackgroundCell(cell)) return;
+
+    bgPanning = true;
+    bgPanStartClientX = e.clientX;
+    bgPanStartClientY = e.clientY;
+    bgPanStartDx = graph.panDx;
+    bgPanStartDy = graph.panDy;
+    // Empêche MaxGraph's PanningHandler de s'activer en parallèle
+    // (sinon double appel panGraph → saut parasite au début).
+    e.stopPropagation();
+}, true);
+
+window.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!bgPanning) return;
+    graph.panGraph(
+        bgPanStartDx + e.clientX - bgPanStartClientX,
+        bgPanStartDy + e.clientY - bgPanStartClientY,
+    );
+}, true);
+
+window.addEventListener('pointerup', () => {
+    if (!bgPanning) return;
+    // Convertit le décalage CSS (panDx/panDy) en view.translate logique,
+    // exactement comme le fait PanningHandler sur son mouseup.
+    // Sans ça, le référentiel de coordonnées de MaxGraph diverge de l'affichage
+    // et les déplacements de cellules suivants sautent.
+    const view  = graph.getView();
+    const scale = view.scale;
+    view.setTranslate(
+        view.translate.x + graph.panDx / scale,
+        view.translate.y + graph.panDy / scale,
+    );
+    graph.panGraph(0, 0);
+    bgPanning = false;
+}, true);
+window.addEventListener('blur', () => {
+    if (!bgPanning) return;
+    const view  = graph.getView();
+    const scale = view.scale;
+    view.setTranslate(
+        view.translate.x + graph.panDx / scale,
+        view.translate.y + graph.panDy / scale,
+    );
+    graph.panGraph(0, 0);
+    bgPanning = false;
+});
 
 //-------------------------------------------------------------------------
 // LOAD / SAVE
 
 export function loadGraph(xml: string) {
     new ModelXmlSerializer(model).import(xml);
+    refreshParallelEdges();
+    // Cadre la totalité des objets dans l'écran, aligné à gauche
+    graph.getPlugin<FitPlugin>('fit')?.fit({margin: 20});
+    isDirty = false; // le chargement initial n'est pas une modification utilisateur
 }
 
 (window as any).loadGraph = loadGraph;
@@ -300,7 +612,7 @@ async function saveGraphToDatabase(
     type: string,
     content: string,
 ): Promise<void> {
-    const csrfMeta  = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
     const csrfToken = csrfMeta?.content;
     if (!csrfToken) {
         console.error('CSRF token manquant');
@@ -313,12 +625,12 @@ async function saveGraphToDatabase(
             method: 'POST',
             credentials: 'same-origin',
             headers: {
-                'Content-Type':      'application/json',
-                Accept:              'application/json',
-                'X-CSRF-TOKEN':      csrfToken,
-                'X-Requested-With':  'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify({ _method: 'PUT', id, name, type, content }),
+            body: JSON.stringify({_method: 'PUT', id, name, type, content}),
         });
 
         if (response.status !== 200) {
@@ -326,9 +638,11 @@ async function saveGraphToDatabase(
             try {
                 const error = await response.json();
                 if (error?.message) errorMessage = error.message;
-            } catch { /* ignore */ }
+            } catch { /* ignore */
+            }
             throw new Error(errorMessage);
         }
+        isDirty = false;
     } catch (error) {
         console.error('Erreur lors de la sauvegarde :', error);
         alert('Erreur lors de la sauvegarde du graphe.');
@@ -342,7 +656,7 @@ function getXMLGraph(): string {
 (window as any).getXMLGraph = getXMLGraph;
 
 function saveGraph() {
-    const idInput   = document.querySelector('#id')   as HTMLInputElement | null;
+    const idInput = document.querySelector('#id') as HTMLInputElement | null;
     const nameInput = document.querySelector('#name') as HTMLInputElement | null;
     const typeInput = document.querySelector('#type') as HTMLInputElement | null;
 
@@ -356,32 +670,36 @@ function saveGraph() {
 
 document.getElementById('saveButton')?.addEventListener('click', saveGraph);
 
+// Les modifications sur le nom ou le type marquent aussi le graphe comme modifié
+document.getElementById('name')?.addEventListener('input', () => { isDirty = true; });
+document.getElementById('type')?.addEventListener('change', () => { isDirty = true; });
+
+// Sauvegarde via le bouton formulaire (PUT) : vider isDirty avant la
+// navigation pour que beforeunload ne bloque pas la redirection.
+document.getElementById('btn-save')?.addEventListener('click', () => { isDirty = false; }, true);
+
+// Confirmation avant fermeture de l'onglet / navigation externe
+window.addEventListener('beforeunload', (e) => {
+    if (!isDirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+});
+
+// Confirmation avant le lien "Retour à la liste"
+document.getElementById('btn-cancel')?.addEventListener('click', (e) => {
+    if (isDirty && !confirm('Des modifications non sauvegardées seront perdues. Quitter quand même ?')) {
+        e.preventDefault();
+    }
+});
+
 //-------------------------------------------------------------------------
 // Utilitaires
 
-type Point = { x: number; y: number };
+type Pt = { x: number; y: number };
 
-function getGraphPointFromEvent(graph: Graph, evt: MouseEvent | DragEvent): Point {
-    if (typeof (graph as any).getPointForEvent === 'function') {
-        const pt = (graph as any).getPointForEvent(evt as any);
-        return { x: pt.x, y: pt.y };
-    }
-
-    const view  = (graph as any).view ?? graph.getView();
-    const pt    = styleUtils.convertPoint(
-        graph.container,
-        eventUtils.getClientX(evt as any),
-        eventUtils.getClientY(evt as any),
-    );
-    const tr    = view.translate ?? { x: 0, y: 0 };
-    const scale = view.scale ?? 1;
-    const panDx = (graph as any).panDx ?? 0;
-    const panDy = (graph as any).panDy ?? 0;
-
-    return {
-        x: (pt.x - panDx) / scale - tr.x - 20,
-        y: (pt.y - panDy) / scale - tr.y - 20,
-    };
+function getGraphPointFromEvent(graph: Graph, evt: MouseEvent | DragEvent): Pt {
+    const pt = graph.getPointForEvent(evt);
+    return {x: pt.x, y: pt.y};
 }
 
 function getFilter(): string[] {
@@ -390,23 +708,233 @@ function getFilter(): string[] {
     return Array.from(select.options).filter(o => o.selected).map(o => o.value);
 }
 
-function hasEdge(src: Cell | null, dest: Cell | null, name: string | null): boolean {
-    if (!src || !dest) return false;
-    const nameMatches = (edge: Cell) => name == null || edge.value === name;
-    return (
-        graph.getEdges(src).some(e  => e.target === dest && nameMatches(e)) ||
-        graph.getEdges(dest).some(e => e.target === src  && nameMatches(e))
-    );
+function getAttrFilter(): string[] {
+    const select = document.getElementById('attr-filter') as HTMLSelectElement | null;
+    if (!select) return [];
+    return Array.from(select.options).filter(o => o.selected).map(o => o.value);
 }
 
-function buildEdgeStyle(edge: Edge): object {
+function matchesAttrFilter(node: MapNode, attrFilter: string[]): boolean {
+    if (attrFilter.length === 0) return true;
+    if (!node.attributes) return false;
+    const nodeAttrs = node.attributes.split(' ').map(s => s.trim()).filter(Boolean);
+    return attrFilter.some(a => nodeAttrs.includes(a));
+}
+
+// 1 = amont (up), 2 = aval (down), 3 = les deux
+function getDirection(): number {
+    if ((document.getElementById('direction-up') as HTMLInputElement | null)?.checked) return 1;
+    if ((document.getElementById('direction-down') as HTMLInputElement | null)?.checked) return 2;
+    return 3;
+}
+
+function matchesDirection(direction: number, source: MapNode, target: MapNode): boolean {
+    if (direction === 1 && source.order <= target.order) return false;
+    if (direction === 2 && source.order >= target.order) return false;
+    return true;
+}
+
+//-------------------------------------------------------------------------
+// Affichage IP / tags dans les labels
+
+function getShowIP(): boolean {
+    return document.getElementById('toggleIP')?.classList.contains('active') ?? false;
+}
+
+function getShowAttr(): boolean {
+    return document.getElementById('toggleAttr')?.classList.contains('active') ?? false;
+}
+
+function buildLabel(node: MapNode): string {
+    if (getShowIP() && node.title) return node.label + '\n' + node.title;
+    if (getShowAttr() && node.attributes) return node.label + '\n' + node.attributes;
+    return node.label;
+}
+
+function refreshNodeLabels(): void {
+    graph.batchUpdate(() => {
+        for (const cell of collectVertices()) {
+            const style = styleOf(cell);
+            if (!style?.image || style.isBackground) continue;
+            const node = _nodes.get(cell.id as string);
+            if (!node) continue;
+            cell.value = buildLabel(node);
+        }
+    });
+    graph.refresh();
+}
+
+// Désactivés par défaut à chaque chargement de la page (pas de persistance).
+function setToggleActive(btn: HTMLElement | null, active: boolean): void {
+    if (!btn) return;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+}
+
+setToggleActive(document.getElementById('toggleIP'), false);
+setToggleActive(document.getElementById('toggleAttr'), false);
+
+document.getElementById('toggleIP')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget as HTMLElement;
+    const isActive = !btn.classList.contains('active');
+    setToggleActive(btn, isActive);
+    if (isActive) setToggleActive(document.getElementById('toggleAttr'), false);
+    refreshNodeLabels();
+});
+
+document.getElementById('toggleAttr')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget as HTMLElement;
+    const isActive = !btn.classList.contains('active');
+    setToggleActive(btn, isActive);
+    if (isActive) setToggleActive(document.getElementById('toggleIP'), false);
+    refreshNodeLabels();
+});
+
+// Nombre de liens déjà tracés entre deux sommets (quel que soit leur sens)
+function countEdgesBetween(src: Cell, dest: Cell): number {
+    return graph.getEdges(src).filter((e) => e.source === dest || e.target === dest).length;
+}
+
+// Ajoute tous les liens manquants entre objets déjà présents sur le canevas,
+// d'après les données de _nodes (pas seulement ceux du nœud double-cliqué).
+function completeMissingEdgesAmongPlacedNodes(parent: Cell): void {
+    const placedIds = new Set(collectVertices().filter(isMovableObject).map((v) => String(v.id)));
+
+    for (const id of placedIds) {
+        const sourceNode = _nodes.get(id);
+        const sourceCell = model.getCell(id) as Cell | null;
+        if (!sourceNode || !sourceCell) continue;
+
+        const edgesByTarget = new Map<string, Edge[]>();
+        for (const edge of sourceNode.edges) {
+            if (!placedIds.has(edge.attachedNodeId)) continue;
+            const list = edgesByTarget.get(edge.attachedNodeId);
+            if (list) list.push(edge); else edgesByTarget.set(edge.attachedNodeId, [edge]);
+        }
+
+        for (const [targetId, edges] of edgesByTarget) {
+            const targetCell = model.getCell(targetId) as Cell | null;
+            if (!targetCell) continue;
+            const alreadyDrawn = countEdgesBetween(sourceCell, targetCell);
+            for (const edge of edges.slice(alreadyDrawn)) {
+                graph.insertEdge({
+                    parent,
+                    value: edge.name,
+                    source: sourceCell,
+                    target: targetCell,
+                    style: buildEdgeStyle(edge),
+                });
+            }
+        }
+    }
+}
+
+// Restaure uniquement les arêtes manquantes connectées au nœud donné.
+// Seules les entrées de node.edges sont examinées — aucun autre nœud du graphe
+// n'est parcouru.
+function restoreMissingEdgesForNode(nodeId: string, parent: Cell): void {
+    const node = _nodes.get(nodeId);
+    const nodeCell = model.getCell(nodeId) as Cell | null;
+    if (!node || !nodeCell) return;
+
+    const edgesByPeer = new Map<string, Edge[]>();
+    for (const edge of node.edges) {
+        const peerId = edge.attachedNodeId;
+        // Le pair doit être un nœud domaine présent dans le graphe.
+        const peerCell = model.getCell(peerId) as Cell | null;
+        if (!peerCell?.isVertex() || !_nodes.has(peerId)) continue;
+        const list = edgesByPeer.get(peerId);
+        if (list) list.push(edge); else edgesByPeer.set(peerId, [edge]);
+    }
+
+    for (const [peerId, edges] of edgesByPeer) {
+        const peerCell = model.getCell(peerId) as Cell | null;
+        if (!peerCell) continue;
+        const alreadyDrawn = countEdgesBetween(nodeCell, peerCell);
+        for (const edge of edges.slice(alreadyDrawn)) {
+            graph.insertEdge({
+                parent,
+                value: edge.name,
+                source: nodeCell,
+                target: peerCell,
+                style: buildEdgeStyle(edge),
+            });
+        }
+    }
+}
+
+function modelCenter(cell: Cell): Point {
+    const g = cell.getGeometry();
+    const w = g?.width ?? 0, h = g?.height ?? 0;
+    let x = 0, y = 0;
+    let c: Cell | null = cell;
+    const root = graph.getDefaultParent();
+    while (c && c !== root) {
+        const cg = c.getGeometry();
+        if (cg && !c.isEdge()) {
+            x += cg.x;
+            y += cg.y;
+        }
+        c = c.getParent();
+    }
+    return new Point(x + w / 2, y + h / 2);
+}
+
+function refreshParallelEdges(): void {
+    const parent = graph.getDefaultParent();
+    const edges = graph.getChildEdges(parent);
+
+    const groups = new Map<string, Cell[]>();
+    for (const edge of edges) {
+        const s = edge.source, t = edge.target;
+        if (!s || !t) continue;
+        const a = String(s.id), b = String(t.id);
+        const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+        const list = groups.get(key);
+        if (list) list.push(edge); else groups.set(key, [edge]);
+    }
+
+    graph.batchUpdate(() => {
+        for (const list of groups.values()) {
+            const n = list.length;
+            list.forEach((edge, i) => {
+                const geo = edge.getGeometry()?.clone();
+                if (!geo) return;
+                const style: CellStateStyle = edge.style ?? {};
+                if (n <= 1) {
+                    geo.points = null;
+                    style.curved = false;
+                } else {
+                    const cs = modelCenter(edge.source!), ct = modelCenter(edge.target!);
+                    const mx = (cs.x + ct.x) / 2, my = (cs.y + ct.y) / 2;
+                    const dx = ct.x - cs.x, dy = ct.y - cs.y;
+                    const len = Math.hypot(dx, dy) || 1;
+                    const nx = -dy / len, ny = dx / len;
+                    const offset = (i - (n - 1) / 2) * 22;
+                    geo.points = [new Point(mx + nx * offset, my + ny * offset)];
+                    style.curved = true;
+                }
+                edge.style = style;
+                edge.setGeometry(geo);
+            });
+        }
+    });
+    graph.refresh();
+}
+
+function buildEdgeStyle(edge: Edge): CellStateStyle {
     const isFlux = edge.edgeType === 'FLUX';
+    const isCable = edge.edgeType === 'CABLE';
+    const isLink = edge.edgeType === 'LINK';
     return {
-        editable:    false,
-        strokeColor: '#000000',
-        strokeWidth: 1,
-        startArrow:  isFlux && (edge.bidirectional || edge.edgeDirection === 'FROM') ? 'classic' : 'none',
-        endArrow:    isFlux && (edge.bidirectional || edge.edgeDirection === 'TO')   ? 'classic' : 'none',
+        editable: false,
+        // Un lien physique (CABLE) garde la couleur définie dans le JSON.
+        strokeColor: isCable ? (edge.color ?? '#000000') : '#000000',
+        strokeWidth: isCable ? 3 : 2,
+        // Comme dans l'explorateur : appartenance (LINK) en pointillé, flux en trait plein.
+        dashed: isLink,
+        startArrow: isFlux && (edge.bidirectional || edge.edgeDirection === 'FROM') ? 'classic' : 'none',
+        endArrow: isFlux && (edge.bidirectional || edge.edgeDirection === 'TO') ? 'classic' : 'none',
     };
 }
 
@@ -415,14 +943,14 @@ graph.enterStopsCellEditing = true;
 //-------------------------------------------------------------------------
 // Drag & drop (gestionnaire unique)
 
-const fontBtn     = document.getElementById('font-btn')   as HTMLElement    | null;
-const squareIcon  = document.getElementById('square-btn') as HTMLElement    | null;
-const nodeIcon    = document.getElementById('nodeImage')  as HTMLImageElement | null;
-const nodeSelector = document.getElementById('node')     as HTMLSelectElement | null;
+const fontBtn = document.getElementById('font-btn') as HTMLElement | null;
+const squareIcon = document.getElementById('square-btn') as HTMLElement | null;
+const nodeIcon = document.getElementById('nodeImage') as HTMLImageElement | null;
+const nodeSelector = document.getElementById('node') as HTMLSelectElement | null;
 
-fontBtn?.addEventListener('dragstart',    (e: DragEvent) => e.dataTransfer?.setData('node-type', 'text-node'));
+fontBtn?.addEventListener('dragstart', (e: DragEvent) => e.dataTransfer?.setData('node-type', 'text-node'));
 squareIcon?.addEventListener('dragstart', (e: DragEvent) => e.dataTransfer?.setData('node-type', 'square-node'));
-nodeIcon?.addEventListener('dragstart',   (e: DragEvent) => e.dataTransfer?.setData('node-type', 'icon-node'));
+nodeIcon?.addEventListener('dragstart', (e: DragEvent) => e.dataTransfer?.setData('node-type', 'icon-node'));
 
 container.addEventListener('dragover', (event: DragEvent) => event.preventDefault());
 
@@ -431,25 +959,35 @@ container.addEventListener('drop', (event: DragEvent) => {
     const type = event.dataTransfer?.getData('node-type');
     if (!type) return;
 
-    const pt     = getGraphPointFromEvent(graph, event);
+    const pt = getGraphPointFromEvent(graph, event);
     const parent = graph.getDefaultParent();
 
     if (type === 'text-node') {
         graph.batchUpdate(() => {
-            graph.insertVertex({
+            const vertex = graph.insertVertex({
                 parent,
-                value:    'Text',
+                value: 'Text',
                 position: [pt.x, pt.y],
-                size:     [150, 30],
+                size: [150, 30],
                 style: {
-                    fillColor:     'none',
-                    strokeColor:   'none',
-                    fontColor:     '#000000',
-                    fontSize:      14,
-                    align:         'left',
-                    verticalAlign: 'middle',
-                },
+                    fillColor: 'none',
+                    strokeColor: 'none',
+                    fontColor: '#000000',
+                    fontSize: 14,
+                    align: 'left',
+                    // 'top' (plutôt que 'middle') évite tout décalage pendant
+                    // l'édition : l'éditeur de MaxGraph applique une translation
+                    // CSS en pourcentage de sa propre hauteur pour un alignement
+                    // 'middle', hauteur qui varie légèrement tant que le texte
+                    // n'a pas encore été redimensionné côté modèle.
+                    verticalAlign: 'top',
+                    // Recalcule automatiquement la taille de la cellule à partir
+                    // du texte rendu dès la fin de l'édition (labelChanged).
+                    autoSize: true,
+                    isText: true,
+                } as AppCellStyle,
             });
+            graph.setSelectionCell(vertex);
         });
         return;
     }
@@ -458,17 +996,20 @@ container.addEventListener('drop', (event: DragEvent) => {
         graph.batchUpdate(() => {
             const vertex = graph.insertVertex({
                 parent,
-                value:    '',
+                value: '',
                 position: [pt.x, pt.y],
-                size:     [150, 120],
+                size: [150, 120],
                 style: {
-                    fillColor:   '#fffacd',
+                    fillColor: '#fffacd',
                     strokeColor: '#000000',
                     strokeWidth: 1,
-                    rounded:     2,
-                },
+                    rounded: true,
+                    isRectangle: true,
+                } as AppCellStyle,
             });
             graph.orderCells(true, [vertex]);
+            ensureBackgroundAtBottom();
+            graph.setSelectionCell(vertex);
         });
         return;
     }
@@ -478,6 +1019,7 @@ container.addEventListener('drop', (event: DragEvent) => {
         graph.batchUpdate(() => {
             const existing = model.getCell(nodeId) as Cell | null;
             if (existing) {
+                restoreMissingEdgesForNode(nodeId, parent);
                 graph.setSelectionCells([existing]);
                 return;
             }
@@ -487,17 +1029,17 @@ container.addEventListener('drop', (event: DragEvent) => {
 
             const newVertex = graph.insertVertex({
                 parent,
-                id:       nodeId,
-                value:    node.label,
+                id: nodeId,
+                value: buildLabel(node),
                 position: [pt.x - 16, pt.y - 16],
-                size:     [32, 32],
+                size: [32, 32],
                 style: {
-                    shape:                 'image',
-                    image:                 nodeIcon.src,
-                    editable:              false,
-                    resizable:             true,
+                    shape: 'image',
+                    image: nodeIcon.src,
+                    editable: false,
+                    resizable: true,
                     verticalLabelPosition: 'bottom',
-                    spacingTop:            -15,
+                    spacingTop: -15,
                 },
             });
 
@@ -506,41 +1048,75 @@ container.addEventListener('drop', (event: DragEvent) => {
                 if (targetCell) {
                     graph.insertEdge({
                         parent,
-                        value:  '',
+                        value: '',
                         source: newVertex,
                         target: targetCell,
                         style: {
-                            editable:    false,
+                            editable: false,
                             strokeColor: '#ff0000',
-                            strokeWidth: 1,
-                            startArrow:  'none',
-                            endArrow:    'none',
+                            strokeWidth: 2,
+                            startArrow: 'none',
+                            endArrow: 'none',
                         },
                     });
                 }
             });
+
+            graph.setSelectionCell(newVertex);
         });
+        refreshParallelEdges();
     }
 });
 
 //-------------------------------------------------------------------------
 // Zoom
 
-const zoomInButton  = document.getElementById('zoom-in-btn')  as HTMLButtonElement | null;
+const zoomInButton = document.getElementById('zoom-in-btn') as HTMLButtonElement | null;
+const fitButton = document.getElementById('fit-btn') as HTMLElement | null;
 const zoomOutButton = document.getElementById('zoom-out-btn') as HTMLButtonElement | null;
 
-if (zoomInButton)  zoomInButton.addEventListener('click',  () => graph.zoomIn());
+if (zoomInButton) zoomInButton.addEventListener('click', () => graph.zoomIn());
+if (fitButton) fitButton.addEventListener('click', () => graph.getPlugin<FitPlugin>('fit')?.fit({ margin: 20 }));
 if (zoomOutButton) zoomOutButton.addEventListener('click', () => graph.zoomOut());
 
 //-------------------------------------------------------------------------
-// Suppression avec Delete / Backspace
+// Suppression avec Delete / Backspace ou le bouton "Delete"
 
-document.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Delete' || event.key === 'Backspace') {
-        const cells = graph.getSelectionCells();
-        if (cells.length > 0) graph.removeCells(cells);
+function deleteSelectedCells(): void {
+    const cells = graph.getSelectionCells().filter((c) => !isBackgroundCell(c));
+    if (cells.length === 0) return;
+
+    graph.removeCells(cells);
+    refreshParallelEdges();
+}
+
+// Sur window en phase capture : s'exécute avant TOUT listener tiers
+// (MaxGraph, Select2, jQuery...). Si le graphe a le focus conceptuel,
+// on absorbe Delete/Backspace pour MaxGraph et on bloque le HTML.
+window.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Delete' && event.key !== 'Backspace') return;
+
+    if (graphHasFocus) {
+        // Bloquer systématiquement l'HTML quand le graphe est actif
+        event.preventDefault();
+        event.stopPropagation();
+        if (graph.getSelectionCells().filter((c) => !isBackgroundCell(c)).length > 0) {
+            deleteSelectedCells();
+        }
+        return;
     }
-});
+
+    // Pas de focus graphe : laisser le navigateur gérer dans les champs de saisie.
+    const target = event.target as HTMLElement | null;
+    if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
+
+    if (graph.getSelectionCells().filter((c) => !isBackgroundCell(c)).length === 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    deleteSelectedCells();
+}, true);
+
+document.getElementById('delete-btn')?.addEventListener('click', deleteSelectedCells);
 
 //-------------------------------------------------------------------------
 // CTRL+A : sélectionner tout
@@ -557,25 +1133,70 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
 // Connexions / déconnexions
 
 graph.setConnectable(false);
-(graph as any).isCellDisconnectable = () => false;
+graph.isCellDisconnectable = () => false;
 
 //-------------------------------------------------------------------------
 // Group / ungroup
 
-const groupButton   = document.getElementById('group-btn')   as HTMLButtonElement | null;
+const groupButton = document.getElementById('group-btn') as HTMLButtonElement | null;
 const ungroupButton = document.getElementById('ungroup-btn') as HTMLButtonElement | null;
+
+// Un groupe contenant un rectangle doit rester en arrière-plan par rapport
+// aux flèches qui ne font pas partie du groupe.
+function groupContainsRectangle(group: Cell): boolean {
+    return (group.children ?? []).some((c) => isRectangleCell(c));
+}
 
 if (groupButton) {
     groupButton.addEventListener('click', () => {
-        const cells = graph.getSelectionCells();
+        const cells = graph.getSelectionCells().filter((c) => !isBackgroundCell(c));
         if (cells.length > 1) {
             const parent = graph.getDefaultParent();
-            // insertVertex ajoute déjà le groupe au parent — pas besoin de addCell()
-            const group = graph.insertVertex({
-                parent,
-                style: { fillColor: 'none', strokeColor: 'none' },
+
+            // MaxGraph peut redimensionner un enfant lors de son ajout au groupe
+            // (constrainChild s'applique avant que le groupe n'ait sa taille finale).
+            // On mémorise la géométrie d'origine pour la restaurer après coup.
+            const originalGeometries = new Map<Cell, Geometry>();
+            for (const cell of cells) {
+                const geo = cell.getGeometry();
+                if (geo) originalGeometries.set(cell, geo.clone());
+            }
+
+            graph.batchUpdate(() => {
+                // insertVertex ajoute déjà le groupe au parent — pas besoin de addCell()
+                const group = graph.insertVertex({
+                    parent,
+                    style: {fillColor: 'none', strokeColor: 'none', resizable: false},
+                });
+                graph.groupCells(group, 5, cells);
+
+                const groupGeo = group.getGeometry();
+                if (!groupGeo) return;
+
+                for (const cell of cells) {
+                    const original = originalGeometries.get(cell);
+                    if (!original) continue;
+                    model.setGeometry(cell, new Geometry(
+                        original.x - groupGeo.x,
+                        original.y - groupGeo.y,
+                        original.width,
+                        original.height,
+                    ));
+                }
+
+                // Les rectangles du groupe doivent rester en arrière-plan par
+                // rapport à ses nœuds (au sein du groupe) et aux liens qui ne
+                // font pas partie du groupe (au niveau du canevas).
+                const rectanglesInGroup = (group.children ?? []).filter((c) => isRectangleCell(c));
+                if (rectanglesInGroup.length > 0) {
+                    graph.orderCells(true, rectanglesInGroup);
+                    graph.orderCells(true, [group]);
+                    ensureBackgroundAtBottom();
+                }
+
+                graph.refresh();
+                graph.setSelectionCell(group);
             });
-            graph.groupCells(group, 5, cells);
         }
     });
 }
@@ -584,43 +1205,80 @@ if (ungroupButton) {
     ungroupButton.addEventListener('click', () => {
         const cells = graph.getSelectionCells();
         if (cells.length === 1) {
-            graph.ungroupCells(cells);
-            graph.setSelectionCells(cells);
+            const released = graph.ungroupCells(cells);
+
+            // Les rectangles libérés doivent rester en arrière-plan par
+            // rapport aux flèches qui ne faisaient pas partie du groupe.
+            const rectangles = released.filter((c) => isRectangleCell(c));
+            if (rectangles.length > 0) {
+                graph.orderCells(true, rectangles);
+                ensureBackgroundAtBottom();
+            }
+
+            graph.setSelectionCells(released);
         }
     });
 }
+
+// Déplacer un groupe peut le faire remonter au-dessus des flèches externes :
+// on réapplique l'arrière-plan pour les groupes contenant un rectangle.
+graph.addListener(InternalEvent.MOVE_CELLS, (_sender: unknown, evt: EventObject) => {
+    const cells = evt.getProperty('cells') as Cell[] | undefined;
+    if (!cells) return;
+
+    const groups = cells.filter((c) => c.isVertex() && (c.children?.length ?? 0) > 0 && groupContainsRectangle(c));
+    if (groups.length > 0) {
+        graph.orderCells(true, groups);
+        ensureBackgroundAtBottom();
+    }
+});
 
 //---------------------------------------------------------------------------
 // Déplacement avec flèches
 
-function moveSelectedVertex(graph: Graph, dx: number, dy: number) {
-    const selected = graph.getSelectionCell() as Cell | null;
-    if (!selected?.isVertex()) return;
+function moveSelectedVertices(graph: Graph, dx: number, dy: number): void {
+    const vertices = graph.getSelectionCells().filter((c) => c.isVertex() && !isBackgroundCell(c));
+    if (vertices.length === 0) return;
+
     graph.batchUpdate(() => {
-        const geo = selected.getGeometry();
-        if (geo) {
-            geo.translate(dx, dy);
-            graph.refresh();
+        for (const vertex of vertices) {
+            vertex.getGeometry()?.translate(dx, dy);
         }
+        graph.refresh();
     });
 }
 
 document.addEventListener('keydown', (event: KeyboardEvent) => {
+    // Laisser les flèches déplacer le curseur dans le texte en cours
+    // d'édition (cellule ou champ de saisie normal de la page) plutôt que
+    // de déplacer le sommet sélectionné.
+    if (graph.isEditing()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
+
     const step = 1;
     switch (event.key) {
-        case 'ArrowUp':    moveSelectedVertex(graph, 0, -step); break;
-        case 'ArrowDown':  moveSelectedVertex(graph, 0,  step); break;
-        case 'ArrowLeft':  moveSelectedVertex(graph, -step, 0); break;
-        case 'ArrowRight': moveSelectedVertex(graph,  step, 0); break;
+        case 'ArrowUp':
+            moveSelectedVertices(graph, 0, -step);
+            break;
+        case 'ArrowDown':
+            moveSelectedVertices(graph, 0, step);
+            break;
+        case 'ArrowLeft':
+            moveSelectedVertices(graph, -step, 0);
+            break;
+        case 'ArrowRight':
+            moveSelectedVertices(graph, step, 0);
+            break;
     }
 });
 
 //---------------------------------------------------------------------------
 // Placement en cercle (double-clic)
 
-function placeObjectsOnCircle(center: Point, radius: number, n: number): Point[] {
+function placeObjectsOnCircle(center: Pt, radius: number, n: number): Pt[] {
     const angleStep = (2 * Math.PI) / n;
-    return Array.from({ length: n }, (_, i) => ({
+    return Array.from({length: n}, (_, i) => ({
         x: center.x + radius * Math.cos(i * angleStep),
         y: center.y + radius * Math.sin(i * angleStep),
     }));
@@ -629,99 +1287,299 @@ function placeObjectsOnCircle(center: Point, radius: number, n: number): Point[]
 //----------------------------------------------------------------
 // Double-clic sur icône
 
-graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender, evt) => {
+graph.addListener(InternalEvent.DOUBLE_CLICK, (_sender: unknown, evt: EventObject) => {
     const cell = evt.getProperty('cell') as Cell | null;
     if (!cell?.isVertex()) return;
 
-    const style = cell.style as any;
+    const style = cell.style;
     if (style?.shape !== 'image') return;
 
     const node = _nodes.get(cell.id as string);
     if (!node) return;
 
     graph.batchUpdate(() => {
-        const newEdges: Edge[] = [];
-        const parent           = graph.getDefaultParent();
-        const filter           = getFilter();
+        // Plusieurs liens peuvent exister entre les deux mêmes nœuds : on les
+        // regroupe par cible pour n'insérer le sommet qu'une fois tout en
+        // conservant chacun des liens (refreshParallelEdges les écartera en arc).
+        const newEdgesByTarget = new Map<string, Edge[]>();
+        const parent = graph.getDefaultParent();
+        const filter = getFilter();
+        const attrFilter = getAttrFilter();
+        const direction = getDirection();
 
         node.edges.forEach((edge) => {
             const targetNode = _nodes.get(edge.attachedNodeId);
             if (!targetNode) return;
+            if (model.getCell(edge.attachedNodeId)) return; // déjà présent : traité par la passe globale ci-dessous
 
-            const vertex = model.getCell(edge.attachedNodeId) as Cell | null;
-
-            if (!vertex && !newEdges.some((e) => e.attachedNodeId === edge.attachedNodeId)) {
-                if (
+            if (
+                (
                     filter.length === 0 ||
                     filter.includes(targetNode.vue) ||
                     (filter.includes('8') && edge.edgeType === 'CABLE') ||
                     (filter.includes('9') && edge.edgeType === 'FLUX')
-                ) {
-                    newEdges.push(edge);
-                }
-            } else if (vertex && !hasEdge(cell, vertex, edge.name)) {
-                graph.insertEdge({
-                    parent,
-                    value:  edge.name,
-                    source: cell,
-                    target: vertex,
-                    style:  buildEdgeStyle(edge),
-                });
+                ) &&
+                matchesAttrFilter(targetNode, attrFilter) &&
+                matchesDirection(direction, node, targetNode)
+            ) {
+                const list = newEdgesByTarget.get(edge.attachedNodeId);
+                if (list) list.push(edge); else newEdgesByTarget.set(edge.attachedNodeId, [edge]);
             }
         });
 
         const geom = cell.getGeometry();
-        if (!geom || newEdges.length === 0) return;
+        if (geom && newEdgesByTarget.size > 0) {
+            const targetIds = Array.from(newEdgesByTarget.keys());
+            const positions = placeObjectsOnCircle({x: geom.x, y: geom.y}, 80, targetIds.length);
 
-        const positions = placeObjectsOnCircle({ x: geom.x, y: geom.y }, 80, newEdges.length);
+            for (let i = 0; i < positions.length; i++) {
+                const attachedNodeId = targetIds[i];
+                const edgesToTarget = newEdgesByTarget.get(attachedNodeId)!;
+                const newNode = _nodes.get(attachedNodeId);
+                if (!newNode) continue;
 
-        for (let i = 0; i < positions.length; i++) {
-            const edge    = newEdges[i];
-            const newNode = _nodes.get(edge.attachedNodeId);
-            if (!newNode) continue;
+                const vertex = graph.insertVertex({
+                    parent,
+                    id: newNode.id,
+                    value: buildLabel(newNode),
+                    position: [positions[i].x, positions[i].y],
+                    size: [32, 32],
+                    style: {
+                        shape: 'image',
+                        image: newNode.image,
+                        editable: false,
+                        resizable: true,
+                        verticalLabelPosition: 'bottom',
+                        spacingTop: -15,
+                    },
+                });
 
-            const vertex = graph.insertVertex({
-                parent,
-                id:       newNode.id,
-                value:    newNode.label,
-                position: [positions[i].x, positions[i].y],
-                size:     [32, 32],
-                style: {
-                    shape:                 'image',
-                    image:                 newNode.image,
-                    editable:              false,
-                    resizable:             true,
-                    verticalLabelPosition: 'bottom',
-                    spacingTop:            -15,
-                },
-            });
+                for (const edge of edgesToTarget) {
+                    graph.insertEdge({
+                        parent,
+                        value: edge.name,
+                        source: cell,
+                        target: vertex,
+                        style: buildEdgeStyle(edge),
+                    });
+                }
+            }
+        }
 
+        // Restaure les liens manquants entre le nœud double-cliqué et les
+        // nœuds déjà présents dans le graphe.
+        restoreMissingEdgesForNode(node.id, parent);
+    });
+    refreshParallelEdges();
+    if (physicsEnabled) startPhysics();
+});
+
+//-------------------------------------------------------------------------
+// Déploiement récursif (bouton Deploy)
+
+function insertPlacedVertex(node: MapNode, position: Pt, parent: Cell): Cell {
+    return graph.insertVertex({
+        parent,
+        id: node.id,
+        value: buildLabel(node),
+        position: [position.x - 16, position.y - 16],
+        size: [32, 32],
+        style: {
+            shape: 'image',
+            image: node.image,
+            editable: false,
+            resizable: true,
+            verticalLabelPosition: 'bottom',
+            spacingTop: -15,
+        },
+    });
+}
+
+function deployFromNode(
+    nodeId: string,
+    depth: number,
+    visited: Set<string>,
+    filter: string[],
+    attrFilter: string[],
+    direction: number,
+    parent: Cell,
+): void {
+    if (depth <= 0 || visited.has(nodeId)) return;
+    visited.add(nodeId);
+
+    const node = _nodes.get(nodeId);
+    const sourceCell = model.getCell(nodeId) as Cell | null;
+    const geom = sourceCell?.getGeometry();
+    if (!node || !sourceCell || !geom) return;
+
+    const newEdgesByTarget = new Map<string, Edge[]>();
+    for (const edge of node.edges) {
+        if (model.getCell(edge.attachedNodeId)) continue; // déjà affiché
+        const targetNode = _nodes.get(edge.attachedNodeId);
+        if (!targetNode) continue;
+
+        const passesFilter =
+            filter.length === 0 ||
+            filter.includes(targetNode.vue) ||
+            (filter.includes('8') && edge.edgeType === 'CABLE') ||
+            (filter.includes('9') && edge.edgeType === 'FLUX');
+
+        if (
+            !passesFilter ||
+            !matchesAttrFilter(targetNode, attrFilter) ||
+            !matchesDirection(direction, node, targetNode)
+        ) continue;
+
+        const list = newEdgesByTarget.get(edge.attachedNodeId);
+        if (list) list.push(edge); else newEdgesByTarget.set(edge.attachedNodeId, [edge]);
+    }
+
+    if (newEdgesByTarget.size === 0) return;
+
+    const targetIds = Array.from(newEdgesByTarget.keys());
+    const positions = placeObjectsOnCircle({x: geom.x, y: geom.y}, 80, targetIds.length);
+
+    targetIds.forEach((attachedNodeId, i) => {
+        const edgesToTarget = newEdgesByTarget.get(attachedNodeId)!;
+        const newNode = _nodes.get(attachedNodeId);
+        if (!newNode) return;
+
+        const vertex = insertPlacedVertex(newNode, positions[i], parent);
+
+        for (const edge of edgesToTarget) {
             graph.insertEdge({
                 parent,
-                value:  edge.name,
-                source: cell,
+                value: edge.name,
+                source: sourceCell,
                 target: vertex,
-                style:  buildEdgeStyle(edge),
+                style: buildEdgeStyle(edge),
             });
         }
     });
+
+    for (const attachedNodeId of targetIds) {
+        deployFromNode(attachedNodeId, depth - 1, visited, filter, attrFilter, direction, parent);
+    }
+}
+
+document.getElementById('deploy-btn')?.addEventListener('click', (e) => {
+    const selected = graph.getSelectionCell() as Cell | null;
+    if (!selected || !_nodes.has(selected.id as string)) {
+        const message = (e.currentTarget as HTMLElement).dataset.pleaseSelect ?? 'Please select a node.';
+        alert(message);
+        return;
+    }
+
+    const depthSelect = document.getElementById('depth') as HTMLSelectElement | null;
+    const depth = parseInt(depthSelect?.value ?? '3', 10) || 3;
+
+    graph.batchUpdate(() => {
+        const parent = graph.getDefaultParent();
+        deployFromNode(selected.id as string, depth, new Set(), getFilter(), getAttrFilter(), getDirection(), parent);
+        completeMissingEdgesAmongPlacedNodes(parent);
+    });
+    refreshParallelEdges();
+    if (physicsEnabled) startPhysics();
+});
+
+//-------------------------------------------------------------------------
+// Ajout direct d'un objet sélectionné dans le sélecteur (#node)
+
+document.getElementById('add-node-btn')?.addEventListener('click', () => {
+    const nodeId = nodeSelector?.value;
+    if (!nodeId) return;
+
+    if (model.getCell(nodeId)) {
+        const existingCell = model.getCell(nodeId) as Cell;
+        graph.batchUpdate(() => {
+            restoreMissingEdgesForNode(nodeId, graph.getDefaultParent());
+        });
+        refreshParallelEdges();
+        graph.setSelectionCells([existingCell]);
+        return;
+    }
+
+    const node = _nodes.get(nodeId);
+    if (!node) return;
+
+    graph.batchUpdate(() => {
+        const parent = graph.getDefaultParent();
+
+        // Centre de la partie VISIBLE du graphe (et non de son contenu, qui
+        // peut être vide ou hors champ), converti en coordonnées modèle.
+        const view = graph.getView();
+        const center = {
+            x: container.clientWidth / 2 / view.scale - view.translate.x,
+            y: container.clientHeight / 2 / view.scale - view.translate.y,
+        };
+
+        const newVertex = graph.insertVertex({
+            parent,
+            id: node.id,
+            value: buildLabel(node),
+            position: [center.x - 16, center.y - 16],
+            size: [32, 32],
+            style: {
+                shape: 'image',
+                image: node.image,
+                editable: false,
+                resizable: true,
+                verticalLabelPosition: 'bottom',
+                spacingTop: -15,
+            },
+        });
+
+        completeMissingEdgesAmongPlacedNodes(parent);
+        graph.setSelectionCell(newVertex);
+    });
+    refreshParallelEdges();
+});
+
+//-------------------------------------------------------------------------
+// Réinitialisation du canevas
+
+document.getElementById('reload-btn')?.addEventListener('click', () => {
+    const cells = graph.getChildCells().filter((c) => !isBackgroundCell(c));
+    if (cells.length > 0) graph.removeCells(cells);
 });
 
 //-------------------------------------------------------------------------
 // Mise à jour des nœuds depuis _nodes
 
+// Retrouve les données d'un lien (JSON _nodes) à partir de ses deux extrémités
+function findEdgeData(sourceId: string, targetId: string): Edge | undefined {
+    return (
+        _nodes.get(sourceId)?.edges.find((e) => e.attachedNodeId === targetId) ??
+        _nodes.get(targetId)?.edges.find((e) => e.attachedNodeId === sourceId)
+    );
+}
+
 document.getElementById('update-btn')?.addEventListener('click', () => {
     graph.batchUpdate(() => {
         graph.getChildCells().forEach((cell) => {
-            if (cell.isEdge()) return;
-            const style = cell.style as any;
+            if (cell.isEdge()) {
+                const s = cell.source, t = cell.target;
+                if (!s || !t) return;
+                const data = findEdgeData(String(s.id), String(t.id));
+                if (!data || data.edgeType !== 'CABLE') return;
+
+                // Un lien physique conserve sa couleur et son type lors de la mise à jour.
+                cell.value = data.name;
+                const style: CellStateStyle = cell.style ?? {};
+                style.strokeColor = data.color ?? '#000000';
+                style.strokeWidth = 2;
+                cell.style = style;
+                return;
+            }
+            const style = styleOf(cell);
+            if (style?.isBackground) return;
             if (!style?.image) return;
 
             const node = _nodes.get(cell.id as string);
             if (!node) {
                 graph.removeCells([cell], true);
             } else {
-                cell.value = node.label;
+                cell.value = buildLabel(node);
                 styleUtils.setCellStyles(graph.getDataModel(), [cell], 'image', node.image);
             }
         });
@@ -741,11 +1599,11 @@ async function embedImagesInSVG(svg: SVGSVGElement): Promise<void> {
         if (!href || href.startsWith('data:')) return;
         try {
             const response = await fetch(href);
-            const blob     = await response.blob();
-            const dataUrl  = await new Promise<string>((resolve, reject) => {
-                const reader      = new FileReader();
-                reader.onloadend  = () => resolve(reader.result as string);
-                reader.onerror    = reject;
+            const blob = await response.blob();
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
                 reader.readAsDataURL(blob);
             });
             img.setAttribute('href', dataUrl);
@@ -765,9 +1623,9 @@ async function downloadSVG(): Promise<void> {
     await embedImagesInSVG(svgElement);
 
     const serializer = new XMLSerializer();
-    const svgString  = serializer.serializeToString(svgElement);
-    const blob       = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const url        = URL.createObjectURL(blob);
+    const svgString = serializer.serializeToString(svgElement);
+    const blob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
 
     const now = new Date();
     const timestamp =
@@ -777,35 +1635,400 @@ async function downloadSVG(): Promise<void> {
         String(now.getHours()).padStart(2, '0') +
         String(now.getMinutes()).padStart(2, '0');
 
-    const link      = document.createElement('a');
-    link.href       = url;
-    link.download   = `graph-${timestamp}.svg`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `graph-${timestamp}.svg`;
     link.click();
     URL.revokeObjectURL(url);
 }
 
 document.getElementById('download-btn')?.addEventListener('click', downloadSVG);
 
-//-------------------------------------------------------------------------
-// Layout organic
+//---------------------------------------------------------------------------
+// Moteur physique (force-directed) start / stop
+//---------------------------------------------------------------------------
 
-export function layout() {
-    const parent = graph.getDefaultParent();
-    const cells  = graph.getChildVertices(parent);
-    if (!cells || cells.length === 0) return;
+let physicsRunning = false;
+let physicsEnabled = false; // true uniquement si l'utilisateur a activé le magnet
+let physicsRafId: number | null = null;
+const physicsStartGeo = new Map<Cell, Geometry>();
 
-    const organic           = new FastOrganicLayout(graph);
-    organic.forceConstant   = 60;
-    organic.disableEdgeStyle = false;
+// Distance minimale entre un nœud confiné et le bord de son groupe
+const GROUP_EDGE_MARGIN = 10;
 
-    graph.getDataModel().beginUpdate();
-    try {
-        organic.execute(parent, cells);
-    } finally {
-        const morph = new Morphing(graph);
-        morph.addListener(InternalEvent.DONE, () => graph.getDataModel().endUpdate());
-        morph.startAnimation();
-    }
+// Le label (sous l'objet, verticalLabelPosition: 'bottom') peut être sur
+// plusieurs lignes (IP, tags) : on lit sa bounding box réellement rendue
+// (gère le retour à la ligne, la police et le spacingTop sans approximation)
+// pour calculer jusqu'où le pied de l'objet (icône + label) descend.
+// Police et décalage réellement appliqués au label des objets (cf. styles
+// d'insertion des sommets image : pas de fontSize explicite => défaut
+// MaxGraph 11px ; spacingTop: -15 remonte le label dans l'icône).
+const LABEL_FONT_SIZE = 11;
+const LABEL_LINE_HEIGHT = LABEL_FONT_SIZE * 4;
+const LABEL_SPACING_TOP = -15;
+
+function getFootprintHeight(cell: Cell, geo: Geometry): number {
+    const value = cell.value;
+    if (typeof value !== 'string' || value.length === 0) return geo.height;
+
+    const lines = value.split('\n').length;
+    const labelHeight = lines * LABEL_LINE_HEIGHT;
+    const extra = Math.max(0, labelHeight + LABEL_SPACING_TOP);
+
+    return geo.height + extra;
 }
 
-document.getElementById('layout-btn')?.addEventListener('click', layout);
+// Arrêt automatique : mouvement (px/tick) sous ce seuil pendant N ticks de suite
+const STABILITY_THRESHOLD = 0.4;
+const STABILITY_TICKS_REQUIRED = 30;
+let stableTicks = 0;
+
+function isMovableObject(cell: Cell): boolean {
+    if (!cell.isVertex()) return false;
+    const s = styleOf(cell);
+    const hasImage = s?.shape === 'image' && !!s?.image;
+    const hasChildren = (cell.children?.length ?? 0) > 0;
+    return hasImage && !hasChildren && !s?.isBackground;
+}
+
+function collectVertices(): Cell[] {
+    const acc: Cell[] = [];
+    const walk = (cell: Cell) => {
+        for (const c of cell.children ?? []) {
+            if (c.isVertex()) acc.push(c);
+            if (c.children?.length) walk(c);
+        }
+    };
+    walk(graph.getDefaultParent());
+    return acc;
+}
+
+function physicsTick(): void {
+    // Les conteneurs de groupe ne sont pas de vrais objets : les exclure des
+    // forces de répulsion, sinon ils repoussent leurs propres enfants vers
+    // les bords du groupe.
+    const all = collectVertices().filter((c) => (c.children?.length ?? 0) === 0);
+    const movable = all.filter(isMovableObject);
+    if (movable.length === 0) {
+        stopPhysics();
+        return;
+    }
+
+    const pos = new Map<Cell, Point>();
+    for (const v of all) pos.set(v, modelCenter(v));
+    const force = new Map<Cell, Point>();
+    for (const v of movable) force.set(v, new Point(0, 0));
+
+    // Vitesse de réaction +50%
+    const K_REP = 11500, K_SPRING = 0.06, REST = 120, DAMPING = 0.85, MAX_STEP = 30;
+
+    for (const v of movable) {
+        const pv = pos.get(v)!, f = force.get(v)!;
+        for (const u of all) {
+            if (u === v) continue;
+            const pu = pos.get(u)!;
+            const dx = pv.x - pu.x, dy = pv.y - pu.y;
+            let d2 = dx * dx + dy * dy;
+            if (d2 < 1) d2 = 1;
+            const d = Math.sqrt(d2), rep = K_REP / d2;
+            f.x += (dx / d) * rep;
+            f.y += (dy / d) * rep;
+        }
+    }
+    for (const edge of graph.getChildEdges(graph.getDefaultParent())) {
+        const s = edge.source, t = edge.target;
+        if (!s || !t) continue;
+        const ps = pos.get(s) ?? modelCenter(s), pt = pos.get(t) ?? modelCenter(t);
+        const dx = pt.x - ps.x, dy = pt.y - ps.y;
+        const d = Math.hypot(dx, dy) || 1, fmag = K_SPRING * (d - REST);
+        const fx = (dx / d) * fmag, fy = (dy / d) * fmag;
+
+        // Un lien qui sort d'un groupe ne doit pas influencer l'élément
+        // qui se trouve dans ce groupe (seuls les liens internes au même
+        // groupe agissent sur ses membres).
+        const sParent = s.getParent(), tParent = t.getParent();
+        const sConfined = !!sParent && sParent !== graph.getDefaultParent();
+        const tConfined = !!tParent && tParent !== graph.getDefaultParent();
+        const externalToS = sConfined && sParent !== tParent;
+        const externalToT = tConfined && tParent !== sParent;
+
+        if (force.has(s) && !externalToS) {
+            const f = force.get(s)!;
+            f.x += fx;
+            f.y += fy;
+        }
+        if (force.has(t) && !externalToT) {
+            const f = force.get(t)!;
+            f.x -= fx;
+            f.y -= fy;
+        }
+    }
+
+    // Rappel vers le centre du groupe pour les objets confinés : sans cette
+    // force, la répulsion pure n'a rien pour la contrebalancer et envoie
+    // systématiquement les objets contre les bords du groupe.
+    const K_CENTER = 0.02;
+    for (const v of movable) {
+        const p = v.getParent();
+        if (!p || p === graph.getDefaultParent()) continue;
+        const pg = p.getGeometry();
+        const geo0 = v.getGeometry();
+        if (!pg || !geo0) continue;
+        const f = force.get(v)!;
+        const targetX = (pg.width - geo0.width) / 2;
+        const targetY = (pg.height - geo0.height) / 2;
+        f.x += (targetX - geo0.x) * K_CENTER;
+        f.y += (targetY - geo0.y) * K_CENTER;
+    }
+
+    // Groupes existants : un nœud qui n'en fait pas partie ne doit jamais y
+    // entrer et doit rester à au moins 10px de son bord.
+    const groups = graph.getChildVertices(graph.getDefaultParent()).filter((c) => (c.children?.length ?? 0) > 0);
+
+    let maxMovement = 0;
+
+    graph.batchUpdate(() => {       // n'empile rien tant que physicsSuppressUndo est vrai
+        for (const v of movable) {
+            const f = force.get(v)!;
+            let dx = f.x * DAMPING, dy = f.y * DAMPING;
+            const m = Math.hypot(dx, dy);
+            if (m > maxMovement) maxMovement = m;
+            if (m > MAX_STEP) {
+                dx = dx / m * MAX_STEP;
+                dy = dy / m * MAX_STEP;
+            }
+            const geo = v.getGeometry()?.clone();
+            if (!geo) continue;
+            geo.x += dx;
+            geo.y += dy;
+            const footprintHeight = getFootprintHeight(v, geo);
+
+            const p = v.getParent();
+            if (p && p !== graph.getDefaultParent()) {
+                const pg = p.getGeometry();
+                if (pg) {
+                    // L'icône doit garder 10px du bord du groupe ; le label sous
+                    // l'objet (potentiellement multi-lignes) peut s'en approcher
+                    // davantage, tant qu'il reste entièrement dans le groupe.
+                    const minX = GROUP_EDGE_MARGIN, maxX = Math.max(minX, pg.width - geo.width - GROUP_EDGE_MARGIN);
+                    const minY = GROUP_EDGE_MARGIN;
+                    const maxY = Math.max(minY, pg.height - Math.max(geo.height + GROUP_EDGE_MARGIN, footprintHeight));
+                    geo.x = Math.max(minX, Math.min(geo.x, maxX));
+                    geo.y = Math.max(minY, Math.min(geo.y, maxY));
+                }
+            } else {
+                // Un nœud hors groupe ne doit jamais entrer dans un groupe
+                // existant : on l'éjecte vers le bord le plus proche, à 10px.
+                for (const group of groups) {
+                    const gg = group.getGeometry();
+                    if (!gg) continue;
+                    const gx = gg.x - GROUP_EDGE_MARGIN, gy = gg.y - GROUP_EDGE_MARGIN;
+                    const gw = gg.width + 2 * GROUP_EDGE_MARGIN, gh = gg.height + 2 * GROUP_EDGE_MARGIN;
+
+                    const overlapLeft = (geo.x + geo.width) - gx;
+                    const overlapRight = (gx + gw) - geo.x;
+                    const overlapTop = (geo.y + footprintHeight) - gy;
+                    const overlapBottom = (gy + gh) - geo.y;
+
+                    if (overlapLeft > 0 && overlapRight > 0 && overlapTop > 0 && overlapBottom > 0) {
+                        const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+                        if (minOverlap === overlapLeft) geo.x = gx - geo.width;
+                        else if (minOverlap === overlapRight) geo.x = gx + gw;
+                        else if (minOverlap === overlapTop) geo.y = gy - footprintHeight;
+                        else geo.y = gy + gh;
+                    }
+                }
+            }
+            v.setGeometry(geo);
+        }
+    });
+    graph.refresh();
+
+    // Arrêt automatique une fois le graphe stabilisé (plus de mouvement notable).
+    if (maxMovement < STABILITY_THRESHOLD) {
+        stableTicks++;
+        if (stableTicks >= STABILITY_TICKS_REQUIRED) {
+            stopPhysics();
+            return;
+        }
+    } else {
+        stableTicks = 0;
+    }
+
+    if (physicsRunning) physicsRafId = requestAnimationFrame(physicsTick);
+}
+
+function setPhysicsButtonActive(active: boolean): void {
+    const btn = document.getElementById('physics-btn');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', String(active));
+    btn.classList.toggle('bi-magnet', !active);
+    btn.classList.toggle('bi-magnet-fill', active);
+}
+
+function startPhysics(): void {
+    if (physicsRunning) return;
+    physicsStartGeo.clear();
+    stableTicks = 0;
+    for (const v of collectVertices().filter(isMovableObject)) {
+        const g = v.getGeometry();
+        if (g) physicsStartGeo.set(v, g.clone());
+    }
+    physicsSuppressUndo = true;     // les ticks ne créent aucun état
+    physicsRunning = true;
+    setPhysicsButtonActive(true);
+    physicsRafId = requestAnimationFrame(physicsTick);
+}
+
+function stopPhysics(): void {
+    physicsRunning = false;
+    if (physicsRafId !== null) {
+        cancelAnimationFrame(physicsRafId);
+        physicsRafId = null;
+    }
+    setPhysicsButtonActive(false);
+
+    if (physicsStartGeo.size === 0) {
+        physicsSuppressUndo = false;
+        return;
+    }
+
+    // Positions finales atteintes
+    const finalGeo = new Map<Cell, Geometry>();
+    for (const cell of physicsStartGeo.keys()) {
+        const g = cell.getGeometry();
+        if (g) finalGeo.set(cell, g.clone());
+    }
+    // (a) revenir au départ SANS enregistrer (drapeau encore actif)
+    graph.batchUpdate(() => {
+        for (const [cell, g0] of physicsStartGeo) cell.setGeometry(g0.clone());
+    });
+    // (b) ré-appliquer le final EN enregistrant → un seul état undo
+    physicsSuppressUndo = false;
+    graph.batchUpdate(() => {
+        for (const [cell, g1] of finalGeo) cell.setGeometry(g1);
+        refreshParallelEdges();     // courbures incluses dans la même transaction
+    });
+    graph.refresh();
+    physicsStartGeo.clear();
+}
+
+document.getElementById('physics-btn')?.addEventListener('click', () => {
+    physicsEnabled = !physicsEnabled;
+    physicsEnabled ? startPhysics() : stopPhysics();
+});
+
+// Toute interaction manuelle (clic, déplacement) doit arrêter le moteur
+// physique au préalable : sinon physicsSuppressUndo, encore actif pendant
+// l'animation, avale aussi l'édition undo-able de l'utilisateur (le ctrl+Z
+// du déplacement manuel ne fonctionnait plus tant que la physique tournait).
+graph.addMouseListener({
+    mouseDown(_sender, _me) {
+        if (physicsRunning) stopPhysics();
+    },
+    mouseMove(_sender, _me) {
+    },
+    mouseUp(_sender, _me) {
+    },
+});
+
+//---------------------------------------------------------------------------
+// Arrière-plan de carte
+//---------------------------------------------------------------------------
+
+const BACKGROUND_ID = '__background__';
+
+function setBackground(image: string, w: number, h: number): void {
+    graph.batchUpdate(() => {
+        const parent = graph.getDefaultParent();
+        let bg = model.getCell(BACKGROUND_ID) as Cell | null;
+        if (bg) {
+            const style: AppCellStyle = bg.style ?? {};
+            style.image = image;
+            bg.style = style;
+            const geo = bg.getGeometry()?.clone();
+            if (geo) {
+                geo.width = w;
+                geo.height = h;
+                bg.setGeometry(geo);
+            }
+        } else {
+            bg = graph.insertVertex({
+                parent, id: BACKGROUND_ID, value: '', position: [0, 0], size: [w, h],
+                style: {shape: 'image', image, isBackground: true, editable: false} as AppCellStyle,
+            });
+        }
+        graph.orderCells(true, [bg!]);
+    });
+    graph.refresh();
+}
+
+function applyBackgroundFromSource(src: string): void {
+    const img = new Image();
+    img.onload = () => setBackground(src, img.naturalWidth, img.naturalHeight);
+    img.src = src;
+}
+
+function selectDefaultBackground(url: string): void {
+    applyBackgroundFromSource(url);
+}
+
+const backgroundMenu = document.getElementById('background-menu') as HTMLDivElement | null;
+
+document.getElementById('background-btn')?.addEventListener('click', (e) => {
+    if (!backgroundMenu) return;
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+
+    // position:absolute se positionne par rapport à l'ancêtre positionné
+    // (#editor, position:relative), pas par rapport au viewport. On ne peut
+    // pas utiliser backgroundMenu.offsetParent ici : il vaut null tant que
+    // le menu est display:none, soit précisément au moment de l'ouvrir.
+    const editorRect = document.getElementById('editor')?.getBoundingClientRect();
+    const offsetLeft = editorRect?.left ?? 0;
+    const offsetTop = editorRect?.top ?? 0;
+
+    backgroundMenu.style.left = `${rect.right - offsetLeft + 8}px`;
+    backgroundMenu.style.top = `${rect.top - offsetTop}px`;
+    backgroundMenu.style.display = backgroundMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+document.querySelectorAll<HTMLElement>('.background-thumb').forEach((thumb) => {
+    thumb.addEventListener('click', () => {
+        const url = thumb.dataset.url;
+        if (url) selectDefaultBackground(url);
+        if (backgroundMenu) backgroundMenu.style.display = 'none';
+    });
+});
+
+document.getElementById('background-input-btn')?.addEventListener('click', () => {
+    document.getElementById('background-input')?.click();
+});
+
+document.getElementById('background-input')?.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        applyBackgroundFromSource(reader.result as string);
+        if (backgroundMenu) backgroundMenu.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('background-remove-btn')?.addEventListener('click', () => {
+    const bg = model.getCell(BACKGROUND_ID) as Cell | null;
+    if (bg) graph.removeCells([bg], true);
+    if (backgroundMenu) backgroundMenu.style.display = 'none';
+});
+
+document.addEventListener('click', (event) => {
+    const target = event.target as globalThis.Node | null;
+    if (
+        backgroundMenu &&
+        !backgroundMenu.contains(target) &&
+        target !== document.getElementById('background-btn')
+    ) {
+        backgroundMenu.style.display = 'none';
+    }
+});

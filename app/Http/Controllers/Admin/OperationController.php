@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyOperationRequest;
 use App\Http\Requests\StoreOperationRequest;
 use App\Http\Requests\UpdateOperationRequest;
-use Gate;
 use App\Models\Activity;
 use App\Models\Actor;
+use App\Models\Cartographer;
 use App\Models\Operation;
 use App\Models\Process;
 use App\Models\Task;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class OperationController extends Controller
@@ -19,7 +20,7 @@ class OperationController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('operation_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Operation::class);
+        $allowedIds = Gate::allows('operation_access') ? null : Cartographer::allowedIdsFor($user, Operation::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -28,12 +29,12 @@ class OperationController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Operation::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.operations.index', compact('operations'));

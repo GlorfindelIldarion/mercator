@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict dlo9Zu4CGsfSzLIZ9VR2tYElKPWxfak59eZizHrgsGBO1oeL6Ns2gvNUCervyIC
+\restrict 8YavW6Hhb6N2I7BgX4UQOus86HcxGiCaz4nYxw9TCbbMw7qPRXFt799eXksVW8Q
 
 -- Dumped from database version 15.16 (Debian 15.16-0+deb12u1)
 -- Dumped by pg_dump version 15.16 (Debian 15.16-0+deb12u1)
@@ -38,7 +38,8 @@ CREATE TABLE public.activities (
     maximum_tolerable_data_loss integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -157,7 +158,8 @@ CREATE TABLE public.actors (
     contact character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -192,6 +194,16 @@ CREATE TABLE public.admin_user_application (
 
 
 --
+-- Name: admin_user_zone; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.admin_user_zone (
+    admin_user_id integer NOT NULL,
+    zone_id integer NOT NULL
+);
+
+
+--
 -- Name: admin_users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -207,7 +219,8 @@ CREATE TABLE public.admin_users (
     domain_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -243,7 +256,8 @@ CREATE TABLE public.annuaires (
     zone_admin_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -288,7 +302,8 @@ CREATE TABLE public.application_blocks (
     responsible character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -353,6 +368,16 @@ CREATE TABLE public.application_database (
 
 
 --
+-- Name: application_document; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.application_document (
+    application_id integer NOT NULL,
+    document_id integer NOT NULL
+);
+
+
+--
 -- Name: application_entity; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -372,7 +397,8 @@ CREATE TABLE public.application_events (
     application_id integer NOT NULL,
     message text NOT NULL,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -411,7 +437,8 @@ CREATE TABLE public.application_flows (
     nature character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -458,7 +485,8 @@ CREATE TABLE public.application_modules (
     deleted_at timestamp(0) without time zone,
     vendor character varying(255),
     product character varying(255),
-    version character varying(255)
+    version character varying(255),
+    ext_refs character varying(255)
 );
 
 
@@ -543,7 +571,8 @@ CREATE TABLE public.application_services (
     name character varying(255) NOT NULL,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -613,7 +642,8 @@ CREATE TABLE public.applications (
     security_need_auth integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -655,19 +685,42 @@ ALTER SEQUENCE public.audit_logs_id_seq OWNED BY public.audit_logs.id;
 
 
 --
+-- Name: backup_logical_server; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.backup_logical_server (
+    backup_id integer NOT NULL,
+    logical_server_id integer NOT NULL
+);
+
+
+--
+-- Name: backup_storage_device; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.backup_storage_device (
+    backup_id integer NOT NULL,
+    storage_device_id integer NOT NULL
+);
+
+
+--
 -- Name: backups; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.backups (
     id integer NOT NULL,
-    logical_server_id integer NOT NULL,
-    storage_device_id integer NOT NULL,
     backup_frequency smallint,
     backup_cycle smallint,
     backup_retention smallint,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    name character varying(255) NOT NULL,
+    type character varying(100),
+    attributes text,
+    description text,
+    ext_refs character varying(255)
 );
 
 
@@ -730,10 +783,12 @@ CREATE TABLE public.bays (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
     description text,
-    room_id integer,
+    building_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255),
+    site_id integer
 );
 
 
@@ -758,6 +813,16 @@ ALTER SEQUENCE public.bays_id_seq OWNED BY public.bays.id;
 
 
 --
+-- Name: building_zone; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.building_zone (
+    building_id integer NOT NULL,
+    zone_id integer NOT NULL
+);
+
+
+--
 -- Name: buildings; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -772,7 +837,8 @@ CREATE TABLE public.buildings (
     icon_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -794,6 +860,41 @@ CREATE SEQUENCE public.buildings_id_seq
 --
 
 ALTER SEQUENCE public.buildings_id_seq OWNED BY public.buildings.id;
+
+
+--
+-- Name: cartographers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.cartographers (
+    id bigint NOT NULL,
+    cartographiable_type character varying(255) NOT NULL,
+    cartographiable_id bigint NOT NULL,
+    user_id integer,
+    role_id integer,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: cartographers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.cartographers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: cartographers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.cartographers_id_seq OWNED BY public.cartographers.id;
 
 
 --
@@ -821,7 +922,8 @@ CREATE TABLE public.certificates (
     last_notification timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -889,7 +991,8 @@ CREATE TABLE public.clusters (
     address_ip character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -945,7 +1048,8 @@ CREATE TABLE public.containers (
     icon_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1092,7 +1196,8 @@ CREATE TABLE public.data_processing (
     data_collection_obligation text,
     data_subject_rights text,
     automated_decision_making text,
-    update_date date
+    update_date date,
+    ext_refs character varying(255)
 );
 
 
@@ -1196,7 +1301,8 @@ CREATE TABLE public.databases (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
     deleted_at timestamp(0) without time zone,
-    icon_id integer
+    icon_id integer,
+    ext_refs character varying(255)
 );
 
 
@@ -1231,7 +1337,8 @@ CREATE TABLE public.dhcp_servers (
     address_ip character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1266,7 +1373,8 @@ CREATE TABLE public.dnsservers (
     address_ip character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1332,7 +1440,8 @@ CREATE TABLE public.documents (
     hash character varying(255) NOT NULL,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1380,7 +1489,8 @@ CREATE TABLE public.domains (
     relation_inter_domaine character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1423,7 +1533,8 @@ CREATE TABLE public.entities (
     external_ref_id character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1486,7 +1597,8 @@ CREATE TABLE public.external_connected_entities (
     contacts character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1570,7 +1682,8 @@ CREATE TABLE public.forest_ads (
     zone_admin_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1606,7 +1719,8 @@ CREATE TABLE public.gateways (
     authentification character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1687,7 +1801,10 @@ CREATE TABLE public.information (
     security_need_auth integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255),
+    type character varying(255),
+    attributes character varying(255)
 );
 
 
@@ -1732,6 +1849,40 @@ CREATE TABLE public.information_process (
 
 
 --
+-- Name: jobs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.jobs (
+    id bigint NOT NULL,
+    queue character varying(255) NOT NULL,
+    payload text NOT NULL,
+    attempts smallint NOT NULL,
+    reserved_at integer,
+    available_at integer NOT NULL,
+    created_at integer NOT NULL
+);
+
+
+--
+-- Name: jobs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.jobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: jobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.jobs_id_seq OWNED BY public.jobs.id;
+
+
+--
 -- Name: lan_man; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1761,7 +1912,8 @@ CREATE TABLE public.lans (
     description character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1825,7 +1977,10 @@ CREATE TABLE public.logical_flows (
     security_device_source_id integer,
     security_device_dest_id integer,
     cluster_source_id integer,
-    cluster_dest_id integer
+    cluster_dest_id integer,
+    ext_refs character varying(255),
+    type character varying(255),
+    attributes character varying(255)
 );
 
 
@@ -1887,7 +2042,8 @@ CREATE TABLE public.logical_servers (
     active boolean,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -1968,7 +2124,8 @@ CREATE TABLE public.macro_processuses (
     owner character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2013,7 +2170,8 @@ CREATE TABLE public.mans (
     updated_at timestamp(0) without time zone,
     deleted_at timestamp(0) without time zone,
     description text,
-    parent_man_id integer
+    parent_man_id integer,
+    ext_refs character varying(255)
 );
 
 
@@ -2156,7 +2314,8 @@ CREATE TABLE public.network_switches (
     description text,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2198,7 +2357,10 @@ CREATE TABLE public.networks (
     security_need_auth integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255),
+    type character varying(255),
+    attributes character varying(255)
 );
 
 
@@ -2372,7 +2534,8 @@ CREATE TABLE public.operations (
     process_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2394,6 +2557,38 @@ CREATE SEQUENCE public.operations_id_seq
 --
 
 ALTER SEQUENCE public.operations_id_seq OWNED BY public.operations.id;
+
+
+--
+-- Name: parameters; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.parameters (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL,
+    value text,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: parameters_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.parameters_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: parameters_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.parameters_id_seq OWNED BY public.parameters.id;
 
 
 --
@@ -2429,7 +2624,8 @@ CREATE TABLE public.peripherals (
     provider_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2472,7 +2668,8 @@ CREATE TABLE public.permissions (
     title character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    module character varying(255)
+    module character varying(255),
+    ext_refs character varying(255)
 );
 
 
@@ -2514,7 +2711,8 @@ CREATE TABLE public.phones (
     address_ip character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2574,7 +2772,10 @@ CREATE TABLE public.physical_links (
     updated_at timestamp(0) without time zone,
     deleted_at timestamp(0) without time zone,
     type character varying(255),
-    color character varying(255)
+    color character varying(255),
+    ext_refs character varying(255),
+    attributes character varying(255),
+    description text
 );
 
 
@@ -2635,7 +2836,8 @@ CREATE TABLE public.physical_routers (
     version character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2686,7 +2888,8 @@ CREATE TABLE public.physical_security_devices (
     attributes character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2742,7 +2945,8 @@ CREATE TABLE public.physical_servers (
     next_update date,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2784,7 +2988,8 @@ CREATE TABLE public.physical_switches (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
     deleted_at timestamp(0) without time zone,
-    icon_id integer
+    icon_id integer,
+    ext_refs character varying(255)
 );
 
 
@@ -2827,7 +3032,8 @@ CREATE TABLE public.processes (
     macroprocess_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2891,7 +3097,8 @@ CREATE TABLE public.relations (
     security_need_auth integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -2971,7 +3178,8 @@ CREATE TABLE public.routers (
     ip_addresses text,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3050,7 +3258,8 @@ CREATE TABLE public.security_controls (
     description text,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3091,7 +3300,8 @@ CREATE TABLE public.security_devices (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
     deleted_at timestamp(0) without time zone,
-    address_ip character varying(255)
+    address_ip character varying(255),
+    ext_refs character varying(255)
 );
 
 
@@ -3126,7 +3336,10 @@ CREATE TABLE public.sites (
     description text,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255),
+    type character varying(255),
+    attributes character varying(255)
 );
 
 
@@ -3168,7 +3381,8 @@ CREATE TABLE public.storage_devices (
     address_ip character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3214,7 +3428,10 @@ CREATE TABLE public.subnetworks (
     subnetwork_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255),
+    type character varying(255),
+    attributes character varying(255)
 );
 
 
@@ -3248,7 +3465,8 @@ CREATE TABLE public.tasks (
     description text,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3323,7 +3541,8 @@ CREATE TABLE public.vlans (
     vlan_id integer,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3356,7 +3575,8 @@ CREATE TABLE public.wans (
     name character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3397,7 +3617,8 @@ CREATE TABLE public.wifi_terminals (
     address_ip character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3464,7 +3685,8 @@ CREATE TABLE public.workstations (
     fin_value numeric(12,2),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3498,7 +3720,8 @@ CREATE TABLE public.zone_admins (
     description text,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    deleted_at timestamp(0) without time zone
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
 );
 
 
@@ -3520,6 +3743,53 @@ CREATE SEQUENCE public.zone_admins_id_seq
 --
 
 ALTER SEQUENCE public.zone_admins_id_seq OWNED BY public.zone_admins.id;
+
+
+--
+-- Name: zone_zone; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.zone_zone (
+    zone_id integer NOT NULL,
+    related_zone_id integer NOT NULL
+);
+
+
+--
+-- Name: zones; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.zones (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    type character varying(255),
+    attributes character varying(255),
+    description text,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp(0) without time zone,
+    ext_refs character varying(255)
+);
+
+
+--
+-- Name: zones_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.zones_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: zones_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.zones_id_seq OWNED BY public.zones.id;
 
 
 --
@@ -3632,6 +3902,13 @@ ALTER TABLE ONLY public.bays ALTER COLUMN id SET DEFAULT nextval('public.bays_id
 --
 
 ALTER TABLE ONLY public.buildings ALTER COLUMN id SET DEFAULT nextval('public.buildings_id_seq'::regclass);
+
+
+--
+-- Name: cartographers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cartographers ALTER COLUMN id SET DEFAULT nextval('public.cartographers_id_seq'::regclass);
 
 
 --
@@ -3761,6 +4038,13 @@ ALTER TABLE ONLY public.information ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: jobs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jobs ALTER COLUMN id SET DEFAULT nextval('public.jobs_id_seq'::regclass);
+
+
+--
 -- Name: lans id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3835,6 +4119,13 @@ ALTER TABLE ONLY public.oauth_personal_access_clients ALTER COLUMN id SET DEFAUL
 --
 
 ALTER TABLE ONLY public.operations ALTER COLUMN id SET DEFAULT nextval('public.operations_id_seq'::regclass);
+
+
+--
+-- Name: parameters id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parameters ALTER COLUMN id SET DEFAULT nextval('public.parameters_id_seq'::regclass);
 
 
 --
@@ -4013,6 +4304,13 @@ ALTER TABLE ONLY public.zone_admins ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: zones id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.zones ALTER COLUMN id SET DEFAULT nextval('public.zones_id_seq'::regclass);
+
+
+--
 -- Name: activities activities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4045,19 +4343,19 @@ ALTER TABLE ONLY public.admin_user_application
 
 
 --
+-- Name: admin_user_zone admin_user_zone_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_user_zone
+    ADD CONSTRAINT admin_user_zone_pkey PRIMARY KEY (admin_user_id, zone_id);
+
+
+--
 -- Name: admin_users admin_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.admin_users
     ADD CONSTRAINT admin_users_pkey PRIMARY KEY (id);
-
-
---
--- Name: annuaires annuaires_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.annuaires
-    ADD CONSTRAINT annuaires_name_unique UNIQUE (name);
 
 
 --
@@ -4109,6 +4407,22 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
+-- Name: backup_logical_server backup_logical_server_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backup_logical_server
+    ADD CONSTRAINT backup_logical_server_pkey PRIMARY KEY (backup_id, logical_server_id);
+
+
+--
+-- Name: backup_storage_device backup_storage_device_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backup_storage_device
+    ADD CONSTRAINT backup_storage_device_pkey PRIMARY KEY (backup_id, storage_device_id);
+
+
+--
 -- Name: backups backups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4125,11 +4439,27 @@ ALTER TABLE ONLY public.bays
 
 
 --
+-- Name: building_zone building_zone_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.building_zone
+    ADD CONSTRAINT building_zone_pkey PRIMARY KEY (building_id, zone_id);
+
+
+--
 -- Name: buildings buildings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.buildings
     ADD CONSTRAINT buildings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cartographers cartographers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cartographers
+    ADD CONSTRAINT cartographers_pkey PRIMARY KEY (id);
 
 
 --
@@ -4381,6 +4711,14 @@ ALTER TABLE ONLY public.information
 
 
 --
+-- Name: jobs jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jobs
+    ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: lans lans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4546,6 +4884,22 @@ ALTER TABLE ONLY public.oauth_refresh_tokens
 
 ALTER TABLE ONLY public.operations
     ADD CONSTRAINT operations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: parameters parameters_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parameters
+    ADD CONSTRAINT parameters_name_unique UNIQUE (name);
+
+
+--
+-- Name: parameters parameters_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parameters
+    ADD CONSTRAINT parameters_pkey PRIMARY KEY (id);
 
 
 --
@@ -4757,6 +5111,30 @@ ALTER TABLE ONLY public.zone_admins
 
 
 --
+-- Name: zone_zone zone_zone_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.zone_zone
+    ADD CONSTRAINT zone_zone_pkey PRIMARY KEY (zone_id, related_zone_id);
+
+
+--
+-- Name: zones zones_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.zones
+    ADD CONSTRAINT zones_name_unique UNIQUE (name, deleted_at);
+
+
+--
+-- Name: zones zones_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.zones
+    ADD CONSTRAINT zones_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: activity_id_fk_1472704; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4810,6 +5188,13 @@ CREATE INDEX application_dest_fk_1485549 ON public.application_flows USING btree
 --
 
 CREATE INDEX application_id_fk_0394834858 ON public.activity_application USING btree (application_id);
+
+
+--
+-- Name: application_id_fk_7812341; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX application_id_fk_7812341 ON public.application_document USING btree (application_id);
 
 
 --
@@ -4957,6 +5342,27 @@ CREATE INDEX building_fk_1485518 ON public.physical_security_devices USING btree
 --
 
 CREATE INDEX building_id_fk_94821232 ON public.buildings USING btree (building_id);
+
+
+--
+-- Name: cartographers_cartographiable_type_cartographiable_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX cartographers_cartographiable_type_cartographiable_id_index ON public.cartographers USING btree (cartographiable_type, cartographiable_id);
+
+
+--
+-- Name: cartographers_role_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX cartographers_role_id_index ON public.cartographers USING btree (role_id);
+
+
+--
+-- Name: cartographers_user_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX cartographers_user_id_index ON public.cartographers USING btree (user_id);
 
 
 --
@@ -5205,6 +5611,13 @@ CREATE INDEX document_id_fk_5938654 ON public.processes USING btree (icon_id);
 
 
 --
+-- Name: document_id_fk_7812342; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX document_id_fk_7812342 ON public.application_document USING btree (document_id);
+
+
+--
 -- Name: document_idx_434934839; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5342,6 +5755,13 @@ CREATE INDEX information_id_fk_4384483 ON public.data_processing_information USI
 --
 
 CREATE INDEX is_external ON public.entities USING btree (is_external);
+
+
+--
+-- Name: jobs_queue_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX jobs_queue_index ON public.jobs USING btree (queue);
 
 
 --
@@ -5971,7 +6391,7 @@ CREATE INDEX role_id_fk_1470803 ON public.role_user USING btree (role_id);
 -- Name: room_fk_1483441; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX room_fk_1483441 ON public.bays USING btree (room_id);
+CREATE INDEX room_fk_1483441 ON public.bays USING btree (building_id);
 
 
 --
@@ -6126,6 +6546,13 @@ CREATE INDEX site_fk_1485507 ON public.wifi_terminals USING btree (site_id);
 --
 
 CREATE INDEX site_fk_1485517 ON public.physical_security_devices USING btree (site_id);
+
+
+--
+-- Name: site_id_fk_1483442; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX site_id_fk_1483442 ON public.bays USING btree (site_id);
 
 
 --
@@ -6341,6 +6768,22 @@ ALTER TABLE ONLY public.admin_user_application
 
 
 --
+-- Name: admin_user_zone admin_user_zone_admin_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_user_zone
+    ADD CONSTRAINT admin_user_zone_admin_user_id_foreign FOREIGN KEY (admin_user_id) REFERENCES public.admin_users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: admin_user_zone admin_user_zone_zone_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_user_zone
+    ADD CONSTRAINT admin_user_zone_zone_id_foreign FOREIGN KEY (zone_id) REFERENCES public.zones(id) ON DELETE CASCADE;
+
+
+--
 -- Name: application_application_service application_application_service_application_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6426,6 +6869,14 @@ ALTER TABLE ONLY public.application_flow_information
 
 ALTER TABLE ONLY public.application_flow_information
     ADD CONSTRAINT application_flow_information_information_id_foreign FOREIGN KEY (information_id) REFERENCES public.information(id) ON DELETE CASCADE;
+
+
+--
+-- Name: application_document application_id_fk_7812341; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.application_document
+    ADD CONSTRAINT application_id_fk_7812341 FOREIGN KEY (application_id) REFERENCES public.applications(id) ON DELETE CASCADE;
 
 
 --
@@ -6533,19 +6984,35 @@ ALTER TABLE ONLY public.application_workstation
 
 
 --
--- Name: backups backups_logical_server_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: backup_logical_server backup_logical_server_backup_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.backups
-    ADD CONSTRAINT backups_logical_server_id_foreign FOREIGN KEY (logical_server_id) REFERENCES public.logical_servers(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.backup_logical_server
+    ADD CONSTRAINT backup_logical_server_backup_id_foreign FOREIGN KEY (backup_id) REFERENCES public.backups(id) ON DELETE CASCADE;
 
 
 --
--- Name: backups backups_storage_device_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: backup_logical_server backup_logical_server_logical_server_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.backups
-    ADD CONSTRAINT backups_storage_device_id_foreign FOREIGN KEY (storage_device_id) REFERENCES public.storage_devices(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.backup_logical_server
+    ADD CONSTRAINT backup_logical_server_logical_server_id_foreign FOREIGN KEY (logical_server_id) REFERENCES public.logical_servers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: backup_storage_device backup_storage_device_backup_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backup_storage_device
+    ADD CONSTRAINT backup_storage_device_backup_id_foreign FOREIGN KEY (backup_id) REFERENCES public.backups(id) ON DELETE CASCADE;
+
+
+--
+-- Name: backup_storage_device backup_storage_device_storage_device_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backup_storage_device
+    ADD CONSTRAINT backup_storage_device_storage_device_id_foreign FOREIGN KEY (storage_device_id) REFERENCES public.storage_devices(id) ON DELETE CASCADE;
 
 
 --
@@ -6602,6 +7069,14 @@ ALTER TABLE ONLY public.physical_security_devices
 
 ALTER TABLE ONLY public.bay_wifi_terminal
     ADD CONSTRAINT bay_id_fk_1485509 FOREIGN KEY (bay_id) REFERENCES public.bays(id) ON DELETE CASCADE;
+
+
+--
+-- Name: bays building_fk_1483441; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bays
+    ADD CONSTRAINT building_fk_1483441 FOREIGN KEY (building_id) REFERENCES public.buildings(id);
 
 
 --
@@ -6677,11 +7152,43 @@ ALTER TABLE ONLY public.physical_security_devices
 
 
 --
+-- Name: building_zone building_zone_building_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.building_zone
+    ADD CONSTRAINT building_zone_building_id_foreign FOREIGN KEY (building_id) REFERENCES public.buildings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: building_zone building_zone_zone_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.building_zone
+    ADD CONSTRAINT building_zone_zone_id_foreign FOREIGN KEY (zone_id) REFERENCES public.zones(id) ON DELETE CASCADE;
+
+
+--
 -- Name: buildings buildings_building_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.buildings
     ADD CONSTRAINT buildings_building_id_foreign FOREIGN KEY (building_id) REFERENCES public.buildings(id) ON DELETE SET NULL;
+
+
+--
+-- Name: cartographers cartographers_role_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cartographers
+    ADD CONSTRAINT cartographers_role_id_foreign FOREIGN KEY (role_id) REFERENCES public.roles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cartographers cartographers_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cartographers
+    ADD CONSTRAINT cartographers_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -7042,6 +7549,14 @@ ALTER TABLE ONLY public.document_relation
 
 ALTER TABLE ONLY public.processes
     ADD CONSTRAINT document_id_fk_5938654 FOREIGN KEY (icon_id) REFERENCES public.documents(id);
+
+
+--
+-- Name: application_document document_id_fk_7812342; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.application_document
+    ADD CONSTRAINT document_id_fk_7812342 FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
@@ -7845,14 +8360,6 @@ ALTER TABLE ONLY public.role_user
 
 
 --
--- Name: bays room_fk_1483441; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.bays
-    ADD CONSTRAINT room_fk_1483441 FOREIGN KEY (room_id) REFERENCES public.buildings(id);
-
-
---
 -- Name: physical_links router_dest_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8026,6 +8533,14 @@ ALTER TABLE ONLY public.wifi_terminals
 
 ALTER TABLE ONLY public.physical_security_devices
     ADD CONSTRAINT site_fk_1485517 FOREIGN KEY (site_id) REFERENCES public.sites(id);
+
+
+--
+-- Name: bays site_id_fk_1483442; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bays
+    ADD CONSTRAINT site_id_fk_1483442 FOREIGN KEY (site_id) REFERENCES public.sites(id);
 
 
 --
@@ -8213,16 +8728,32 @@ ALTER TABLE ONLY public.forest_ads
 
 
 --
+-- Name: zone_zone zone_zone_related_zone_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.zone_zone
+    ADD CONSTRAINT zone_zone_related_zone_id_foreign FOREIGN KEY (related_zone_id) REFERENCES public.zones(id) ON DELETE CASCADE;
+
+
+--
+-- Name: zone_zone zone_zone_zone_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.zone_zone
+    ADD CONSTRAINT zone_zone_zone_id_foreign FOREIGN KEY (zone_id) REFERENCES public.zones(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dlo9Zu4CGsfSzLIZ9VR2tYElKPWxfak59eZizHrgsGBO1oeL6Ns2gvNUCervyIC
+\unrestrict 8YavW6Hhb6N2I7BgX4UQOus86HcxGiCaz4nYxw9TCbbMw7qPRXFt799eXksVW8Q
 
 --
 -- PostgreSQL database dump
 --
 
-\restrict W305QXlYtSkbFvFcleYrleNR5JUxgH6RRxdlLbp7itNZJtEbCxufiMI4feyCFdr
+\restrict 4gJEHlDiF6fj2G9IEie3U4nGEs4p4owUzVxauWQ6vwkhxlIDpqDwPiJzJxbrao8
 
 -- Dumped from database version 15.16 (Debian 15.16-0+deb12u1)
 -- Dumped by pg_dump version 15.16 (Debian 15.16-0+deb12u1)
@@ -8505,6 +9036,22 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 264	2026_05_07_215942_rename_fluxes_to_application_flows	8
 265	2026_05_08_120804_rename_flux_information_to_application_flow_information	8
 266	2026_05_08_212557_rename_domaines_to_domains	8
+267	2026_05_11_000001_create_parameters_table	9
+268	2026_05_12_113635_drop_unique_name_from_annuaires	9
+269	2026_05_12_150000_create_zones_table	9
+270	2026_05_12_150001_add_zone_permissions	9
+271	2026_05_20_000000_restructure_backups_table	9
+272	2026_05_31_000000_create_cartographers_table	9
+273	2026_05_31_000001_rename_irregular_permissions	9
+274	2026_06_04_090735_create_jobs_table	9
+275	2026_06_07_094101_add_soft_deletes_to_cartographers_table	9
+276	2026_06_11_000000_create_application_document_table	9
+277	2026_06_18_000000_add_ext_refs_to_mapped_objects	9
+278	2026_06_21_000000_move_mercator_config_to_parameters	9
+279	2026_06_22_000000_rename_room_id_to_building_id_in_bays	9
+280	2026_06_22_000001_add_type_and_attributes_columns	9
+281	2026_06_22_000002_add_description_and_attributes_to_physical_links	9
+282	2026_06_28_000000_drop_unique_name_from_backups_table	9
 \.
 
 
@@ -8512,12 +9059,12 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 -- Name: migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.migrations_id_seq', 266, true);
+SELECT pg_catalog.setval('public.migrations_id_seq', 282, true);
 
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict W305QXlYtSkbFvFcleYrleNR5JUxgH6RRxdlLbp7itNZJtEbCxufiMI4feyCFdr
+\unrestrict 4gJEHlDiF6fj2G9IEie3U4nGEs4p4owUzVxauWQ6vwkhxlIDpqDwPiJzJxbrao8
 

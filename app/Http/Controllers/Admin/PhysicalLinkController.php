@@ -43,7 +43,7 @@ class PhysicalLinkController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (PhysicalLink::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                     $nameRelations = [
                         'peripheralSrc', 'phoneSrc', 'physicalRouterSrc', 'physicalSecurityDeviceSrc',
@@ -54,7 +54,7 @@ class PhysicalLinkController extends Controller
                         'workstationDest', 'routerDest', 'networkSwitchDest', 'logicalServerDest',
                     ];
                     foreach ($nameRelations as $relation) {
-                        $q->orWhereHas($relation, fn ($r) => $r->where('name', 'like', "%{$search}%"));
+                        $q->orWhereHas($relation, fn ($r) => $r->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($search).'%']));
                     }
                 });
             })

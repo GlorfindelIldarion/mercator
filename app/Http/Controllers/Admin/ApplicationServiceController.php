@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyApplicationServiceRequest;
 use App\Http\Requests\StoreApplicationServiceRequest;
 use App\Http\Requests\UpdateApplicationServiceRequest;
+use App\Models\Application;
 use App\Models\ApplicationModule;
 use App\Models\ApplicationService;
-use App\Models\Application;
+use App\Models\Cartographer;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,22 +18,21 @@ class ApplicationServiceController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('application_service_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\ApplicationService::class);
+        $allowedIds = Gate::allows('application_service_access') ? null : Cartographer::allowedIdsFor($user, ApplicationService::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $applicationServices = ApplicationService::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (ApplicationService::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (ApplicationService::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.applicationServices.index', compact('applicationServices'));
     }

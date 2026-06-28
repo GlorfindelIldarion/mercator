@@ -6,14 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\Cartographer;
+use App\Models\Permission;
+use App\Models\Role;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Models\Cartographer;
-use App\Models\Permission;
-use App\Models\Role;
 use Symfony\Component\HttpFoundation\Response;
 
 class RolesController extends Controller
@@ -52,7 +52,7 @@ class RolesController extends Controller
     {
         abort_if(Gate::denies('role_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $roles  = Role::withCount('users')
+        $roles = Role::withCount('users')
             ->with('cartographerEntries.cartographiable')
             ->orderBy('id')
             ->get();
@@ -112,7 +112,7 @@ class RolesController extends Controller
         $permissions_sorted = $this->getSortedPerms($permissions);
 
         $role->load('permissions');
-        $cartographers       = $role->cartographerEntries()->with('cartographiable')->orderBy('cartographiable_type')->get();
+        $cartographers = $role->cartographerEntries()->with('cartographiable')->orderBy('cartographiable_type')->get();
         $cartographiableModels = Cartographer::cartographiableModelsList();
 
         return view('admin.roles.edit', compact('permissions_sorted', 'role', 'cartographers', 'cartographiableModels'));
@@ -139,7 +139,7 @@ class RolesController extends Controller
         $permissions = Permission::all()->sortBy('title')->pluck('title', 'id');
         $permissions_sorted = $this->getSortedPerms($permissions);
         $role->load('permissions');
-        $cartographers       = $role->cartographerEntries()->with('cartographiable')->orderBy('cartographiable_type')->get();
+        $cartographers = $role->cartographerEntries()->with('cartographiable')->orderBy('cartographiable_type')->get();
         $cartographiableModels = Cartographer::cartographiableModelsList();
 
         return view('admin.roles.show', compact('permissions_sorted', 'role', 'cartographers', 'cartographiableModels'));

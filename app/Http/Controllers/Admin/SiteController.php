@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroySiteRequest;
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
+use App\Models\Cartographer;
 use App\Models\Site;
 use App\Services\IconUploadService;
 use Gate;
@@ -19,7 +20,7 @@ class SiteController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('site_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Site::class);
+        $allowedIds = Gate::allows('site_access') ? null : Cartographer::allowedIdsFor($user, Site::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -28,12 +29,12 @@ class SiteController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Site::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.sites.index', compact('sites'));

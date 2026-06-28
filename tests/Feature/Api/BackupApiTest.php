@@ -78,6 +78,65 @@ it('links a backup to a logical server and a storage device via API', function (
 });
 
 // ============================================================
+// Unicité du champ name (éléments non supprimés seulement)
+// ============================================================
+
+it('rejects a store with a name already used by an active backup', function () {
+    Backup::factory()->create(['name' => 'BACKUP-HEBDO']);
+
+    $this->postJson('/api/backups', [
+        'name'             => 'BACKUP-HEBDO',
+        'backup_frequency' => 1,
+        'backup_cycle'     => 1,
+        'backup_retention' => 30,
+    ])->assertUnprocessable()
+      ->assertJsonValidationErrors(['name']);
+});
+
+it('allows creating a backup with the name of a soft-deleted backup', function () {
+    $deleted = Backup::factory()->create(['name' => 'BACKUP-HEBDO']);
+    $deleted->delete();
+
+    $this->postJson('/api/backups', [
+        'name'             => 'BACKUP-HEBDO',
+        'backup_frequency' => 2,
+        'backup_cycle'     => 2,
+        'backup_retention' => 35,
+    ])->assertCreated();
+
+    expect(Backup::where('name', 'BACKUP-HEBDO')->count())->toBe(1);
+});
+
+it('rejects an update with a name already used by another active backup', function () {
+    Backup::factory()->create(['name' => 'BACKUP-A']);
+    $b = Backup::factory()->create(['name' => 'BACKUP-B']);
+
+    $this->putJson("/api/backups/{$b->id}", [
+        'name'             => 'BACKUP-A',
+        'backup_frequency' => 1,
+        'backup_cycle'     => 1,
+        'backup_retention' => 30,
+    ])->assertUnprocessable()
+      ->assertJsonValidationErrors(['name']);
+});
+
+it('allows updating a backup with the name of a soft-deleted backup', function () {
+    $deleted = Backup::factory()->create(['name' => 'BACKUP-OLD']);
+    $deleted->delete();
+
+    $b = Backup::factory()->create(['name' => 'BACKUP-B']);
+
+    $this->putJson("/api/backups/{$b->id}", [
+        'name'             => 'BACKUP-OLD',
+        'backup_frequency' => 1,
+        'backup_cycle'     => 1,
+        'backup_retention' => 30,
+    ])->assertOk();
+
+    expect($b->fresh()->name)->toBe('BACKUP-OLD');
+});
+
+// ============================================================
 // L'update via l'interface admin doit synchroniser les backups
 // ============================================================
 

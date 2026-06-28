@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyZoneAdminRequest;
 use App\Http\Requests\StoreZoneAdminRequest;
 use App\Http\Requests\UpdateZoneAdminRequest;
+use App\Models\Cartographer;
 use App\Models\ZoneAdmin;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,22 +16,21 @@ class ZoneAdminController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('zone_admin_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\ZoneAdmin::class);
+        $allowedIds = Gate::allows('zone_admin_access') ? null : Cartographer::allowedIdsFor($user, ZoneAdmin::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $zoneAdmins = ZoneAdmin::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (ZoneAdmin::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (ZoneAdmin::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.zoneAdmins.index', compact('zoneAdmins'));
     }

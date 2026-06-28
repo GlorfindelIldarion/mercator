@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cartographer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class GlobalSearchController extends Controller
@@ -70,23 +71,33 @@ class GlobalSearchController extends Controller
 
         $searchableData = [];
 
-        if (($term === null) || (strlen($term) < 3)) {
+        if (($term === null) || (mb_strlen($term) < 3)) {
             return view('admin.search', compact('searchableData'));
         }
+
+        $driver = DB::connection()->getDriverName();
 
         foreach ($this->models as $model => $translation) {
             $modelClass = 'App\\Models\\'.$model;
 
             $fields = property_exists($modelClass, 'searchable') ? $modelClass::$searchable : [];
 
-            if (empty($fields))
+            if (empty($fields)) {
                 continue;
+            }
 
-            $escaped = $this->escapeLike($term);
+            $escaped = mb_strtolower($this->escapeLike($term));
             $results = Cartographer::scopedQueryByClass($modelClass)
-                ->where(function ($q) use ($fields, $escaped) {
+                ->where(function ($q) use ($fields, $escaped, $driver) {
                     foreach ($fields as $field) {
-                        $q->orWhere($field, 'LIKE', '%'.$escaped.'%');
+                        // SQLite n'a aucun caractère d'échappement LIKE par défaut :
+                        // il faut le déclarer. MySQL/MariaDB/PostgreSQL utilisent '\'
+                        // par défaut, inutile de le répéter.
+                        $sql = 'LOWER('.$field.') LIKE ?';
+                        if ($driver === 'sqlite') {
+                            $sql .= " ESCAPE '\\'";
+                        }
+                        $q->orWhereRaw($sql, ['%'.$escaped.'%']);
                     }
                 })
                 ->take(100)
@@ -99,13 +110,13 @@ class GlobalSearchController extends Controller
 
             foreach ($results as $result) {
                 $searchableData[] = [
-                    'instance'       => $result,
-                    'data'           => $result->only($fields),
-                    'model'          => $model,
-                    'name'           => trans($translation),
-                    'fields'         => $fields,
+                    'instance' => $result,
+                    'data' => $result->only($fields),
+                    'model' => $model,
+                    'name' => trans($translation),
+                    'fields' => $fields,
                     'fields_formated' => $formattedFields,
-                    'url'            => '/admin/'.Str::plural(Str::snake($model, '-')).'/'.$result->getKey(),
+                    'url' => '/admin/'.Str::plural(Str::snake($model, '-')).'/'.$result->getKey(),
                 ];
             }
         }
@@ -115,7 +126,8 @@ class GlobalSearchController extends Controller
 
     private function escapeLike(string $value): string
     {
-        return addcslashes($value, '%_\\');
+        // '=' comme caractère d'échappement (neutre dans les littéraux SQL des 4 moteurs).
+        // Le caractère d'échappement lui-même doit être échappé en premier.
+        return str_replace(['=', '%', '_'], ['==', '=%', '=_'], $value);
     }
-
 }

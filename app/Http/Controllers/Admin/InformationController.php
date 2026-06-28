@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyInformationRequest;
 use App\Http\Requests\StoreInformationRequest;
 use App\Http\Requests\UpdateInformationRequest;
-use Gate;
+use App\Models\Cartographer;
 use App\Models\Information;
 use App\Models\Process;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class InformationController extends Controller
@@ -16,24 +17,22 @@ class InformationController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('information_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Information::class);
+        $allowedIds = Gate::allows('information_access') ? null : Cartographer::allowedIdsFor($user, Information::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $information = Information::query()
-            ->with('parents','children')
-            
-        ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Information::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+            ->with('parents', 'children')
+            ->when(request('search'), function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    foreach (Information::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.information.index', compact('information'));
     }

@@ -9,7 +9,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Actor;
 use App\Models\Annuaire;
+use App\Models\Application;
 use App\Models\ApplicationBlock;
+use App\Models\ApplicationFlow;
 use App\Models\ApplicationModule;
 use App\Models\ApplicationService;
 use App\Models\Bay;
@@ -23,7 +25,6 @@ use App\Models\Dnsserver;
 use App\Models\Domain;
 use App\Models\Entity;
 use App\Models\ExternalConnectedEntity;
-use App\Models\ApplicationFlow;
 use App\Models\ForestAd;
 use App\Models\Gateway;
 use App\Models\Information;
@@ -31,7 +32,6 @@ use App\Models\Lan;
 use App\Models\LogicalServer;
 use App\Models\MacroProcessus;
 use App\Models\Man;
-use App\Models\Application;
 use App\Models\Network;
 use App\Models\NetworkSwitch;
 use App\Models\Operation;
@@ -61,7 +61,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\Element\Section;
 use PhpOffice\PhpWord\Element\Table;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\Shared\Html;
+use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\SimpleType\JcTable;
 use Symfony\Component\HttpFoundation\Response;
 
 class CartographyController extends Controller
@@ -92,8 +97,8 @@ class CartographyController extends Controller
         $vues = $request->input('vues', []);
 
         // get template
-        $phpWord = new \PhpOffice\PhpWord\PhpWord;
-        \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
+        $phpWord = new PhpWord;
+        Settings::setOutputEscapingEnabled(true);
         $phpWord->getSettings()->setHideGrammaticalErrors(true);
         $phpWord->getSettings()->setHideSpellingErrors(true);
 
@@ -144,7 +149,7 @@ class CartographyController extends Controller
 
         // Add footer
         $footer = $section->addFooter();
-        $footer->addPreserveText('{PAGE} / {NUMPAGES}', ['size' => 8], ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
+        $footer->addPreserveText('{PAGE} / {NUMPAGES}', ['size' => 8], ['alignment' => Jc::CENTER]);
 
         // ====================
         // ==== Ecosystème ====
@@ -2451,7 +2456,7 @@ class CartographyController extends Controller
         $filepath = storage_path('app/reports/cartographie-'.Carbon::today()->format('Ymd').'.docx');
 
         // Saving the document as Word2007 file.
-        $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($filepath);
 
         // unlink the images
@@ -2470,7 +2475,7 @@ class CartographyController extends Controller
                 'borderSize' => 2,
                 'borderColor' => '006699',
                 'cellMargin' => 80,
-                'alignment' => \PhpOffice\PhpWord\SimpleType\JcTable::CENTER,
+                'alignment' => JcTable::CENTER,
             ]
         );
         $table->addRow();
@@ -2496,7 +2501,7 @@ class CartographyController extends Controller
         $table->addRow();
         $table->addCell(2000)->addText($title, CartographyController::FANCY_LEFT_TABLE_CELL_STYLE, CartographyController::NO_SPACE);
         try {
-            \PhpOffice\PhpWord\Shared\Html::addHtml($table->addCell(6000), str_replace('<br>', '<br/>', $value));
+            Html::addHtml($table->addCell(6000), str_replace('<br>', '<br/>', $value));
         } catch (\Exception $e) {
             Log::error('CartographyController - Invalid HTML '.$value);
         }

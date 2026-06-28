@@ -6,40 +6,39 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyDatabaseRequest;
 use App\Http\Requests\StoreDatabaseRequest;
 use App\Http\Requests\UpdateDatabaseRequest;
-use App\Services\IconUploadService;
-use Gate;
+use App\Models\Application;
+use App\Models\Cartographer;
 use App\Models\Container;
 use App\Models\Database;
 use App\Models\Entity;
 use App\Models\Information;
 use App\Models\LogicalServer;
-use App\Models\Application;
+use App\Services\IconUploadService;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class DatabaseController extends Controller
 {
-
     public function __construct(private readonly IconUploadService $iconUploadService) {}
 
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('database_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Database::class);
+        $allowedIds = Gate::allows('database_access') ? null : Cartographer::allowedIdsFor($user, Database::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $databases = Database::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Database::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (Database::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.databases.index', compact('databases'));
     }

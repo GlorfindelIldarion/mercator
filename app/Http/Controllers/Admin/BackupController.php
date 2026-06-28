@@ -7,6 +7,7 @@ use App\Http\Requests\MassDestroyBackupRequest;
 use App\Http\Requests\StoreBackupRequest;
 use App\Http\Requests\UpdateBackupRequest;
 use App\Models\Backup;
+use App\Models\Cartographer;
 use App\Models\LogicalServer;
 use App\Models\StorageDevice;
 use Gate;
@@ -17,23 +18,21 @@ class BackupController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('backup_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Backup::class);
+        $allowedIds = Gate::allows('backup_access') ? null : Cartographer::allowedIdsFor($user, Backup::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $backups = Backup::with('logicalServers', 'storageDevices')
-            
-        ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Backup::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+            ->when(request('search'), function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    foreach (Backup::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.backups.index', compact('backups'));
     }
@@ -44,9 +43,8 @@ class BackupController extends Controller
 
         $logicalServers = LogicalServer::query()->orderBy('name')->pluck('name', 'id');
         $storageDevices = StorageDevice::query()->orderBy('name')->pluck('name', 'id');
-        $type_list      = Backup::query()->select('type')->whereNotNull('type')->distinct()->orderBy('type')->pluck('type');
+        $type_list = Backup::query()->select('type')->whereNotNull('type')->distinct()->orderBy('type')->pluck('type');
         $attributes_list = $this->getAttributes();
-
 
         return view('admin.backups.create',
             compact(
@@ -74,7 +72,7 @@ class BackupController extends Controller
 
         $logicalServers = LogicalServer::query()->orderBy('name')->pluck('name', 'id');
         $storageDevices = StorageDevice::query()->orderBy('name')->pluck('name', 'id');
-        $type_list      = Backup::query()->select('type')->whereNotNull('type')->distinct()->orderBy('type')->pluck('type');
+        $type_list = Backup::query()->select('type')->whereNotNull('type')->distinct()->orderBy('type')->pluck('type');
         $attributes_list = $this->getAttributes();
 
         $backup->load('logicalServers', 'storageDevices');
@@ -127,7 +125,6 @@ class BackupController extends Controller
         return response(null, Response::HTTP_NO_CONTENT);
     }
 
-
     private function getAttributes()
     {
         $attributes_list = Backup::query()
@@ -146,5 +143,4 @@ class BackupController extends Controller
 
         return array_unique($res);
     }
-
 }

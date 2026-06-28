@@ -7,6 +7,7 @@ use App\Http\Requests\MassDestroyBuildingRequest;
 use App\Http\Requests\StoreBuildingRequest;
 use App\Http\Requests\UpdateBuildingRequest;
 use App\Models\Building;
+use App\Models\Cartographer;
 use App\Models\Site;
 use App\Services\IconUploadService;
 use Gate;
@@ -21,25 +22,25 @@ class BuildingController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('building_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Building::class);
+        $allowedIds = Gate::allows('building_access') ? null : Cartographer::allowedIdsFor($user, Building::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $buildings = Building::with([
-                'site:id,name',
-                'building:id,name',
-                'buildings:id,name,building_id',
-            ])
+            'site:id,name',
+            'building:id,name',
+            'buildings:id,name,building_id',
+        ])
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Building::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.buildings.index', compact('buildings'));
@@ -92,12 +93,13 @@ class BuildingController extends Controller
             compact('sites', 'buildings', 'icons', 'attributes_list', 'type_list')
         );
     }
+
     public function store(StoreBuildingRequest $request)
     {
         $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
 
         // Résoudre automatiquement le site_id si absent
-        if (empty($request->input('site_id')) && !empty($request->input('building_id'))) {
+        if (empty($request->input('site_id')) && ! empty($request->input('building_id'))) {
             $siteId = $this->resolveSiteId($request->input('building_id'));
             if ($siteId !== null) {
                 $request->merge(['site_id' => $siteId]);
@@ -161,6 +163,7 @@ class BuildingController extends Controller
         // Vérifier les cycles en tenant compte du parent ET des enfants ensemble
         if ($this->wouldCreateCycle($building->id, $newBuildingId, $childrenIds)) {
             $errorField = $newBuildingId !== null ? 'building_id' : 'buildings';
+
             return redirect()
                 ->back()
                 ->withInput()
@@ -168,7 +171,7 @@ class BuildingController extends Controller
         }
 
         // Résoudre automatiquement le site_id si absent
-        if (empty($request->input('site_id')) && !empty($request->input('building_id'))) {
+        if (empty($request->input('site_id')) && ! empty($request->input('building_id'))) {
             $siteId = $this->resolveSiteId($request->input('building_id'));
             if ($siteId !== null) {
                 $request->merge(['site_id' => $siteId]);
@@ -195,7 +198,7 @@ class BuildingController extends Controller
 
         return redirect()->route('admin.buildings.index');
     }
-    
+
     public function show(Building $building)
     {
         abort_if(Gate::denies('show-object', $building), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -213,7 +216,7 @@ class BuildingController extends Controller
 
         // due to soft delete, also set null to all children
         Building::query()
-            ->where("building_id", $building->id)
+            ->where('building_id', $building->id)
             ->update(['building_id' => null]);
 
         return redirect()->route('admin.buildings.index');
@@ -266,8 +269,8 @@ class BuildingController extends Controller
     /**
      * Récupère tous les ancêtres d'un building en remontant la chaîne
      *
-     * @param int $buildingId ID du building de départ
-     * @param Collection $buildings Collection de tous les buildings
+     * @param  int  $buildingId  ID du building de départ
+     * @param  Collection  $buildings  Collection de tous les buildings
      * @return array Liste des IDs des ancêtres (le building lui-même inclus)
      */
     private function getAncestors(int $buildingId, Collection $buildings): array
@@ -294,7 +297,7 @@ class BuildingController extends Controller
     /**
      * Résout le site_id en remontant la chaîne des buildings parents
      *
-     * @param int $buildingId ID du building parent
+     * @param  int  $buildingId  ID du building parent
      * @return int|null ID du site trouvé ou null
      */
     private function resolveSiteId(int $buildingId): ?int
@@ -315,9 +318,9 @@ class BuildingController extends Controller
     /**
      * Vérifie si une configuration créerait un cycle dans la hiérarchie
      *
-     * @param int $buildingId ID du building concerné
-     * @param int|null $parentId ID du building parent proposé (null si pas de changement)
-     * @param array $childrenIds IDs des buildings enfants proposés
+     * @param  int  $buildingId  ID du building concerné
+     * @param  int|null  $parentId  ID du building parent proposé (null si pas de changement)
+     * @param  array  $childrenIds  IDs des buildings enfants proposés
      * @return bool true si un cycle serait créé
      */
     private function wouldCreateCycle(int $buildingId, ?int $parentId = null, array $childrenIds = []): bool
@@ -348,7 +351,7 @@ class BuildingController extends Controller
         foreach ($childrenIds as $childId) {
             // Vérifier si l'enfant proposé a le building actuel dans ses ancêtres
             // (en excluant le building actuel pour simuler la nouvelle hiérarchie)
-            $childAncestors = $this->getAncestorsExcluding((int)$childId, $buildingId, $buildings);
+            $childAncestors = $this->getAncestorsExcluding((int) $childId, $buildingId, $buildings);
             if (in_array($buildingId, $childAncestors)) {
                 return true;
             }
@@ -366,9 +369,9 @@ class BuildingController extends Controller
      * Récupère tous les ancêtres d'un building en excluant un building spécifique
      * Cela permet de simuler une nouvelle hiérarchie lors de la vérification
      *
-     * @param int $buildingId ID du building de départ
-     * @param int $excludeId ID du building à exclure de la chaîne
-     * @param Collection $buildings Collection de tous les buildings
+     * @param  int  $buildingId  ID du building de départ
+     * @param  int  $excludeId  ID du building à exclure de la chaîne
+     * @param  Collection  $buildings  Collection de tous les buildings
      * @return array Liste des IDs des ancêtres (sans le building exclu)
      */
     private function getAncestorsExcluding(int $buildingId, int $excludeId, Collection $buildings): array
@@ -405,8 +408,8 @@ class BuildingController extends Controller
     /**
      * Vérifie si la création d'un building avec un parent et des enfants créerait un cycle
      *
-     * @param int|null $parentId ID du building parent proposé
-     * @param array $childrenIds IDs des buildings enfants proposés
+     * @param  int|null  $parentId  ID du building parent proposé
+     * @param  array  $childrenIds  IDs des buildings enfants proposés
      * @return bool true si un cycle serait créé
      */
     private function wouldCreateCycleOnCreation(?int $parentId, array $childrenIds): bool
@@ -423,7 +426,7 @@ class BuildingController extends Controller
         $buildings = $this->getAllBuildings();
 
         // Les enfants ne peuvent pas être des ancêtres du parent
-        if ($parentId !== null && !empty($childrenIds)) {
+        if ($parentId !== null && ! empty($childrenIds)) {
             $parentAncestors = $this->getAncestors($parentId, $buildings);
 
             foreach ($childrenIds as $childId) {

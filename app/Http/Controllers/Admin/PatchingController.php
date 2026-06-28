@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
+use App\Models\LogicalServer;
 use Carbon\Carbon;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\LogicalServer;
-use App\Models\Application;
 use Symfony\Component\HttpFoundation\Response;
 
 class PatchingController extends Controller

@@ -7,6 +7,7 @@ use App\Http\Requests\MassDestroyAnnuaireRequest;
 use App\Http\Requests\StoreAnnuaireRequest;
 use App\Http\Requests\UpdateAnnuaireRequest;
 use App\Models\Annuaire;
+use App\Models\Cartographer;
 use App\Models\ZoneAdmin;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,22 +17,21 @@ class AnnuaireController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('annuaire_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Annuaire::class);
+        $allowedIds = Gate::allows('annuaire_access') ? null : Cartographer::allowedIdsFor($user, Annuaire::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $annuaires = Annuaire::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Annuaire::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (Annuaire::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.annuaires.index', compact('annuaires'));
     }

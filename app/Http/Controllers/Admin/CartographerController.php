@@ -24,8 +24,8 @@ class CartographerController extends Controller
         abort_if(Gate::denies('cartographer_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $cartographers = Cartographer::with(['user', 'role', 'cartographiable'])->orderBy('cartographiable_type')->paginate(50);
-        $models  = $this->cartographiableModels();
-        $routes  = Cartographer::cartographiableRoutesMap();
+        $models = $this->cartographiableModels();
+        $routes = Cartographer::cartographiableRoutesMap();
 
         return view('admin.cartographers.index', compact('cartographers', 'models', 'routes'));
     }
@@ -34,12 +34,12 @@ class CartographerController extends Controller
     {
         abort_if(Gate::denies('cartographer_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $models   = $this->cartographiableModels();
+        $models = $this->cartographiableModels();
         asort($models);
-        $users    = User::orderBy('name')->pluck('name', 'id');
-        $roles    = Role::orderBy('title')->pluck('title', 'id');
-        $userId   = $request->query('user_id');
-        $roleId   = $request->query('role_id');
+        $users = User::orderBy('name')->pluck('name', 'id');
+        $roles = Role::orderBy('title')->pluck('title', 'id');
+        $userId = $request->query('user_id');
+        $roleId = $request->query('role_id');
 
         return view('admin.cartographers.create', compact('models', 'users', 'roles', 'userId', 'roleId'));
     }
@@ -49,9 +49,9 @@ class CartographerController extends Controller
         abort_if(Gate::denies('cartographer_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $validated = $request->validate([
-            'user_id'   => ['nullable', 'integer', 'exists:users,id'],
-            'role_id'   => ['nullable', 'integer', 'exists:roles,id'],
-            'objects'   => ['required', 'array', 'min:1'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+            'objects' => ['required', 'array', 'min:1'],
             'objects.*' => ['string'],
         ]);
 
@@ -81,9 +81,9 @@ class CartographerController extends Controller
 
             Cartographer::firstOrCreate([
                 'cartographiable_type' => $type,
-                'cartographiable_id'   => $id,
-                'user_id'              => $validated['user_id'] ?? null,
-                'role_id'              => $validated['role_id'] ?? null,
+                'cartographiable_id' => $id,
+                'user_id' => $validated['user_id'] ?? null,
+                'role_id' => $validated['role_id'] ?? null,
             ]);
         }
 
@@ -114,16 +114,16 @@ class CartographerController extends Controller
 
         $results = [];
         foreach ($rows as $c) {
-            $typeLabel  = $models[$c->cartographiable_type] ?? $c->cartographiable_type;
-            $related    = $c->cartographiable;
+            $typeLabel = $models[$c->cartographiable_type] ?? $c->cartographiable_type;
+            $related = $c->cartographiable;
             $objectName = $related !== null
-                ? (string) ($related->getAttribute('name') ?? '(id:' . $c->cartographiable_id . ')')
-                : '(id:' . $c->cartographiable_id . ')';
+                ? (string) ($related->getAttribute('name') ?? '(id:'.$c->cartographiable_id.')')
+                : '(id:'.$c->cartographiable_id.')';
             $results[] = [
-                'type'  => $c->cartographiable_type,
-                'id'    => $c->cartographiable_id,
-                'name'  => $objectName,
-                'label' => $typeLabel . ' — ' . $objectName,
+                'type' => $c->cartographiable_type,
+                'id' => $c->cartographiable_id,
+                'name' => $objectName,
+                'label' => $typeLabel.' — '.$objectName,
             ];
         }
 
@@ -148,9 +148,9 @@ class CartographerController extends Controller
 
     public function list()
     {
-        $user    = auth()->user();
-        $models  = $this->cartographiableModels();
-        $routes  = Cartographer::cartographiableRoutesMap();
+        $user = auth()->user();
+        $models = $this->cartographiableModels();
+        $routes = Cartographer::cartographiableRoutesMap();
 
         $roleIds = $user->roles()->pluck('roles.id');
 
@@ -159,7 +159,7 @@ class CartographerController extends Controller
             ->with('cartographiable')
             ->orderBy('cartographiable_type')
             ->get()
-            ->unique(fn ($c) => $c->cartographiable_type . '#' . $c->cartographiable_id);
+            ->unique(fn ($c) => $c->cartographiable_type.'#'.$c->cartographiable_id);
 
         return view('admin.cartographers.list', compact('cartographers', 'models', 'routes'));
     }

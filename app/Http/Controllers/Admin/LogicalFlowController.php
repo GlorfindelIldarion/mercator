@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyLogicalFlowRequest;
 use App\Http\Requests\StoreLogicalFlowRequest;
 use App\Http\Requests\UpdateLogicalFlowRequest;
-use App\Rules\Cidr;
-use Gate;
-use Illuminate\Support\Collection;
+use App\Models\Cartographer;
 use App\Models\Cluster;
 use App\Models\LogicalFlow;
 use App\Models\LogicalServer;
@@ -20,6 +18,9 @@ use App\Models\SecurityDevice;
 use App\Models\StorageDevice;
 use App\Models\Subnetwork;
 use App\Models\Workstation;
+use App\Rules\Cidr;
+use Gate;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogicalFlowController extends Controller
@@ -27,7 +28,7 @@ class LogicalFlowController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('logical_flow_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\LogicalFlow::class);
+        $allowedIds = Gate::allows('logical_flow_access') ? null : Cartographer::allowedIdsFor($user, LogicalFlow::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -54,12 +55,12 @@ class LogicalFlowController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (LogicalFlow::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderby('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.logicalFlows.index', compact('logicalFlows'));
@@ -85,31 +86,31 @@ class LogicalFlowController extends Controller
         // Build device list
         $devices = Collection::make();
         foreach ($logicalServers as $key => $value) {
-            $devices->put(LogicalServer::$prefix . $key, $value);
+            $devices->put(LogicalServer::$prefix.$key, $value);
         }
         foreach ($peripherals as $key => $value) {
-            $devices->put(Peripheral::$prefix . $key, $value);
+            $devices->put(Peripheral::$prefix.$key, $value);
         }
         foreach ($physicalServers as $key => $value) {
-            $devices->put(PhysicalServer::$prefix . $key, $value);
+            $devices->put(PhysicalServer::$prefix.$key, $value);
         }
         foreach ($storageDevices as $key => $value) {
-            $devices->put(StorageDevice::$prefix . $key, $value);
+            $devices->put(StorageDevice::$prefix.$key, $value);
         }
         foreach ($workstations as $key => $value) {
-            $devices->put(Workstation::$prefix . $key, $value);
+            $devices->put(Workstation::$prefix.$key, $value);
         }
         foreach ($physicalSecurityDevices as $key => $value) {
-            $devices->put(PhysicalSecurityDevice::$prefix . $key, $value);
+            $devices->put(PhysicalSecurityDevice::$prefix.$key, $value);
         }
         foreach ($securityDevices as $key => $value) {
-            $devices->put(SecurityDevice::$prefix . $key, $value);
+            $devices->put(SecurityDevice::$prefix.$key, $value);
         }
         foreach ($subnetworks as $key => $value) {
-            $devices->put(Subnetwork::$prefix . $key, $value);
+            $devices->put(Subnetwork::$prefix.$key, $value);
         }
         foreach ($clusters as $key => $value) {
-            $devices->put(Cluster::$prefix . $key, $value);
+            $devices->put(Cluster::$prefix.$key, $value);
         }
 
         // Lists
@@ -138,29 +139,29 @@ class LogicalFlowController extends Controller
     public function store(StoreLogicalFlowRequest $request)
     {
         $this->validate($request, [
-                'source_ip_range' => [
-                    new Cidr,
-                    'nullable',
-                    'required_without:src_id',
-                ],
-                'priority' => [
-                    'nullable',
-                    'integer',
-                ],
-                'src_id' => [
-                    'nullable',
-                    'required_without:source_ip_range',
-                ],
-                'dest_ip_range' => [
-                    new Cidr,
-                    'nullable',
-                    'required_without:dest_id',
-                ],
-                'dest_id' => [
-                    'nullable',
-                    'required_without:dest_ip_range',
-                ]
-            ]
+            'source_ip_range' => [
+                new Cidr,
+                'nullable',
+                'required_without:src_id',
+            ],
+            'priority' => [
+                'nullable',
+                'integer',
+            ],
+            'src_id' => [
+                'nullable',
+                'required_without:source_ip_range',
+            ],
+            'dest_ip_range' => [
+                new Cidr,
+                'nullable',
+                'required_without:dest_id',
+            ],
+            'dest_id' => [
+                'nullable',
+                'required_without:dest_ip_range',
+            ],
+        ]
         );
 
         $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);
@@ -234,31 +235,31 @@ class LogicalFlowController extends Controller
         // Build device list
         $devices = Collection::make();
         foreach ($logicalServers as $key => $value) {
-            $devices->put(LogicalServer::$prefix . $key, $value);
+            $devices->put(LogicalServer::$prefix.$key, $value);
         }
         foreach ($peripherals as $key => $value) {
-            $devices->put(Peripheral::$prefix . $key, $value);
+            $devices->put(Peripheral::$prefix.$key, $value);
         }
         foreach ($physicalServers as $key => $value) {
-            $devices->put(PhysicalServer::$prefix . $key, $value);
+            $devices->put(PhysicalServer::$prefix.$key, $value);
         }
         foreach ($storageDevices as $key => $value) {
-            $devices->put(StorageDevice::$prefix . $key, $value);
+            $devices->put(StorageDevice::$prefix.$key, $value);
         }
         foreach ($workstations as $key => $value) {
-            $devices->put(Workstation::$prefix . $key, $value);
+            $devices->put(Workstation::$prefix.$key, $value);
         }
         foreach ($physicalSecurityDevices as $key => $value) {
-            $devices->put(PhysicalSecurityDevice::$prefix . $key, $value);
+            $devices->put(PhysicalSecurityDevice::$prefix.$key, $value);
         }
         foreach ($securityDevices as $key => $value) {
-            $devices->put(SecurityDevice::$prefix . $key, $value);
+            $devices->put(SecurityDevice::$prefix.$key, $value);
         }
         foreach ($subnetworks as $key => $value) {
-            $devices->put(Subnetwork::$prefix . $key, $value);
+            $devices->put(Subnetwork::$prefix.$key, $value);
         }
         foreach ($clusters as $key => $value) {
-            $devices->put(Cluster::$prefix . $key, $value);
+            $devices->put(Cluster::$prefix.$key, $value);
         }
 
         // Lists
@@ -279,29 +280,29 @@ class LogicalFlowController extends Controller
         abort_if(Gate::denies('edit-object', $logicalFlow), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $this->validate($request, [
-                'source_ip_range' => [
-                    new Cidr,
-                    'nullable',
-                    'required_without:src_id',
-                ],
-                'priority' => [
-                    'nullable',
-                    'integer',
-                ],
-                'src_id' => [
-                    'nullable',
-                    'required_without:source_ip_range',
-                ],
-                'dest_ip_range' => [
-                    new Cidr,
-                    'nullable',
-                    'required_without:dest_id',
-                ],
-                'dest_id' => [
-                    'nullable',
-                    'required_without:dest_ip_range',
-                ]
-            ]
+            'source_ip_range' => [
+                new Cidr,
+                'nullable',
+                'required_without:src_id',
+            ],
+            'priority' => [
+                'nullable',
+                'integer',
+            ],
+            'src_id' => [
+                'nullable',
+                'required_without:source_ip_range',
+            ],
+            'dest_ip_range' => [
+                new Cidr,
+                'nullable',
+                'required_without:dest_id',
+            ],
+            'dest_id' => [
+                'nullable',
+                'required_without:dest_ip_range',
+            ],
+        ]
         );
 
         $request['attributes'] = implode(' ', $request->get('attributes') !== null ? $request->get('attributes') : []);

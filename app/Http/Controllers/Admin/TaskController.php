@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
-use Gate;
+use App\Models\Cartographer;
 use App\Models\Task;
+use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
@@ -15,7 +16,7 @@ class TaskController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('task_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Task::class);
+        $allowedIds = Gate::allows('task_access') ? null : Cartographer::allowedIdsFor($user, Task::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -24,12 +25,12 @@ class TaskController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Task::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.tasks.index', compact('tasks'));

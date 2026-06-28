@@ -129,6 +129,7 @@ return [
     'history' => 'History',
     'icon_select' => 'Select an icon',
     'if_you_are_having_trouble' => 'If you have any problems, click',
+    'import' => 'Import',
     'import_data' => 'Import Data',
     'imported_rows_to_table' => ': rows rows imported into the table: table',
     'inbox' => 'mailbox',

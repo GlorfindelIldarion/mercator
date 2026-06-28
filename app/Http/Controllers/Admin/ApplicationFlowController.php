@@ -7,10 +7,11 @@ use App\Http\Requests\MassDestroyApplicationFlowRequest;
 use App\Http\Requests\StoreApplicationFlowRequest;
 use App\Http\Requests\UpdateApplicationFlowRequest;
 use App\Models\Application;
+use App\Models\ApplicationFlow;
 use App\Models\ApplicationModule;
 use App\Models\ApplicationService;
+use App\Models\Cartographer;
 use App\Models\Database;
-use App\Models\ApplicationFlow;
 use App\Models\Information;
 use Gate;
 use Illuminate\Support\Collection;
@@ -21,22 +22,21 @@ class ApplicationFlowController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('application_flow_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\ApplicationFlow::class);
+        $allowedIds = Gate::allows('application_flow_access') ? null : Cartographer::allowedIdsFor($user, ApplicationFlow::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $flows = ApplicationFlow::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (ApplicationFlow::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (ApplicationFlow::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.application-flows.index', compact('flows'));
     }
@@ -57,16 +57,16 @@ class ApplicationFlowController extends Controller
 
         $items = Collection::make();
         foreach ($applications as $key => $value) {
-            $items->put(Application::$prefix . $key, $value . ' [Application]');
+            $items->put(Application::$prefix.$key, $value.' [Application]');
         }
         foreach ($services as $key => $value) {
-            $items->put(ApplicationService::$prefix . $key, $value . ' [Service]');
+            $items->put(ApplicationService::$prefix.$key, $value.' [Service]');
         }
         foreach ($modules as $key => $value) {
-            $items->put(ApplicationModule::$prefix . $key, $value . ' [Module]');
+            $items->put(ApplicationModule::$prefix.$key, $value.' [Module]');
         }
         foreach ($databases as $key => $value) {
-            $items->put(Database::$prefix . $key, $value . ' [Database]');
+            $items->put(Database::$prefix.$key, $value.' [Database]');
         }
 
         return view(
@@ -158,16 +158,16 @@ class ApplicationFlowController extends Controller
 
         $items = Collection::make();
         foreach ($applications as $key => $value) {
-            $items->put( Application::$prefix . $key, $value . ' [Application]');
+            $items->put(Application::$prefix.$key, $value.' [Application]');
         }
         foreach ($services as $key => $value) {
-            $items->put(ApplicationService::$prefix . $key, $value . ' [Service]');
+            $items->put(ApplicationService::$prefix.$key, $value.' [Service]');
         }
         foreach ($modules as $key => $value) {
-            $items->put(ApplicationModule::$prefix . $key, $value . ' [Module]');
+            $items->put(ApplicationModule::$prefix.$key, $value.' [Module]');
         }
         foreach ($databases as $key => $value) {
-            $items->put(Database::$prefix . $key, $value . ' [Database]');
+            $items->put(Database::$prefix.$key, $value.' [Database]');
         }
 
         return view(
@@ -234,7 +234,7 @@ class ApplicationFlowController extends Controller
         } else {
             $flow->database_dest_id = null;
         }
-        
+
         $flow->crypted = $request->has('crypted');
         $flow->bidirectional = $request->has('bidirectional');
         $flow->update();

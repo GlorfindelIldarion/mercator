@@ -7,6 +7,7 @@ use App\Http\Requests\MassDestroyEntityRequest;
 use App\Http\Requests\StoreEntityRequest;
 use App\Http\Requests\UpdateEntityRequest;
 use App\Models\Application;
+use App\Models\Cartographer;
 use App\Models\Database;
 use App\Models\Entity;
 use App\Models\Process;
@@ -21,7 +22,7 @@ class EntityController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('entity_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Entity::class);
+        $allowedIds = Gate::allows('entity_access') ? null : Cartographer::allowedIdsFor($user, Entity::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -31,12 +32,12 @@ class EntityController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Entity::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))
             ->paginate(min(max((int) request('per_page', 50), 10), 500));
 

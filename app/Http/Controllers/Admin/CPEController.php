@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CPEProduct;
 use App\Models\CPEVendor;
 use App\Models\CPEVersion;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Log;
@@ -78,7 +79,7 @@ class CPEController extends Controller
     {
         $search = $request['search'];
         $part = $request['part'];
-        
+
         $cpeGuesserUrl = config('mercator.cpe.guesser');
 
         if ($cpeGuesserUrl) {
@@ -91,17 +92,18 @@ class CPEController extends Controller
 
             try {
                 $response = Http::timeout(5)
-                    ->withUserAgent('Mercator/' . trim(file_get_contents(base_path('version.txt'))))
-                    ->post(rtrim($cpeGuesserUrl, '/') . '/search', [
+                    ->withUserAgent('Mercator/'.trim(file_get_contents(base_path('version.txt'))))
+                    ->post(rtrim($cpeGuesserUrl, '/').'/search', [
                         'query' => $keywords,
-                        'part' => $part
+                        'part' => $part,
                     ]);
 
                 if ($response->failed()) {
                     Log::warning('cpe-guesser request failed', [
                         'status' => $response->status(),
-                        'url'    => $cpeGuesserUrl,
+                        'url' => $cpeGuesserUrl,
                     ]);
+
                     return response()->json([]);
                 }
 
@@ -116,18 +118,18 @@ class CPEController extends Controller
                     ->map(function (array $cpe) {
                         // Format : [score, "cpe:2.3:a:vendor:product:..."]
                         $parts = explode(':', $cpe[1]);
+
                         return [
-                            'vendor_name'  => $parts[3] ?? '',
+                            'vendor_name' => $parts[3] ?? '',
                             'product_name' => $parts[4] ?? '',
                         ];
                     })
-                    ->unique(fn ($item) => $item['vendor_name'] . ':' . $item['product_name'])
+                    ->unique(fn ($item) => $item['vendor_name'].':'.$item['product_name'])
                     ->values();
-
 
                 return response()->json($result);
 
-            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            } catch (ConnectionException $e) {
                 Log::warning('cpe-guesser unreachable', ['error' => $e->getMessage()]);
                 // Return fallback
                 // return response()->json([]);
@@ -138,7 +140,7 @@ class CPEController extends Controller
         $result = CPEVendor::query()
             ->select('cpe_vendors.name as vendor_name', 'cpe_products.name as product_name')
             ->join('cpe_products', 'cpe_vendor_id', '=', 'cpe_vendors.id')
-            ->where('cpe_products.name', 'like', '%' . $search . '%')
+            ->where('cpe_products.name', 'like', '%'.$search.'%')
             ->limit(100)
             ->get();
 

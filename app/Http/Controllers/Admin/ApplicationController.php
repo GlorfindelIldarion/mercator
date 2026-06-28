@@ -6,21 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyApplicationRequest;
 use App\Http\Requests\StoreApplicationRequest;
 use App\Http\Requests\UpdateApplicationRequest;
-use App\Services\IconUploadService;
-use Gate;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 use App\Models\Activity;
 use App\Models\AdminUser;
 use App\Models\Application;
 use App\Models\ApplicationBlock;
 use App\Models\ApplicationService;
+use App\Models\Cartographer;
 use App\Models\Container;
 use App\Models\Database;
 use App\Models\Entity;
 use App\Models\LogicalServer;
 use App\Models\Process;
 use App\Models\SecurityDevice;
+use App\Services\IconUploadService;
+use Gate;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationController extends Controller
@@ -30,7 +31,7 @@ class ApplicationController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('application_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Application::class);
+        $allowedIds = Gate::allows('application_access') ? null : Cartographer::allowedIdsFor($user, Application::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -44,12 +45,12 @@ class ApplicationController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Application::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.applications.index', compact('applications'));
@@ -89,7 +90,7 @@ class ApplicationController extends Controller
 
         // Préparer les données du formulaire
         $formData = $application->only($application->getFillable());
-        $formData['name'] = $application->name . ' (copy)';
+        $formData['name'] = $application->name.' (copy)';
 
         // Ajouter les IDs des relations pour pré-sélection
         $formData['entities'] = $application->entities->pluck('id')->toArray();
@@ -187,6 +188,7 @@ class ApplicationController extends Controller
             'attributes_list'
         );
     }
+
     public function store(StoreApplicationRequest $request)
     {
         $request->merge(['responsible' => implode(', ', $request->responsibles !== null ? $request->responsibles : [])]);

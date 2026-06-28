@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyLanRequest;
 use App\Http\Requests\StoreLanRequest;
 use App\Http\Requests\UpdateLanRequest;
+use App\Models\Cartographer;
 use App\Models\Lan;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,22 +16,21 @@ class LanController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('lan_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Lan::class);
+        $allowedIds = Gate::allows('lan_access') ? null : Cartographer::allowedIdsFor($user, Lan::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
 
         $lans = Lan::query()
             ->when(request('search'), function ($q, $search) {
-            $q->where(function ($q) use ($search) {
-                foreach (Lan::$searchable as $field) {
-                    $q->orWhere($field, 'like', "%{$search}%");
-                }
-            });
-        })
-        ->orderBy('name')
-        
-        ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
+                $q->where(function ($q) use ($search) {
+                    foreach (Lan::$searchable as $field) {
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
+                    }
+                });
+            })
+            ->orderBy('name')
+            ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.lans.index', compact('lans'));
     }

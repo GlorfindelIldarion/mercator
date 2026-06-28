@@ -1,4 +1,7 @@
 import {
+    Cell,
+    type CellStateStyle,
+    EventObject,
     Graph,
     GraphDataModel,
     InternalEvent,
@@ -20,6 +23,11 @@ type NodeMap = Map<string, MapNode>;
 
 declare const _nodes: NodeMap;
 
+// Drapeau métier ajouté au style MaxGraph (absent de CellStateStyle).
+interface AppCellStyle extends CellStateStyle {
+    isBackground?: boolean;
+}
+
 //-----------------------------------------------------------------------
 // Initialisation du graphe
 
@@ -37,8 +45,14 @@ InternalEvent.disableContextMenu(container);
 //-----------------------------------------------------------------------
 // Style des sommets
 
-graph.getStylesheet().getDefaultVertexStyle().cursor = 'pointer';
-graph.options.expandedImage = null;
+// Le curseur "pointer" sur les sommets-image est géré manuellement via le
+// mouseListener ci-dessous (CellStateStyle n'a pas de propriété "cursor" :
+// elle ne serait pas prise en compte par le rendu).
+
+// Pas d'icône de pliage/dépliage sur cette vue lecture seule, quel que soit
+// l'état (replié ou non) du groupe — contrairement à options.expandedImage,
+// qui ne masque que l'icône des groupes dépliés.
+graph.getFoldingImage = () => null;
 
 //-----------------------------------------------------------------------
 // Style des arêtes
@@ -46,15 +60,49 @@ graph.options.expandedImage = null;
 const edgeDefaultStyle = graph.getStylesheet().getDefaultEdgeStyle();
 edgeDefaultStyle.labelBackgroundColor = '#FFFFFF';
 edgeDefaultStyle.strokeWidth  = 2;
-edgeDefaultStyle.rounded      = true;
+edgeDefaultStyle.rounded      = false;
 edgeDefaultStyle.entryPerimeter = false;
-edgeDefaultStyle.edgeStyle    = 'manhattanEdgeStyle';
 
 //-------------------------------------------------------------------------
 // LOAD
 
+const FIT_MARGIN = 20;
+
+// Zoom pour que tous les objets soient visibles, alignés en haut à gauche du
+// conteneur. Calcul manuel (plutôt que FitPlugin.fit()) pour garder un
+// contrôle exact en pixels sur la marge, quel que soit le niveau de zoom.
+function fitTopLeft(margin: number): void {
+    const view   = graph.getView();
+    const bounds = graph.getGraphBounds();
+    if (!bounds || bounds.width <= 0 || bounds.height <= 0) return;
+
+    const originalScale = view.scale || 1;
+    const modelWidth     = bounds.width  / originalScale;
+    const modelHeight    = bounds.height / originalScale;
+
+    const availableWidth  = container!.clientWidth  - margin * 2;
+    const availableHeight = container!.clientHeight - margin * 2;
+
+    let newScale = Math.min(availableWidth / modelWidth, availableHeight / modelHeight);
+    if (!Number.isFinite(newScale) || newScale <= 0) newScale = 1;
+
+    const modelLeft = bounds.x / originalScale - view.translate.x;
+    const modelTop  = bounds.y / originalScale - view.translate.y;
+
+    const translateX = margin / newScale - modelLeft;
+    const translateY = margin / newScale - modelTop;
+
+    view.scaleAndTranslate(newScale, translateX, translateY);
+}
+
 export function loadGraph(xml: string): void {
     new ModelXmlSerializer(model).import(xml);
+
+    // Le rendu doit être validé avant de mesurer les limites du graphe,
+    // sinon getGraphBounds() est vide et le calcul de zoom ne fait rien.
+    graph.refresh();
+
+    fitTopLeft(FIT_MARGIN);
 }
 
 (window as any).loadGraph = loadGraph;
@@ -62,8 +110,8 @@ export function loadGraph(xml: string): void {
 //--------------------------------------------------------------------------
 // Navigation au clic sur un sommet
 
-graph.addListener(InternalEvent.CLICK, (_sender, evt) => {
-    const cell = evt.getProperty('cell');
+graph.addListener(InternalEvent.CLICK, (_sender: unknown, evt: EventObject) => {
+    const cell = evt.getProperty('cell') as Cell | null;
     if (!cell?.isVertex()) return;
 
     const node = _nodes.get(cell.id as string);
@@ -81,7 +129,8 @@ graph.addListener(InternalEvent.CLICK, (_sender, evt) => {
 graph.addMouseListener({
     mouseMove(_sender, me) {
         const cell = me.getCell();
-        const isImageVertex = cell?.isVertex() && (cell.style as any)?.image != null;
+        const style = cell?.style as AppCellStyle | undefined;
+        const isImageVertex = !!cell?.isVertex() && style?.image != null && !style.isBackground;
         container!.style.cursor = isImageVertex ? 'pointer' : 'default';
     },
     mouseDown(_sender, _me) {},

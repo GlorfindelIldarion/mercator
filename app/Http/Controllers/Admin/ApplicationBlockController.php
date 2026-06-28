@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyApplicationBlockRequest;
 use App\Http\Requests\StoreApplicationBlockRequest;
 use App\Http\Requests\UpdateApplicationBlockRequest;
-use App\Models\ApplicationBlock;
 use App\Models\Application;
+use App\Models\ApplicationBlock;
+use App\Models\Cartographer;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +17,7 @@ class ApplicationBlockController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('application_block_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\ApplicationBlock::class);
+        $allowedIds = Gate::allows('application_block_access') ? null : Cartographer::allowedIdsFor($user, ApplicationBlock::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -25,12 +26,12 @@ class ApplicationBlockController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (ApplicationBlock::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.applicationBlocks.index', compact('applicationBlocks'));

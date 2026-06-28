@@ -8,8 +8,9 @@ use App\Http\Requests\StoreActivityRequest;
 use App\Http\Requests\UpdateActivityRequest;
 use App\Models\Activity;
 use App\Models\ActivityImpact;
-use App\Models\Graph;
 use App\Models\Application;
+use App\Models\Cartographer;
+use App\Models\Graph;
 use App\Models\Operation;
 use App\Models\Process;
 use Gate;
@@ -20,7 +21,7 @@ class ActivityController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $allowedIds = Gate::allows('activity_access') ? null : \App\Models\Cartographer::allowedIdsFor($user, \App\Models\Activity::class);
+        $allowedIds = Gate::allows('activity_access') ? null : Cartographer::allowedIdsFor($user, Activity::class);
         if ($allowedIds !== null && empty($allowedIds)) {
             abort(Response::HTTP_FORBIDDEN, '403 Forbidden');
         }
@@ -29,12 +30,12 @@ class ActivityController extends Controller
             ->when(request('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     foreach (Activity::$searchable as $field) {
-                        $q->orWhere($field, 'like', "%{$search}%");
+                        $q->orWhereRaw('LOWER('.$field.') LIKE ?', ['%'.mb_strtolower($search).'%']);
                     }
                 });
             })
             ->orderBy('name')
-            
+
             ->when($allowedIds !== null, fn ($q) => $q->whereIn('id', $allowedIds))->paginate(min(max((int) request('per_page', 50), 10), 500));
 
         return view('admin.activities.index', compact('activities'));
@@ -153,7 +154,6 @@ class ActivityController extends Controller
         return redirect()->route('admin.activities.index');
     }
 
-
     public function show(Activity $activity)
     {
         abort_if(Gate::denies('show-object', $activity), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -162,14 +162,15 @@ class ActivityController extends Controller
 
         // Select BPMN graphs
         $BPMNGraphs = Graph::query()
-            ->select("id", "name")
-            ->where("class", "=", 2)
-            ->whereLike('content', '%"#' . $activity->getUID() . '"%')
+            ->select('id', 'name')
+            ->where('class', '=', 2)
+            ->whereLike('content', '%"#'.$activity->getUID().'"%')
             ->get();
 
         return view('admin.activities.show',
             compact('activity', 'BPMNGraphs'));
     }
+
     public function destroy(Activity $activity)
     {
         abort_if(Gate::denies('activity_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
