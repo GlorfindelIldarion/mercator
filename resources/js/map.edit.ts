@@ -1097,6 +1097,8 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key !== 'Delete' && event.key !== 'Backspace') return;
 
     if (graphHasFocus) {
+        // Ne pas intercepter quand le graphe est en mode édition de texte
+        if (graph.isEditing()) return;
         // Bloquer systématiquement l'HTML quand le graphe est actif
         event.preventDefault();
         event.stopPropagation();
